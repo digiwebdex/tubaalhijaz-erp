@@ -44,7 +44,12 @@ TUBAALHIJAZ/
 │   │   ├── UAT_BUG_REGISTER.md
 │   │   ├── UAT_SIGNOFF.md
 │   │   └── GO_LIVE_READINESS.md
-│   ├── releases/                       # Release engineering (ESP-06 + TRANSFORM packs)
+│   ├── releases/                       # Release engineering (ESP-06/07 + TRANSFORM)
+│   │   ├── v2.0_RELEASE.md             # ESP-07 official release
+│   │   ├── v2.0_CHANGELOG.md
+│   │   ├── KNOWN_ISSUES.md
+│   │   ├── UPGRADE_GUIDE.md
+│   │   ├── FINAL_SIGNOFF.md
 │   │   ├── PRODUCTION_READINESS.md
 │   │   ├── DEPLOYMENT_CHECKLIST.md
 │   │   ├── DISASTER_RECOVERY.md
