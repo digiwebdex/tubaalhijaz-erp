@@ -1,0 +1,31 @@
+# Keep the Docker build context small + host-only artifacts out of images.
+# Applies to both Dockerfile.api and Dockerfile.web (both build from the repo root).
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+.git
+.gitignore
+
+# secrets — never into an image
+**/.env
+**/.env.*
+!**/.env.example
+
+# tests + test tooling (not needed to build/run the app)
+**/test
+**/*.spec.ts
+**/*.e2e-spec.ts
+**/jest.config.*
+**/jest-e2e.json
+
+# local storage output + compose data
+apps/api/uploads
+apps/web/dist
+infra/**/data
+
+# misc
+*.log
+**/*.tsbuildinfo
+.vscode
+.idea

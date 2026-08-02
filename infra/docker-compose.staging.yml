@@ -1,0 +1,60 @@
+# TUBA AL HIJAZ — STAGING overlay.
+#
+# This is an OVERRIDE layered on top of docker-compose.prod.yml — deliberately not a
+# second copy of the stack, so a change to the prod topology can never silently skip
+# staging. Always pass BOTH files, and always from the staging checkout:
+#
+#   cd /var/www/TUBAALHIJAZ-staging/infra
+#   docker compose -f docker-compose.prod.yml -f docker-compose.staging.yml \
+#                  -p tuba-staging up -d
+#
+# ISOLATION — three independent guards, because a staging stack that accidentally
+# adopts production's containers/volumes would be catastrophic:
+#   1. `name: tuba-staging` below (later file wins for scalar keys)
+#   2. `-p tuba-staging` on every documented command (CLI flag = highest precedence)
+#   3. a SEPARATE directory with its OWN infra/.env, so the prod compose file's
+#      `env_file: [.env]` resolves to staging secrets and cannot reach production's
+# The project name prefixes containers, the network AND the volumes, so
+# tuba-staging_pgdata is a different volume from tuba-alhijaz_pgdata. Staging never
+# touches the production database.
+#
+# Verify isolation on first provision (must print tuba-staging, and volumes must not
+# already exist under the prod project):
+#   docker compose -f docker-compose.prod.yml -f docker-compose.staging.yml \
+#                  -p tuba-staging config --format json | head -c 200
+#   docker volume ls | grep tuba
+name: tuba-staging
+
+services:
+  # Staging pulls the image CI already built; it never builds on the box. `build:` is
+  # neutralised by pinning to the same registry image the prod stack uses — the tag is
+  # what differs (staging deploys the staging branch SHA).
+  postgres:
+    deploy:
+      resources:
+        limits: { memory: 384M, cpus: "0.5" }
+
+  redis:
+    # Half the prod cache ceiling — staging carries no real traffic.
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "100mb", "--maxmemory-policy", "allkeys-lru"]
+    deploy:
+      resources:
+        limits: { memory: 128M, cpus: "0.25" }
+
+  minio:
+    deploy:
+      resources:
+        limits: { memory: 256M, cpus: "0.25" }
+
+  api:
+    environment:
+      NODE_ENV: production          # staging runs the prod build path — that's the point
+      APP_ENV: staging              # surfaced in logs/metrics so staging rows are identifiable
+    deploy:
+      resources:
+        limits: { memory: 512M, cpus: "0.5" }
+
+  web:
+    deploy:
+      resources:
+        limits: { memory: 96M, cpus: "0.25" }

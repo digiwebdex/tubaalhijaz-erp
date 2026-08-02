@@ -1,0 +1,43 @@
+{
+  // apps/web shipped from Figma with NO tsconfig — vite "builds" were
+  // transpile-only, so an undefined identifier (e.g. an unimported icon)
+  // sailed through CI and crashed at runtime in production. That is exactly
+  // what happened on /ops-departments (`<X …>` with X never imported, present
+  // since the original export). This config exists to make that class of bug
+  // a build failure.
+  //
+  // Deliberately pragmatic, not maximal: the codebase is generated UI code.
+  // We want RUNTIME BOMBS (unknown names, bad member access, wrong call
+  // shapes), not a style crusade over 24 pages of prototype code.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // strictness: on where it catches crashes, off where it only nags
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "src/**/*.selftest.ts"]
+}

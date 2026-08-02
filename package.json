@@ -1,0 +1,14 @@
+{
+  "name": "tuba-al-hijaz",
+  "private": true,
+  "version": "0.0.1",
+  "description": "TUBA AL HIJAZ — Umrah/Hajj operations platform (monorepo: web + api + shared)",
+  "packageManager": "pnpm@11.13.1",
+  "scripts": {
+    "build:shared": "pnpm --filter @tuba/shared build",
+    "dev": "pnpm build:shared && pnpm --parallel --filter @tuba/web --filter @tuba/api dev",
+    "dev:web": "pnpm --filter @tuba/web dev",
+    "dev:api": "pnpm build:shared && pnpm --filter @tuba/api dev",
+    "build": "pnpm build:shared && pnpm --filter @tuba/web build && pnpm --filter @tuba/api build"
+  }
+}

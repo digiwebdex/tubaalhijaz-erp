@@ -1,0 +1,156 @@
+# TUBA AL HIJAZ — development stack. Run from infra/:
+#   cp .env.example .env  &&  docker compose up   (or: make -C infra dev)
+# Same five services as prod, but backing stores (postgres/redis/minio) are
+# exposed to the host so you can seed / inspect / run `pnpm dev` against them,
+# and nothing auto-restarts. Env comes from infra/.env.
+name: tuba-alhijaz-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"     # exposed for host seeding / psql
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits: { memory: 768M, cpus: "1.0" }
+    networks: [tuba]
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "200mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits: { memory: 256M, cpus: "0.5" }
+    networks: [tuba]
+
+  # MinIO is THE single source of truth for uploaded files (miniodata volume).
+  # The API's local-disk driver is inactive when MINIO_ENDPOINT is set — no 2nd store.
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/minio/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits: { memory: 512M, cpus: "0.5" }
+    networks: [tuba]
+
+  createbuckets:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      STORAGE_BUCKET: ${STORAGE_BUCKET}
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 \"$$MINIO_ROOT_USER\" \"$$MINIO_ROOT_PASSWORD\"; do echo 'waiting for minio…'; sleep 2; done;
+      mc mb --ignore-existing local/$$STORAGE_BUCKET;
+      echo 'bucket ready';
+      "
+    networks: [tuba]
+
+  api:
+    image: tuba-alhijaz/api:${IMAGE_TAG:-dev}
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    env_file: [.env]
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "3210"
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      REDIS_URL: redis://redis:6379/3
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: "9000"
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      STORAGE_BUCKET: ${STORAGE_BUCKET}
+      CORS_ORIGIN: ${WEB_ORIGIN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      createbuckets:
+        condition: service_completed_successfully
+    ports:
+      - "${API_PORT:-3210}:3210"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3210/health >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    deploy:
+      resources:
+        limits: { memory: 768M, cpus: "1.0" }
+    networks: [tuba]
+
+  web:
+    image: tuba-alhijaz/web:${IMAGE_TAG:-dev}
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.web
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3210}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits: { memory: 128M, cpus: "0.25" }
+    networks: [tuba]
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:      # the only persisted file store
+
+networks:
+  tuba:
+    driver: bridge

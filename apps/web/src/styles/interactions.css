@@ -1,0 +1,108 @@
+/* ─── Micro-interactions — TUBA AL HIJAZ ERP ─────────────────────────────── */
+
+/* Button press feedback */
+button:not(:disabled):active {
+  transform: scale(0.96);
+  transition: transform 80ms ease;
+}
+
+/* Input / textarea focus rings */
+input:not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: rgba(201, 162, 75, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(201, 162, 75, 0.08) !important;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+/* Loading skeleton animation */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.6s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+@keyframes skeleton-sweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Table row hover */
+tr.hoverable:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  transition: background-color 100ms ease;
+}
+
+/* ERP action button base transitions */
+.erp-btn {
+  transition: opacity 120ms ease, transform 80ms ease, box-shadow 120ms ease;
+  touch-action: manipulation;
+}
+.erp-btn:hover {
+  opacity: 0.88;
+}
+.erp-btn:active {
+  transform: scale(0.95);
+}
+.erp-btn:focus-visible {
+  outline: 2px solid #C9A24B;
+  outline-offset: 2px;
+}
+
+/* UI-11 — coarse pointers (phones/tablets): keep ≥44px targets */
+@media (pointer: coarse) {
+  .erp-btn {
+    min-height: 44px !important;
+  }
+}
+
+/* Prefer reduced motion — cut transform press feedback */
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active,
+  .erp-btn:active {
+    transform: none;
+  }
+}
+
+/* Drag-active dropzone pulse border */
+@keyframes dash-march {
+  to { stroke-dashoffset: -24; }
+}
+
+/* Mobile OCR scan-line animation */
+@keyframes scan-line-move {
+  0%   { top: 15%; }
+  100% { top: 80%; }
+}
+
+/* Status badge pulse for IN_PROGRESS indicators */
+.status-pulse {
+  animation: status-pulse-anim 2s ease-in-out infinite;
+}
+@keyframes status-pulse-anim {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* Smooth scrollbar (webkit) */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
+}

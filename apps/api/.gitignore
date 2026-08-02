@@ -1,0 +1,3 @@
+# Local-disk storage output (dev/CI fallback when MinIO isn't configured).
+# Anchored to the api root so it does NOT ignore the src/uploads/ module source.
+/uploads/

@@ -1,0 +1,17 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+allowBuilds:
+  argon2: true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@tailwindcss/oxide': true
+  esbuild: true
+  prisma: true
+  msgpackr-extract: false # optional native accel for msgpackr (bullmq dep); JS fallback is fine
+  protobufjs: false # @google-cloud/vision uses protobufjs as a pure-JS lib; build script not needed
+
+overrides:
+  # security patches within the tested majors (avoid surprise vite 8 / rr 8)
+  vite: "^6.4.3"
+  react-router: "^7.15.0"

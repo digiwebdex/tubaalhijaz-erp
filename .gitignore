@@ -1,0 +1,41 @@
+# deps
+node_modules/
+
+# builds
+dist/
+build/
+.vite/
+
+# env — never commit real secrets (use .env.example)
+.env
+.env.local
+.env.*.local
+
+# logs / misc
+*.log
+.DS_Store
+Thumbs.db
+
+# prisma generated client lives in node_modules; migrations ARE committed
+
+# compose secrets
+infra/.env
+infra/.env.bak*
+infra/.env.*.bak*
+
+# local archives / dumps
+*.tar.gz
+*.sql.gz
+/var/backups/
+
+# IDE
+.cursor/
+# package stores / caches
+.pnpm-store/
+**/.pnpm-store/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+apps/**/dist/
+packages/**/dist/

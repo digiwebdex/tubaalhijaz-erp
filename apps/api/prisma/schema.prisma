@@ -1,0 +1,1851 @@
+// ─── TUBA AL HIJAZ — PostgreSQL schema (Prisma) ──────────────────────────────
+// Source of truth for entities/fields/enums: docs/AUDIT.md (Phase 1 audit).
+// Conventions:
+//  - Every business record keeps a human-facing `code` (e.g. GRP-1446-2891,
+//    INV-1446-0091) following {PREFIX}-{HijriSeason}-{serial}; the DB pk is a cuid.
+//  - `tenantId` → Company.id row-level multi-tenancy on all agent-scoped data
+//    (agents must never see other agents' rows). Supplier-side scoping uses
+//    `supplierId`. Platform/internal rows have tenantId = null where nullable.
+//  - Money: Decimal(14,2) in SAR unless a currency column says otherwise.
+//    FX rates: Decimal(12,4). VAT 15%, platform fee 2.5% applied in service layer.
+//  - Dates are UTC timestamps; Hijri display strings are kept only where the UI
+//    shows them verbatim (e.g. CR issue/expiry) alongside a real DateTime.
+//  - Bilingual content columns use the `xxxBn` suffix (Bangla default in UI).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum CompanyType {
+  AGENT
+  SUPPLIER
+}
+
+enum VerificationStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  SUSPENDED
+}
+
+enum SupplierType {
+  HOTEL
+  TRANSPORT
+  CATERING
+  /// Saudi Umrah Company partner (visa processing via Nusuk/MOFA) — T002-01
+  UMRAH_COMPANY
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Destination {
+  MAKKAH
+  MADINAH
+  MAKKAH_MADINAH
+}
+
+enum VisaType {
+  UMRAH
+  LONG_STAY
+  HAJJ
+}
+
+enum PackageType {
+  ECONOMY
+  STANDARD
+  PREMIUM
+}
+
+enum GroupStatus {
+  PENDING
+  IN_PROGRESS
+  VERIFIED
+  COMPLETED
+  CANCELLED
+}
+
+enum OpsStatus {
+  UPCOMING
+  ACTIVE
+  DELAYED
+  COMPLETED
+}
+
+enum VisaStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// T002-03 — Mutamer Visa Pipeline (Passenger SoT). Batch VisaRequest.status is separate.
+enum VisaPipelineStatus {
+  NEW
+  MOFA
+  EMBASSY
+  BIOMETRIC
+  SUBMITTED
+  PROCESSING
+  ISSUED
+  REJECTED
+  PASSPORT_RETURNED
+  COMPLETED
+  REJECTED_CLOSED
+}
+
+enum ConfirmStatus {
+  PENDING
+  CONFIRMED
+}
+
+enum MohStatus {
+  PENDING
+  CLEARED
+}
+
+enum FlightDirection {
+  ARRIVAL
+  DEPARTURE
+}
+
+enum FlightStatus {
+  SCHEDULED
+  DELAYED
+  LANDING
+  AT_GATE
+  IMMIGRATION
+  BAGGAGE
+  EN_ROUTE
+  DELIVERED
+  STANDBY
+  CHECK_IN
+  BOARDING
+  DEPARTED
+}
+
+// Master-plan end-to-end workflow for every bookable service:
+// Requested → Assigned → Confirmed → Voucher Issued → Completed
+enum ServiceRequestStatus {
+  REQUESTED
+  ASSIGNED
+  CONFIRMED
+  VOUCHER_ISSUED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum MohCategory {
+  A
+  B
+  C
+}
+
+enum MealPlan {
+  ROOM_ONLY
+  BREAKFAST_ONLY
+  BED_BREAKFAST
+  HALF_BOARD
+  FULL_BOARD
+  PREMIUM
+}
+
+enum VehicleType {
+  SEDAN
+  VAN
+  HIACE
+  COASTER
+  BUS
+}
+
+enum VehicleStatus {
+  ACTIVE
+  MAINTENANCE
+  RETIRED
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_DUTY
+  EN_ROUTE
+  STANDBY
+  OFF_DUTY
+}
+
+enum DispatchStatus {
+  ASSIGNED
+  EN_ROUTE
+  COMPLETED
+  DELAYED
+  CANCELLED
+}
+
+enum AdditionalServiceType {
+  WHEELCHAIR
+  VIP_LOUNGE
+  SIM_CARD
+  INSURANCE
+  PHOTOGRAPHY
+  INTERPRETER
+  CURRENCY_EXCHANGE
+  OTHER
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum VoucherType {
+  HOTEL
+  TRANSPORT
+  CATERING
+  ZIYARAH
+  MEET_ASSIST
+}
+
+enum VoucherStatus {
+  DRAFT
+  ISSUED
+  SENT
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OUTSTANDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+/// T002-06 — Invoice kind. MOFA Processing Bill ≠ mutamer MOFA Number (architecture §1.6).
+enum InvoiceKind {
+  STANDARD
+  MOFA_PROCESSING
+}
+
+enum ReceiptMethod {
+  BANK_TRANSFER
+  SARIE
+  CHEQUE
+  CASH
+  SADAD
+  WIRE
+  ONLINE
+}
+
+enum PaymentSlipType {
+  BANK_TRANSFER
+  CHEQUE
+  SADAD
+  WIRE
+  ONLINE_BANKING
+}
+
+enum PaymentSlipPurpose {
+  WALLET_TOPUP
+  INVOICE_PAYMENT
+  SECURITY_DEPOSIT
+  OTHER
+}
+
+enum ReviewStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum LedgerType {
+  AGENT
+  SUPPLIER
+  GENERAL
+}
+
+enum AccountKind {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum TxnDirection {
+  CREDIT
+  DEBIT
+}
+
+enum CurrencyCode {
+  SAR
+  USD
+  BDT
+  EUR
+  GBP
+  TRY
+}
+
+enum BrnStatus {
+  OPEN
+  PROCESSING
+  FULFILLED
+  CANCELLED
+}
+
+enum ZiyarahStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum LongStayStatus {
+  UPCOMING
+  ACTIVE
+  RENEWAL
+  COMPLETED
+}
+
+enum RenewalStatus {
+  NONE
+  REQUESTED
+  APPROVED
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  REPAIR
+  INSPECTION
+}
+
+enum VehicleDocType {
+  REGISTRATION // Istimara
+  INSPECTION // Fahes / periodic technical inspection
+  OPERATING_CARD // transport operating card / permit
+  PERMIT
+  OTHER
+}
+
+enum LocationSource {
+  MANUAL // ops-entered / simulated (MVP)
+  DEVICE // hardware GPS tracker — Phase 2 (post-MVP) integration
+}
+
+enum InsuranceStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+// The master plan's 15 OCR document types
+enum OcrDocumentType {
+  PASSPORT
+  VISA
+  FLIGHT_TICKET
+  TRADE_LICENSE
+  NATIONAL_ID
+  BANK_CHEQUE
+  PAYMENT_SLIP
+  INVOICE
+  HOTEL_VOUCHER
+  TRANSPORT_VOUCHER
+  CATERING_VOUCHER
+  VEHICLE_REGISTRATION
+  DRIVER_LICENSE
+  CONTRACT
+  STATEMENT
+  /// T001-07 — Nusuk Groups List image → approve creates/updates Group (feature-flagged).
+  NUSUK_GROUP_LIST
+}
+
+enum OcrReviewStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum RunStatus {
+  OK
+  WARN
+  ERROR
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  EMAIL
+  IN_APP
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  EMERGENCY
+}
+
+enum NotificationStatus {
+  PENDING
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum EnquiryType {
+  AGENT
+  SUPPLIER
+  PILGRIM
+  OTHER
+}
+
+enum FinanceEntryKind {
+  INCOME
+  EXPENSE
+}
+
+enum FinanceEntryStatus {
+  RECEIVED
+  PENDING
+  OVERDUE
+  PAID
+}
+
+/// Where an EXPENSE account sits on the P&L (revenue accounts leave this null).
+enum PlSection {
+  COGS
+  OPEX
+}
+
+// Registration-wizard document slots (storage objects, not OCR jobs)
+enum UploadKind {
+  TRADE_LICENSE
+  OWNER_ID
+  OFFICE_PHOTO
+  COMPANY_LOGO
+  SIGNED_CHEQUE
+  DEPOSIT_PROOF
+  SUPPLIER_CERT
+  VOUCHER
+  INVOICE
+  /// T001-06 — passport scan intake (agents already send kind=PASSPORT).
+  PASSPORT
+  OTHER
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  APPROVE
+  REJECT
+  EXPORT
+  RUN
+  VIEW
+  PROCESS
+  TOGGLE
+  REVIEW
+  LOGIN
+}
+
+// ─── Platform: seasons, workflow catalog, RBAC ───────────────────────────────
+
+/// Hijri season — first-class dimension; every business code embeds its year.
+model Season {
+  id        String   @id @default(cuid())
+  code      String   @unique // e.g. "UMR-1446"
+  hijriYear Int // 1446
+  name      String // "Umrah 1446H"
+  nameBn    String?
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(false)
+
+  groups       Group[]
+  invoices     Invoice[]
+  visaRequests VisaRequest[]
+  quotas       AgentSeasonQuota[]
+}
+
+/// Catalog of the canonical 19-stage group lifecycle (WorkflowMap page).
+model WorkflowStage {
+  id      Int     @id // 1..19
+  phase   Int // 1..3
+  labelEn String
+  labelBn String
+  module  String // owning module, e.g. "Agent Portal", "Visa Desk"
+  slaText String?
+  route   String?
+
+  groups Group[]
+}
+
+model Role {
+  id     String  @id @default(cuid())
+  key    String  @unique // CEO, OPS_MANAGER, FINANCE_OFFICER, AGENT_SUPPORT, IT_ADMIN, SUPPLIER_LIAISON, AGENT, SUPPLIER, DRIVER
+  name   String
+  nameBn String?
+
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id     String  @id @default(cuid())
+  key    String  @unique // e.g. VIEW_DASHBOARD, MANAGE_USERS, ...
+  name   String
+  nameBn String?
+
+  roles RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model User {
+  id           String     @id @default(cuid())
+  code         String?    @unique // USR-001
+  email        String     @unique
+  passwordHash String
+  name         String
+  nameBn       String?
+  phone        String?
+  preferredLang String    @default("bn") // notification language (bn default)
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id])
+  companyId String? // null = TUBA platform staff
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  driver          Driver?
+  refreshTokens   RefreshToken[]
+  uploadedFiles   UploadedFile[]    @relation("FileUploader")
+  auditLogs       AuditLog[]        @relation("AuditActor")
+  uploadedOcrDocs OcrDocument[]     @relation("OcrUploader")
+  reviewedOcrDocs OcrDocument[]     @relation("OcrReviewer")
+  notifications   NotificationLog[] @relation("NotificationRecipient")
+  reviewedSlips   PaymentSlip[]     @relation("SlipReviewer")
+  ledgerEntries   LedgerEntry[]     @relation("LedgerCreator")
+  uploadedGroups  Group[]           @relation("GroupUploader")
+
+  @@index([companyId])
+  @@index([roleId])
+}
+
+/// A stored file object (MinIO-shaped: bucket + storage key). Uploaded pre-auth
+/// during registration wizards (companyId null) and claimed/linked on submit.
+model UploadedFile {
+  id           String     @id @default(cuid())
+  bucket       String     @default("tuba-docs")
+  storageKey   String     @unique
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  kind         UploadKind @default(OTHER)
+  meta         Json? // structured context, e.g. {bookingService, bookingId, invoiceNo, ...}
+  companyId    String?
+  company      Company?   @relation(fields: [companyId], references: [id])
+  uploadedById String?
+  uploadedBy   User?      @relation("FileUploader", fields: [uploadedById], references: [id])
+  createdAt    DateTime   @default(now())
+
+  // Document Vault (Phase 13): versioned by (companyId, kind). A new upload of the
+  // same document type supersedes the prior one (isLatest=false) — never overwrites.
+  version      Int        @default(1)
+  isLatest     Boolean    @default(true)
+  expiryDate   DateTime? // document validity (trade licence, ID, cert…) for expiry tracking
+  scanStatus   String     @default("CLEAN") // CLEAN | (future) INFECTED — content scan result
+  supersedesId String?    @unique // the version this one replaces
+  supersedes   UploadedFile?  @relation("FileVersions", fields: [supersedesId], references: [id])
+  supersededBy UploadedFile?  @relation("FileVersions")
+
+  vouchers    Voucher[]
+  invoices    Invoice[]
+  vehicleDocs VehicleDocument[]
+
+  @@index([companyId, kind])
+  @@index([companyId, kind, isLatest]) // vault: latest doc per type
+  @@index([expiryDate]) // expiry sweep
+}
+
+/// Rotating refresh tokens — stored hashed; rotation revokes + links the old row.
+model RefreshToken {
+  id           String    @id @default(cuid())
+  tokenHash    String    @unique
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?
+  ip           String?
+  userAgent    String?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId, expiresAt])
+}
+
+// ─── Tenancy: companies + profiles ───────────────────────────────────────────
+
+/// The tenant. Both agent companies and supplier companies.
+model Company {
+  id                 String             @id @default(cuid())
+  code               String             @unique // AGT-1446-4827 | SUP-HTL-4291
+  type               CompanyType
+  name               String
+  nameBn             String?
+  city               String?
+  country            String             @default("Saudi Arabia")
+  email              String?
+  phone              String?
+  preferredLang      String             @default("bn") // notification language for this tenant
+  verificationStatus VerificationStatus @default(PENDING)
+  rejectionReason    String?
+  joinedAt           DateTime           @default(now())
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  agentProfile    AgentProfile?
+  supplierProfile SupplierProfile?
+  users           User[]
+  bankAccounts    BankAccount[]
+  wallet          Wallet?
+
+  // agent-tenant scoped data
+  groups                    Group[]
+  passengers                Passenger[]
+  flightInfos               FlightInfo[]
+  visaRequests              VisaRequest[]
+  hotelBookingsAsTenant     HotelBooking[]             @relation("HotelBookingTenant")
+  transportBookingsAsTenant TransportBooking[]         @relation("TransportBookingTenant")
+  cateringBookingsAsTenant  CateringBooking[]          @relation("CateringBookingTenant")
+  additionalServices        AdditionalServiceRequest[]
+  brns                      BRN[]
+  vouchers                  Voucher[]
+  invoices                  Invoice[]
+  receipts                  Receipt[]
+  statements                Statement[]
+  paymentSlips              PaymentSlip[]
+  ledgerEntries             LedgerEntry[]
+  ocrDocuments              OcrDocument[]
+  ziyarahTrips              ZiyarahTrip[]
+  longStays                 LongStay[]
+  dispatchOrders            DispatchOrder[]
+  notificationLogs          NotificationLog[]
+
+  // supplier-side assignments
+  hotelBookingsAsSupplier     HotelBooking[]     @relation("HotelBookingSupplier")
+  transportBookingsAsSupplier TransportBooking[] @relation("TransportBookingSupplier")
+  cateringBookingsAsSupplier  CateringBooking[]  @relation("CateringBookingSupplier")
+  hotels                      Hotel[]
+  vehicles                    Vehicle[]
+  drivers                     Driver[]
+  uploadedFiles               UploadedFile[]
+
+  /// Groups that named this Company as their Umrah Co (T002-01).
+  groupsAsUmrahCompany        Group[]       @relation("GroupUmrahCompany")
+  /// VisaRequest batches that named this Company as Umrah Co (T002-01).
+  visaRequestsAsUmrahCompany  VisaRequest[] @relation("VisaRequestUmrahCompany")
+
+  @@index([type, verificationStatus])
+}
+
+model AgentProfile {
+  id        String  @id @default(cuid())
+  companyId String  @unique
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Trade License (CR)
+  crNumber         String? // CR-1446-00923
+  crIssueHijri     String? // "01 Muharram 1443H" (display)
+  crExpiryHijri    String?
+  crExpiryDate     DateTime?
+  businessActivity String?
+
+  // Owner identity
+  ownerName        String?
+  ownerIdNumber    String? // NID or passport
+  ownerNationality String?
+  ownerDobHijri    String?
+  ownerPosition    String?
+  ownerMobile      String?
+  ownerWhatsapp    String?
+  ownerAddress     String?
+
+  // Business contact
+  businessEmail String?
+  opsEmail      String?
+  website       String?
+  officePhone   String?
+
+  // Signed cheque + security deposit
+  chequeAmount  Decimal?     @db.Decimal(14, 2)
+  chequeNumber  String?
+  chequeBank    String?
+  depositAmount Decimal?     @db.Decimal(14, 2)
+  depositRef    String?
+  depositDate   DateTime?
+  depositStatus ReviewStatus @default(PENDING)
+
+  // Reference agent (existing agency vouching for this one)
+  referenceAgencyName String?
+  referenceAgentCode  String?
+  referenceContact    String?
+  referencePhone      String?
+
+  platformRating Decimal? @db.Decimal(3, 2) // 4.80
+
+  guarantors Guarantor[]
+  quotas     AgentSeasonQuota[]
+}
+
+model Guarantor {
+  id             String       @id @default(cuid())
+  agentProfileId String
+  agentProfile   AgentProfile @relation(fields: [agentProfileId], references: [id], onDelete: Cascade)
+  position       Int // 1 | 2
+  name           String
+  nationalId     String
+  phone          String?
+  relationship   String? // "Business Associate", "Family Member"
+
+  @@unique([agentProfileId, position])
+}
+
+model AgentSeasonQuota {
+  id             String       @id @default(cuid())
+  agentProfileId String
+  agentProfile   AgentProfile @relation(fields: [agentProfileId], references: [id], onDelete: Cascade)
+  seasonId       String
+  season         Season       @relation(fields: [seasonId], references: [id])
+  groupsQuota    Int          @default(0)
+  paxQuota       Int          @default(0)
+  visaQuota      Int          @default(0)
+
+  @@unique([agentProfileId, seasonId])
+}
+
+model SupplierProfile {
+  id        String       @id @default(cuid())
+  companyId String       @unique
+  company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type      SupplierType
+
+  contractedSince DateTime?
+  crNumber        String?
+
+  // HOTEL
+  starRating         Int?
+  district           String?
+  // TRANSPORT
+  fleetSize          Int?
+  primaryVehicleType String?
+  // CATERING
+  dailyMealCapacity  Int?
+  halalCertBody      String?
+
+  // performance metrics (denormalized, recomputed by jobs)
+  qualityScore    Decimal? @db.Decimal(3, 2)
+  responseTimeHrs Decimal? @db.Decimal(6, 2)
+}
+
+model BankAccount {
+  id            String       @id @default(cuid())
+  companyId     String
+  company       Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bankName      String
+  beneficiary   String?
+  accountNumber String
+  iban          String?
+  swift         String?
+  currency      CurrencyCode @default(SAR)
+  isPrimary     Boolean      @default(false)
+
+  @@index([companyId])
+}
+
+/// Public-site contact form
+model Enquiry {
+  id        String      @id @default(cuid())
+  type      EnquiryType
+  name      String
+  company   String?
+  email     String
+  subject   String
+  message   String
+  handled   Boolean     @default(false)
+  createdAt DateTime    @default(now())
+}
+
+// ─── Core operations: groups, passengers, flights ────────────────────────────
+
+model Group {
+  id            String        @id @default(cuid())
+  code          String        @unique // GRP-1446-2891 (internal; unchanged)
+  tenantId      String
+  tenant        Company       @relation(fields: [tenantId], references: [id])
+  seasonId      String
+  season        Season        @relation(fields: [seasonId], references: [id])
+  name          String
+  nameBn        String?
+  destination   Destination
+  visaType      VisaType
+  packageType   PackageType   @default(STANDARD)
+  maxCapacity   Int           @default(40)
+  paxCount      Int           @default(0) // denormalized for boards
+  departDate    DateTime?
+  returnDate    DateTime?
+  notes         String?
+  /// Nusuk Group Number spine (business identity). Nullable for legacy rows; unique when set.
+  nusukGroupNumber String?    @unique
+  /// Mandatory for HAJJ/UMRAH when REQUIRE_HAJI_WHATSAPP=true.
+  hajiWhatsapp     String?
+  consulate        String?
+  /// Saudi Umrah Company that processes visas for this group (T002-01). Optional FK → Company.
+  umrahCompanyId   String?
+  umrahCompany     Company?   @relation("GroupUmrahCompany", fields: [umrahCompanyId], references: [id])
+  servicesValue    Decimal?   @db.Decimal(14, 2)
+  uploadedByUserId String?
+  uploadedByUser   User?      @relation("GroupUploader", fields: [uploadedByUserId], references: [id])
+  uploadedByLabel  String?
+  /// Readiness gates (T001-02) — independent of WorkflowStage. Default false.
+  gateVisa      Boolean       @default(false)
+  gatePackage   Boolean       @default(false)
+  gatePayment   Boolean       @default(false)
+  gateBill      Boolean       @default(false)
+  status        GroupStatus   @default(PENDING)
+  opsStatus     OpsStatus     @default(UPCOMING)
+  currentStage  Int           @default(1)
+  workflowStage WorkflowStage @relation(fields: [currentStage], references: [id])
+  stageNote     String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  passengers         Passenger[]
+  flightInfos        FlightInfo[]
+  tickets            Ticket[]
+  visaRequests       VisaRequest[]
+  hotelBookings      HotelBooking[]
+  transportBookings  TransportBooking[]
+  cateringBookings   CateringBooking[]
+  additionalServices AdditionalServiceRequest[]
+  brns               BRN[]
+  vouchers           Voucher[]
+  invoices           Invoice[]
+  dispatchOrders     DispatchOrder[]
+  ziyarahTrips       ZiyarahTrip[]
+  ocrDocuments       OcrDocument[]
+  ledgerEntries      LedgerEntry[]
+  paymentSlips       PaymentSlip[]
+  financeEntries     FinanceEntry[]
+  longStays          LongStay[]
+  mutamerImportRuns  MutamerImportRun[]
+
+  @@index([tenantId, status])
+  @@index([opsStatus])
+  @@index([seasonId])
+  @@index([currentStage])
+  @@index([umrahCompanyId])
+}
+
+/// T001-05 — successful Mutamer Excel/CSV import fingerprint (duplicate-import guard).
+model MutamerImportRun {
+  id           String   @id @default(cuid())
+  groupId      String
+  group        Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  tenantId     String
+  fileName     String
+  fileHash     String
+  rowCount     Int
+  successCount Int
+  importedById String?
+  createdAt    DateTime @default(now())
+
+  @@unique([groupId, fileHash])
+  @@index([tenantId, createdAt])
+}
+
+model Passenger {
+  id       String  @id @default(cuid())
+  code     String // PAX-001 (unique within group)
+  tenantId String
+  tenant   Company @relation(fields: [tenantId], references: [id])
+  groupId  String
+  group    Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  name           String
+  nameBn         String?
+  passportNo     String
+  passportExpiry DateTime?
+  nationality    String
+  gender         Gender
+  dob            DateTime?
+  phone          String?
+  seat           String?
+
+  /// T001-04 Mutamer Excel foundation (nullable; legacy rows omit).
+  age              Int?
+  mainEaCode       String?
+  mainEaName       String?
+  subEaCode        String?
+  subEaName        String?
+  biometricStatus  String?
+  visaNumber       String?
+  mofaNumber       String?
+  mutamerType      String?
+  /// Business sheet label (e.g. "Visa Not Issued"); ERP enum remains visaStatus.
+  visaStatusLabel  String?
+
+  /// T002-03 — canonical Mutamer Visa Pipeline state (desk transitions).
+  visaPipelineStatus VisaPipelineStatus @default(NEW)
+  /// Last rejection reason when pipeline is/was REJECTED (guard for → REJECTED).
+  visaRejectReason   String?
+
+  /// T002-05 — slim embassy / passport custody (no PassportMovement table unless SOP mandates).
+  /// File / consulate reference captured at EMBASSY stage (complements VisaRequest.embassy / Group.consulate).
+  embassyRef           String?
+  /// When mutamer file/passport was submitted to embassy/consulate handling.
+  embassySubmittedAt   DateTime?
+  /// When passport returned to Agent/Tuba custody (PASSPORT_RETURNED).
+  passportReturnedAt   DateTime?
+
+  visaStatus      VisaStatus    @default(PENDING)
+  hotelStatus     ConfirmStatus @default(PENDING)
+  transportStatus ConfirmStatus @default(PENDING)
+  mohStatus       MohStatus     @default(PENDING)
+
+  ocrDocumentId String?
+  ocrDocument   OcrDocument?  @relation(fields: [ocrDocumentId], references: [id])
+  ocrDuplicates OcrDocument[] @relation("OcrDupPassenger")
+
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, code])
+  @@index([tenantId])
+  @@index([passportNo]) // duplicate detection
+  @@index([groupId, visaStatus])
+  @@index([groupId, visaPipelineStatus])
+  @@index([visaPipelineStatus])
+  @@index([mofaNumber])
+  @@index([subEaCode])
+}
+
+/// One row per flight leg (arrival or departure) — powers the live boards.
+model FlightInfo {
+  id            String          @id @default(cuid())
+  code          String          @unique // ARR-001 / DEP-001
+  tenantId      String
+  tenant        Company         @relation(fields: [tenantId], references: [id])
+  groupId       String
+  group         Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  direction     FlightDirection
+  airline       String
+  flightNo      String // "SV 642"
+  originAirport String // IATA
+  destAirport   String
+  scheduledAt   DateTime
+  terminal      String?
+  gate          String?
+  paxCount      Int             @default(0)
+  status        FlightStatus    @default(SCHEDULED)
+
+  tickets        Ticket[]
+  dispatchOrders DispatchOrder[]
+  meetAssist     MeetAssistTask[]
+
+  // Live Arrival/Departure boards filter by these — keep them fast:
+  @@index([direction, status, scheduledAt])
+  @@index([groupId])
+  @@index([tenantId])
+}
+
+model Ticket {
+  id           String       @id @default(cuid())
+  groupId      String
+  group        Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  flightInfoId String?
+  flightInfo   FlightInfo?  @relation(fields: [flightInfoId], references: [id])
+  passengerId  String?
+  passenger    Passenger?   @relation(fields: [passengerId], references: [id])
+  fileUrl      String?
+  fileName     String?
+  status       ReviewStatus @default(PENDING)
+  uploadedAt   DateTime     @default(now())
+
+  @@index([groupId])
+  @@index([flightInfoId])
+}
+
+/// Meet & Assist checklist — 7 fixed steps per arrival flight.
+model MeetAssistTask {
+  id           String     @id @default(cuid())
+  flightInfoId String
+  flightInfo   FlightInfo @relation(fields: [flightInfoId], references: [id], onDelete: Cascade)
+  stepNo       Int // 1..7
+  done         Boolean    @default(false)
+  completedAt  DateTime?
+
+  @@unique([flightInfoId, stepNo])
+}
+
+// ─── Service bookings (Requested → Assigned → Confirmed → Voucher Issued → Completed) ─
+
+model VisaRequest {
+  id       String  @id @default(cuid())
+  code     String  @unique // REQ-V-0089
+  tenantId String
+  tenant   Company @relation(fields: [tenantId], references: [id])
+  groupId  String
+  group    Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  seasonId String?
+  season   Season? @relation(fields: [seasonId], references: [id])
+
+  visaType             VisaType
+  applicationYearHijri String? // "1446"
+  nusukRef             String?
+  muallimNo            String?
+  mahramWaiverNo       String?
+  mohCategory          MohCategory?
+  embassy              String?
+  /// Optional override; defaults from Group.umrahCompanyId on create (T002-01).
+  umrahCompanyId       String?
+  umrahCompany         Company?             @relation("VisaRequestUmrahCompany", fields: [umrahCompanyId], references: [id])
+  priority             Priority             @default(NORMAL)
+  status               ServiceRequestStatus @default(REQUESTED)
+  statusReason         String?
+  submittedAt          DateTime?
+  notes                String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  @@index([tenantId, status])
+  @@index([groupId])
+  @@index([status])
+  @@index([umrahCompanyId])
+}
+
+/// Hotel catalogue (property master data)
+model Hotel {
+  id                 String   @id @default(cuid())
+  name               String
+  nameBn             String?
+  city               String
+  stars              Int
+  distanceFromHaramM Int?
+  pricePerNight      Decimal? @db.Decimal(14, 2)
+  available          Boolean  @default(true)
+  contactEmail       String?
+  contactPhone       String?
+  supplierId         String?
+  supplier           Company? @relation(fields: [supplierId], references: [id])
+
+  bookings HotelBooking[]
+
+  @@index([city, available])
+}
+
+model HotelBooking {
+  id         String   @id @default(cuid())
+  code       String   @unique // HTL-0067
+  tenantId   String
+  tenant     Company  @relation("HotelBookingTenant", fields: [tenantId], references: [id])
+  groupId    String
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  hotelId    String?
+  hotel      Hotel?   @relation(fields: [hotelId], references: [id])
+  supplierId String?
+  supplier   Company? @relation("HotelBookingSupplier", fields: [supplierId], references: [id])
+
+  checkIn         DateTime
+  checkOut        DateTime
+  nights          Int
+  doubleRooms     Int      @default(0)
+  tripleRooms     Int      @default(0)
+  singleRooms     Int      @default(0)
+  mealPlan        MealPlan @default(FULL_BOARD)
+  ratePerRoom     Decimal? @db.Decimal(14, 2)
+  subtotal        Decimal? @db.Decimal(14, 2)
+  vatAmount       Decimal? @db.Decimal(14, 2)
+  totalAmount     Decimal? @db.Decimal(14, 2)
+  specialRequests String?
+  priority        Priority @default(NORMAL)
+
+  status       ServiceRequestStatus @default(REQUESTED)
+  statusReason String?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  brns BRN[]
+
+  @@index([tenantId, status])
+  @@index([supplierId, status])
+  @@index([groupId])
+  @@index([status])
+}
+
+model TransportBooking {
+  id         String   @id @default(cuid())
+  code       String   @unique // TRN-0121
+  tenantId   String
+  tenant     Company  @relation("TransportBookingTenant", fields: [tenantId], references: [id])
+  groupId    String
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  supplierId String?
+  supplier   Company? @relation("TransportBookingSupplier", fields: [supplierId], references: [id])
+
+  vehicleType    VehicleType
+  vehicleCount   Int         @default(1)
+  departurePoint String
+  destination    String
+  stopPoints     String?
+  departAt       DateTime
+  returnAt       DateTime?
+  totalAmount    Decimal?    @db.Decimal(14, 2)
+
+  statusReason String?
+  status       ServiceRequestStatus @default(REQUESTED)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([tenantId, status])
+  @@index([supplierId, status])
+  @@index([groupId])
+  @@index([status])
+}
+
+model CateringBooking {
+  id         String   @id @default(cuid())
+  code       String   @unique // CAT-0055
+  tenantId   String
+  tenant     Company  @relation("CateringBookingTenant", fields: [tenantId], references: [id])
+  groupId    String
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  supplierId String?
+  supplier   Company? @relation("CateringBookingSupplier", fields: [supplierId], references: [id])
+
+  mealPlan            MealPlan
+  pricePerPaxDay      Decimal?  @db.Decimal(14, 2)
+  halalCount          Int       @default(0)
+  vegetarianCount     Int       @default(0)
+  diabeticCount       Int       @default(0)
+  specialInstructions String?
+  startDate           DateTime?
+  endDate             DateTime?
+  totalAmount         Decimal?  @db.Decimal(14, 2)
+
+  statusReason String?
+  status       ServiceRequestStatus @default(REQUESTED)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([tenantId, status])
+  @@index([supplierId, status])
+  @@index([groupId])
+  @@index([status])
+}
+
+model AdditionalServiceRequest {
+  id       String  @id @default(cuid())
+  code     String  @unique // SVC-0044
+  tenantId String
+  tenant   Company @relation(fields: [tenantId], references: [id])
+  groupId  String
+  group    Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  serviceType   AdditionalServiceType
+  beneficiaries Int                   @default(1)
+  priority      Priority              @default(NORMAL)
+  description   String?
+  requestedFor  DateTime?
+
+  statusReason String?
+  status       ServiceRequestStatus @default(REQUESTED)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([tenantId, status])
+  @@index([groupId])
+}
+
+/// Booking Reference Number — links a group to hotel contracts / bundled services.
+model BRN {
+  id             String        @id @default(cuid())
+  code           String        @unique // BRN-1446-0091
+  tenantId       String
+  tenant         Company       @relation(fields: [tenantId], references: [id])
+  groupId        String
+  group          Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  hotelBookingId String?
+  hotelBooking   HotelBooking? @relation(fields: [hotelBookingId], references: [id])
+
+  serviceScope String // "Hotel + Transport + Meet&Assist"
+  detail       String?
+  dateRequired DateTime?
+  priority     Priority  @default(NORMAL)
+  status       BrnStatus @default(OPEN)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([tenantId, status])
+  @@index([groupId])
+}
+
+model Voucher {
+  id       String      @id @default(cuid())
+  code     String      @unique // VCH-1446-2891-HOT
+  type     VoucherType
+  tenantId String
+  tenant   Company     @relation(fields: [tenantId], references: [id])
+  groupId  String
+  group    Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  // generic link to the source booking (HotelBooking | TransportBooking | ...)
+  refType String?
+  refId   String?
+
+  // the generated PDF object
+  fileId String?
+  file   UploadedFile? @relation(fields: [fileId], references: [id])
+
+  issueDate      DateTime      @default(now())
+  validUntil     DateTime?
+  payload        Json? // rendered document fields snapshot
+  status         VoucherStatus @default(DRAFT)
+  sentWhatsappAt DateTime?
+  sentEmailAt    DateTime?
+  createdAt      DateTime      @default(now())
+
+  @@index([tenantId, type])
+  @@index([groupId])
+  @@index([refType, refId])
+}
+
+/// Long-stay tracking (OpsControl Long Stay screen).
+/// T002-07 — Host register fields (Host is not a User login). Day-85 is T002-08.
+model LongStay {
+  id        String         @id @default(cuid())
+  code      String         @unique // LST-0041
+  tenantId  String
+  tenant    Company        @relation(fields: [tenantId], references: [id])
+  groupId   String
+  group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  hotelName String
+  city      String
+  nights    Int
+  checkIn   DateTime
+  checkOut  DateTime
+  pax       Int            @default(0)
+  renewal   RenewalStatus  @default(NONE)
+  status    LongStayStatus @default(UPCOMING)
+
+  /// Host register (architecture §8) — not a login user.
+  hostName     String?
+  hostIqama    String?
+  hostWhatsapp String?
+  hostRelation String?
+  /// Absher tracking flag / note (staff-update model; no gov API).
+  absher       String?
+  /// Kingdom entry / exit dates for ~90-day duration tracking.
+  entryDate    DateTime?
+  exitDate     DateTime?
+  /// T002-08 Day-85 compliance — stamped by the automation sweep, never by API.
+  day85NotifiedAt DateTime?
+
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([status])
+  @@index([groupId])
+}
+
+model ZiyarahTrip {
+  id        String        @id @default(cuid())
+  code      String        @unique // ZYR-0041
+  tenantId  String
+  tenant    Company       @relation(fields: [tenantId], references: [id])
+  groupId   String
+  group     Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  date      DateTime
+  sites     String // "Masjid al-Haram, Zamzam, Safa & Marwa"
+  sitesBn   String?
+  guideName String?
+  vehicleId String?
+  vehicle   Vehicle?      @relation(fields: [vehicleId], references: [id])
+  pax       Int           @default(0)
+  status    ZiyarahStatus @default(SCHEDULED)
+
+  @@index([tenantId, status])
+  @@index([date])
+}
+
+// ─── Fleet ERP ────────────────────────────────────────────────────────────────
+
+model Vehicle {
+  id         String        @id @default(cuid())
+  code       String        @unique // "BUS B-12" | "TAH-07"
+  type       VehicleType
+  plateNo    String?
+  seats      Int           @default(0)
+  status     VehicleStatus @default(ACTIVE)
+  supplierId String? // null = TUBA-owned fleet
+  supplier   Company?      @relation(fields: [supplierId], references: [id])
+  notes      String?
+
+  // Denormalized latest GPS fix — the map reads these directly (O(1), no join).
+  // Full trail lives in VehicleLocation. See docs/FLEET.md "GPS (MVP)".
+  lastLat           Decimal?  @db.Decimal(9, 6)
+  lastLng           Decimal?  @db.Decimal(9, 6)
+  lastLocationLabel String?
+  lastLocationAt    DateTime?
+
+  dispatchOrders     DispatchOrder[]
+  fuelLogs           FuelLog[]
+  maintenanceRecords MaintenanceRecord[]
+  insurancePolicies  InsurancePolicy[]
+  ziyarahTrips       ZiyarahTrip[]
+  documents          VehicleDocument[]
+  locations          VehicleLocation[]
+
+  @@index([status, type])
+}
+
+model VehicleDocument {
+  id         String         @id @default(cuid())
+  vehicleId  String
+  vehicle    Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  type       VehicleDocType
+  docNo      String?
+  issueDate  DateTime?
+  expiryDate DateTime // expiry alerts key off this
+  fileId     String? // optional scan in object storage
+  file       UploadedFile?  @relation(fields: [fileId], references: [id])
+  notes      String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@index([vehicleId, type])
+  @@index([expiryDate]) // expiry scan range query
+}
+
+model VehicleLocation {
+  id         String         @id @default(cuid())
+  vehicleId  String
+  vehicle    Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  lat        Decimal        @db.Decimal(9, 6)
+  lng        Decimal        @db.Decimal(9, 6)
+  label      String? // "King Abdulaziz Intl (JED)", "Haram approach"…
+  speedKmh   Int?
+  source     LocationSource @default(MANUAL)
+  recordedAt DateTime       @default(now())
+
+  @@index([vehicleId, recordedAt])
+}
+
+model Driver {
+  id            String       @id @default(cuid())
+  name          String
+  nameBn        String?
+  phone         String?
+  licenseNo     String?
+  licenseExpiry DateTime?
+  status        DriverStatus @default(AVAILABLE)
+  rating        Decimal?     @db.Decimal(3, 2)
+  supplierId    String? // null = TUBA-employed
+  supplier      Company?     @relation(fields: [supplierId], references: [id])
+  userId        String?      @unique // driver-app login
+  user          User?        @relation(fields: [userId], references: [id])
+
+  dispatchOrders DispatchOrder[]
+  fuelLogs       FuelLog[]
+
+  @@index([status])
+}
+
+model DispatchOrder {
+  id           String      @id @default(cuid())
+  code         String      @unique // DSP-0441
+  tenantId     String?
+  tenant       Company?    @relation(fields: [tenantId], references: [id])
+  groupId      String
+  group        Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  flightInfoId String?
+  flightInfo   FlightInfo? @relation(fields: [flightInfoId], references: [id])
+  vehicleId    String?
+  vehicle      Vehicle?    @relation(fields: [vehicleId], references: [id])
+  driverId     String?
+  driver       Driver?     @relation(fields: [driverId], references: [id])
+
+  routeFrom   String
+  routeTo     String
+  pax         Int            @default(0)
+  scheduledAt DateTime
+  status      DispatchStatus @default(ASSIGNED)
+  progressPct Int            @default(0)
+  note        String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Live Dispatch board — keep fast:
+  @@index([status, scheduledAt])
+  @@index([driverId, status])
+  @@index([vehicleId])
+  @@index([groupId])
+}
+
+model FuelLog {
+  id         String   @id @default(cuid())
+  vehicleId  String
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverId   String?
+  driver     Driver?  @relation(fields: [driverId], references: [id])
+  date       DateTime
+  liters     Decimal  @db.Decimal(8, 2)
+  cost       Decimal  @db.Decimal(14, 2)
+  odometerKm Int?
+  notes      String?
+
+  @@index([vehicleId, date])
+}
+
+model MaintenanceRecord {
+  id          String          @id @default(cuid())
+  vehicleId   String
+  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  type        MaintenanceType
+  description String
+  date        DateTime
+  cost        Decimal?        @db.Decimal(14, 2)
+  odometerKm  Int?
+  nextDueDate DateTime?
+  workshop    String?
+
+  @@index([vehicleId, date])
+}
+
+model InsurancePolicy {
+  id        String          @id @default(cuid())
+  vehicleId String
+  vehicle   Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  provider  String
+  policyNo  String          @unique
+  startDate DateTime
+  endDate   DateTime
+  premium   Decimal?        @db.Decimal(14, 2)
+  status    InsuranceStatus @default(ACTIVE)
+
+  @@index([vehicleId, status])
+  @@index([endDate]) // expiry alerts
+}
+
+// ─── Finance ──────────────────────────────────────────────────────────────────
+
+model Wallet {
+  id        String       @id @default(cuid())
+  companyId String       @unique
+  company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  balance   Decimal      @default(0) @db.Decimal(14, 2)
+  currency  CurrencyCode @default(SAR)
+  updatedAt DateTime     @updatedAt
+
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id           String       @id @default(cuid())
+  walletId     String
+  wallet       Wallet       @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  direction    TxnDirection
+  amount       Decimal      @db.Decimal(14, 2)
+  balanceAfter Decimal?     @db.Decimal(14, 2)
+  description  String
+  refType      String? // "PaymentSlip" | "Invoice" | ...
+  refId        String?
+  createdAt    DateTime     @default(now())
+
+  // Idempotency guard: at most one txn per (refType, refId, direction).
+  // Postgres treats NULLs as distinct, so ad-hoc null-ref rows are unaffected.
+  @@unique([refType, refId, direction])
+  @@index([walletId, createdAt])
+}
+
+/// Agent-uploaded proof of payment (top-up / invoice payment / deposit).
+model PaymentSlip {
+  id           String             @id @default(cuid())
+  code         String             @unique // SLP-0071
+  companyId    String
+  company      Company            @relation(fields: [companyId], references: [id])
+  purpose      PaymentSlipPurpose @default(WALLET_TOPUP)
+  type         PaymentSlipType
+  amount       Decimal            @db.Decimal(14, 2)
+  bank         String?
+  transferRef  String?
+  paymentDate  DateTime
+  groupId      String?
+  group        Group?             @relation(fields: [groupId], references: [id])
+  notes        String?
+  fileUrl      String?
+  status       ReviewStatus       @default(PENDING)
+  reviewedById String?
+  reviewedBy   User?              @relation("SlipReviewer", fields: [reviewedById], references: [id])
+  reviewedAt   DateTime?
+  createdAt    DateTime           @default(now())
+
+  @@index([companyId, status])
+  @@index([status])
+}
+
+/// General ledger chart of accounts (codes 1001, 2001, ...).
+model ChartAccount {
+  id        String      @id @default(cuid())
+  code      String      @unique // "1001"
+  name      String // "Cash — Al Rajhi"
+  nameBn    String?
+  kind      AccountKind
+  plSection PlSection? // for EXPENSE accounts: COGS vs OPEX (drives the P&L)
+
+  entries LedgerEntry[]
+}
+
+/// Discriminated ledger: AGENT / SUPPLIER sub-ledgers (companyId set) and
+/// GENERAL double-entry GL (accountId set).
+model LedgerEntry {
+  id          String        @id @default(cuid())
+  ledgerType  LedgerType
+  companyId   String? // AGENT / SUPPLIER ledgers
+  company     Company?      @relation(fields: [companyId], references: [id])
+  accountId   String? // GENERAL ledger
+  account     ChartAccount? @relation(fields: [accountId], references: [id])
+  groupId     String?
+  group       Group?        @relation(fields: [groupId], references: [id])
+  date        DateTime
+  description String
+  ref         String? // INV-0091, PAY-0189, STL-0063 ...
+  debit       Decimal       @default(0) @db.Decimal(14, 2)
+  credit      Decimal       @default(0) @db.Decimal(14, 2)
+  createdById String?
+  createdBy   User?         @relation("LedgerCreator", fields: [createdById], references: [id])
+  createdAt   DateTime      @default(now())
+
+  @@index([ledgerType, companyId, date])
+  @@index([accountId, date])
+  @@index([groupId])
+}
+
+model Invoice {
+  id       String  @id @default(cuid())
+  code     String  @unique // INV-1446-0091
+  tenantId String // billed-to company
+  tenant   Company @relation(fields: [tenantId], references: [id])
+  groupId  String?
+  group    Group?  @relation(fields: [groupId], references: [id])
+  seasonId String?
+  season   Season? @relation(fields: [seasonId], references: [id])
+
+  issueDate  DateTime      @default(now())
+  dueDate    DateTime?
+  currency   CurrencyCode  @default(SAR)
+  subtotal   Decimal       @db.Decimal(14, 2)
+  vatRate    Decimal       @default(15) @db.Decimal(5, 2)
+  vatAmount  Decimal       @db.Decimal(14, 2)
+  total      Decimal       @db.Decimal(14, 2)
+  status     InvoiceStatus @default(OUTSTANDING)
+  notes      String?
+  /// T002-06 — STANDARD (default) vs MOFA Processing Account bill (Qty×Rate).
+  kind       InvoiceKind   @default(STANDARD)
+  /// Finance Approval Sign (MOFA bill strip) — not the mutamer MOFA Number.
+  approvalSign String?
+  /// CR Date when bill is finance-approved.
+  crDate     DateTime?
+  // the booking that auto-generated this invoice (idempotency guard)
+  sourceType String?
+  sourceId   String?
+  // generated PDF object
+  fileId     String?
+  file       UploadedFile? @relation(fields: [fileId], references: [id])
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  items       InvoiceItem[]
+  allocations ReceiptAllocation[]
+
+  // Idempotency guard: one auto-invoice per source booking (NULLs distinct → manual invoices unaffected)
+  @@unique([sourceType, sourceId])
+  @@index([tenantId, status])
+  @@index([status, dueDate])
+  @@index([groupId])
+  @@index([kind])
+}
+
+model InvoiceItem {
+  id            String  @id @default(cuid())
+  invoiceId     String
+  invoice       Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description   String
+  descriptionBn String?
+  qty           Int     @default(1)
+  unitPrice     Decimal @db.Decimal(14, 2)
+  total         Decimal @db.Decimal(14, 2)
+
+  @@index([invoiceId])
+}
+
+model Receipt {
+  id        String        @id @default(cuid())
+  code      String        @unique // REC-1446-0241
+  companyId String
+  company   Company       @relation(fields: [companyId], references: [id])
+  date      DateTime
+  amount    Decimal       @db.Decimal(14, 2)
+  method    ReceiptMethod
+  bankRef   String? // SARIE-20250712-4491
+  notes     String?
+  status    ReviewStatus  @default(CONFIRMED)
+  createdAt DateTime      @default(now())
+
+  allocations ReceiptAllocation[]
+
+  @@index([companyId, date])
+}
+
+/// A receipt can settle several invoices (and an invoice several receipts).
+model ReceiptAllocation {
+  id        String  @id @default(cuid())
+  receiptId String
+  receipt   Receipt @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount    Decimal @db.Decimal(14, 2)
+
+  @@unique([receiptId, invoiceId])
+}
+
+model Statement {
+  id             String   @id @default(cuid())
+  code           String   @unique // STMT-0716
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id])
+  periodStart    DateTime
+  periodEnd      DateTime
+  openingBalance Decimal  @default(0) @db.Decimal(14, 2)
+  totalCredits   Decimal  @default(0) @db.Decimal(14, 2)
+  totalDebits    Decimal  @default(0) @db.Decimal(14, 2)
+  closingBalance Decimal  @default(0) @db.Decimal(14, 2)
+  fileUrl        String?
+  createdAt      DateTime @default(now())
+
+  @@index([companyId, periodStart])
+}
+
+model CurrencyRate {
+  id        String       @id @default(cuid())
+  currency  CurrencyCode
+  rateToSar Decimal      @db.Decimal(12, 4) // 1 unit of currency = X SAR
+  asOf      DateTime
+
+  @@unique([currency, asOf])
+  @@index([currency, asOf(sort: Desc)])
+}
+
+/// Income / expense journal records (FinanceERP Income & Expenses screens).
+/// Creating one posts a balanced double-entry to the GL (LedgerEntry GENERAL).
+/// Staff-only module — deliberately NOT companyId-named so the tenant-scoping
+/// Prisma extension leaves it as passthrough.
+model FinanceEntry {
+  id          String             @id @default(cuid())
+  code        String             @unique // INC-0091 / EXP-0091
+  kind        FinanceEntryKind
+  date        DateTime
+  ref         String? // INV-.. / PO-.. / SAL-JUL-2025 ...
+  partyName   String // agent or supplier display name
+  category    String // "Visa Services" | "Hotel Costs" | "Salaries" ...
+  amount      Decimal            @db.Decimal(14, 2)
+  groupId     String?
+  group       Group?             @relation(fields: [groupId], references: [id])
+  status      FinanceEntryStatus @default(PENDING)
+  notes       String?
+  createdById String?
+  createdAt   DateTime           @default(now())
+
+  @@index([kind, date])
+  @@index([status])
+}
+
+// ─── OCR / AI Center ─────────────────────────────────────────────────────────
+
+model OcrDocument {
+  id                     String          @id @default(cuid())
+  code                   String          @unique // OCR-0441
+  documentType           OcrDocumentType
+  fileUrl                String?
+  fileName               String?
+  tenantId               String?
+  tenant                 Company?        @relation(fields: [tenantId], references: [id])
+  groupId                String?
+  group                  Group?          @relation(fields: [groupId], references: [id])
+  uploadedById           String?
+  uploadedBy             User?           @relation("OcrUploader", fields: [uploadedById], references: [id])
+  extractedFields        Json? // [{field, value, confidence, low, overriddenValue?}]
+  validation             Json? // pipeline result: checks[], duplicate{}, provider, autoAccept
+  confidenceScore        Float?
+  mrzDiscrepancy         Boolean         @default(false)
+  duplicateOfId          String?
+  duplicateOf            OcrDocument?    @relation("OcrDuplicate", fields: [duplicateOfId], references: [id])
+  duplicates             OcrDocument[]   @relation("OcrDuplicate")
+  duplicateOfPassengerId String?
+  duplicateOfPassenger   Passenger?      @relation("OcrDupPassenger", fields: [duplicateOfPassengerId], references: [id])
+  reviewStatus           OcrReviewStatus @default(PENDING)
+  reviewedById           String?
+  reviewedBy             User?           @relation("OcrReviewer", fields: [reviewedById], references: [id])
+  processedAt            DateTime?
+  createdAt              DateTime        @default(now())
+
+  passengers Passenger[]
+
+  @@index([reviewStatus, documentType])
+  @@index([tenantId])
+  @@index([groupId])
+}
+
+// ─── Automation & Notification engines ───────────────────────────────────────
+
+model AutomationRule {
+  id            String    @id @default(cuid())
+  code          String    @unique // R01 / AR-01
+  name          String
+  nameBn        String?
+  category      String // Agent | Group | Visa | Hotel | Finance | Docs | Sys | Esc
+  trigger       String // human descriptor: "Passport file uploaded" | cron descriptor
+  eventKey      String? // MACHINE trigger — domain event name (agent.approved, booking.confirmed…); null = schedule-only
+  conditionExpr String? // human display: "Docs >= 3 AND Status = Pending"
+  conditions    Json? // structured [{path,op,value}] (all AND) evaluated against the event payload
+  actions       Json // structured [{type: SEND_NOTIFICATION|GENERATE_VOUCHER|…, params?}]
+  enabled       Boolean   @default(true)
+  cronExpr      String? // real cron when schedule-triggered (BullMQ repeatable)
+  lastRunAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  runLogs AutomationRunLog[]
+
+  @@index([enabled])
+  @@index([eventKey, enabled]) // dispatcher lookup: enabled rules for a fired event
+}
+
+model AutomationRunLog {
+  id         String         @id @default(cuid())
+  ruleId     String
+  rule       AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  eventKey   String? // the domain event (or cron) that fired this run
+  action     String? // the action type executed (SEND_NOTIFICATION…)
+  jobId      String? // BullMQ job id — correlate log ↔ queue
+  startedAt  DateTime       @default(now())
+  durationMs Int?
+  status     RunStatus      @default(OK)
+  message    String?
+
+  @@index([ruleId, startedAt])
+  @@index([startedAt]) // history feed, newest first
+}
+
+/// Event catalog + per-channel enablement matrix (Super Admin screen).
+model NotificationEvent {
+  id       String               @id @default(cuid())
+  key      String               @unique // AGENT_REGISTRATION_SUBMITTED, VISA_APPROVED...
+  labelEn  String
+  labelBn  String
+  priority NotificationPriority @default(NORMAL)
+  whatsapp Boolean              @default(true)
+  email    Boolean              @default(true)
+  inApp    Boolean              @default(true)
+
+  templates MessageTemplate[]
+  logs      NotificationLog[]
+}
+
+model MessageTemplate {
+  id      String              @id @default(cuid())
+  eventId String
+  event   NotificationEvent   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  channel NotificationChannel
+  lang    String // "bn" | "en"
+  subject String?
+  body    String // supports {{variables}}
+
+  @@unique([eventId, channel, lang])
+}
+
+model NotificationLog {
+  id               String               @id @default(cuid())
+  code             String?              @unique // NL-0841
+  eventId          String?
+  event            NotificationEvent?   @relation(fields: [eventId], references: [id])
+  channel          NotificationChannel
+  priority         NotificationPriority @default(NORMAL)
+  tenantId         String?
+  tenant           Company?             @relation(fields: [tenantId], references: [id])
+  recipientUserId  String?
+  recipientUser    User?                @relation("NotificationRecipient", fields: [recipientUserId], references: [id])
+  recipientAddress String? // phone / email when external
+  title            String
+  body             String?
+  status           NotificationStatus   @default(PENDING)
+  lang             String? // "bn" | "en" — language the body was rendered in
+  attempts         Int                  @default(0) // delivery attempts (BullMQ retries)
+  error            String? // last failure reason when status = FAILED
+  providerId       String? // WASender msgId / SMTP messageId
+  sentAt           DateTime?
+  readAt           DateTime? // in-app read state
+  createdAt        DateTime             @default(now())
+
+  @@index([recipientUserId, status])
+  @@index([tenantId, channel])
+  @@index([status, createdAt])
+  @@index([tenantId, createdAt]) // bell feed: latest for a tenant
+}
+
+// ─── Audit ───────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  actorUserId String?
+  actor       User?       @relation("AuditActor", fields: [actorUserId], references: [id])
+  actorLabel  String? // "System (Cron)" when no user
+  action      AuditAction
+  module      String // Users | Companies | Finance | OCR | ...
+  entityType  String
+  entityId    String?
+  before      Json?
+  after       Json?
+  ip          String?
+  createdAt   DateTime    @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorUserId, createdAt])
+  @@index([createdAt])
+}
