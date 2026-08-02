@@ -23,6 +23,7 @@ import {
 } from "../components/erp";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
+import { downloadCsv } from "../lib/exportCsv";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -846,8 +847,27 @@ function LedgerScreen() {
           </div>
         )}
         <div className="ml-auto flex gap-2">
-          <ActionBtn label="Export" icon={Download} />
-          <ActionBtn label="Print"  icon={Printer} />
+          <ActionBtn
+            label="Export CSV"
+            icon={Download}
+            onClick={() => {
+              if (isGL) {
+                downloadCsv(
+                  `gl-${new Date().toISOString().slice(0, 10)}.csv`,
+                  ["Date", "Account", "Ref", "Description", "Debit", "Credit"],
+                  glRows.map((r) => [r.date, r.acct, r.ref, r.desc, r.dr, r.cr]),
+                );
+              } else {
+                downloadCsv(
+                  `ledger-${tab}-${new Date().toISOString().slice(0, 10)}.csv`,
+                  ["Date", "Description", "Ref", "Debit", "Credit", "Balance"],
+                  rows.map((r) => [r.date, r.desc, r.ref, r.dr, r.cr, r.bal]),
+                );
+              }
+              erpToast.success("CSV downloaded");
+            }}
+          />
+          <ActionBtn label="Print" icon={Printer} onClick={() => window.print()} />
         </div>
       </div>
 
@@ -1324,13 +1344,65 @@ type InvRow = {
 function InvoicesScreen() {
   const { lang } = useLang();
   const { data: live, loading, error, demo, refetch: refresh } = useLive<ApiInvoice[]>("/finance/invoices");
-  const [busy, setBusy] = useState<"pdf" | "pay" | null>(null);
+  const [busy, setBusy] = useState<"pdf" | "pay" | "create" | null>(null);
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [sel, setSel] = useState<InvRow | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [agents, setAgents] = useState<LedEntity[]>([]);
+  const [tenantId, setTenantId] = useState("");
+  const [itemDesc, setItemDesc] = useState("Umrah package services");
+  const [itemQty, setItemQty] = useState("1");
+  const [itemUnit, setItemUnit] = useState("");
+  const [notes, setNotes] = useState("");
   const PAGE = 20;
+
+  useEffect(() => {
+    if (!showCreate || !isLoggedIn()) return;
+    api.get<LedEntity[]>("/finance/ledger/entities?type=agent")
+      .then((rows) => {
+        setAgents(rows);
+        if (!tenantId && rows[0]) setTenantId(rows[0].companyId);
+      })
+      .catch(() => setAgents([]));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showCreate]);
+
+  const createInvoice = async () => {
+    if (demo || !isLoggedIn()) {
+      erpToast.error(lang === "bn" ? "সাইন ইন করুন" : "Sign in as finance staff", lang);
+      return;
+    }
+    const qty = Math.max(1, Number(itemQty) || 1);
+    const unit = Number(itemUnit);
+    if (!tenantId.trim()) {
+      erpToast.error(lang === "bn" ? "এজেন্ট নির্বাচন করুন" : "Select an agent tenant", lang);
+      return;
+    }
+    if (!itemDesc.trim() || Number.isNaN(unit) || unit < 0) {
+      erpToast.error(lang === "bn" ? "বর্ণনা ও ইউনিট মূল্য আবশ্যক" : "Description and unit price required", lang);
+      return;
+    }
+    setBusy("create");
+    try {
+      await api.post("/finance/invoices", {
+        tenantId: tenantId.trim(),
+        notes: notes.trim() || undefined,
+        items: [{ desc: itemDesc.trim(), qty, unit }],
+      });
+      erpToast.success(lang === "bn" ? "ইনভয়েস তৈরি হয়েছে" : "Invoice created", lang);
+      setShowCreate(false);
+      setItemUnit("");
+      setNotes("");
+      refresh();
+    } catch (e) {
+      erpToast.error(e instanceof ApiError ? e.message : (lang === "bn" ? "তৈরি ব্যর্থ" : "Create failed"), lang);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const invoices: InvRow[] = demo
     ? INVOICES_LIST.map(v => ({ ...v, realId: null, fileId: null, vat: v.vat }))
@@ -1392,9 +1464,29 @@ function InvoicesScreen() {
         title={lang === "bn" ? "ইনভয়েস" : "Invoices"}
         subtitle={lang === "bn" ? "এজেন্ট ইনভয়েস · বিদ্যমান API" : "Agent invoices · existing API"}
         primaryAction={
-          <ErpButton variant="secondary" icon={<RefreshCw size={14} />} onClick={refresh}>
-            {lang === "bn" ? "রিফ্রেশ" : "Refresh"}
-          </ErpButton>
+          <div className="flex flex-wrap gap-2">
+            <ErpButton
+              variant="outline"
+              icon={<Download size={14} />}
+              disabled={!filtered.length}
+              onClick={() => {
+                downloadCsv(
+                  `invoices-${new Date().toISOString().slice(0, 10)}.csv`,
+                  ["Code", "Bill To", "Date", "Group", "Total", "Status"],
+                  filtered.map((i) => [i.id, i.to, i.date, i.group, i.total, i.status]),
+                );
+                erpToast.success(lang === "bn" ? "CSV ডাউনলোড হয়েছে" : "CSV downloaded", lang);
+              }}
+            >
+              {lang === "bn" ? "এক্সপোর্ট CSV" : "Export CSV"}
+            </ErpButton>
+            <ErpButton variant="secondary" icon={<RefreshCw size={14} />} onClick={refresh}>
+              {lang === "bn" ? "রিফ্রেশ" : "Refresh"}
+            </ErpButton>
+            <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)} disabled={demo}>
+              {lang === "bn" ? "নতুন ইনভয়েস" : "New Invoice"}
+            </ErpButton>
+          </div>
         }
         toolbar={
           <div className="flex flex-col sm:flex-row gap-3 w-full">
@@ -1435,6 +1527,51 @@ function InvoicesScreen() {
           />
         )}
       </ErpPageTemplate>
+
+      <ErpDrawer
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        title={lang === "bn" ? "নতুন ইনভয়েস" : "New Invoice"}
+        lang={lang}
+        footer={
+          <ErpDrawerFooterActions
+            lang={lang}
+            onCancel={() => setShowCreate(false)}
+            onSave={createInvoice}
+            saving={busy === "create"}
+            saveLabel={lang === "bn" ? "তৈরি করুন" : "Create"}
+          />
+        }
+      >
+        <ErpForm columns={2}>
+          <ErpFormRow span={2}>
+            <ErpField label={lang === "bn" ? "এজেন্ট" : "Agent tenant"} required>
+              <ErpSelect value={tenantId} onChange={(e) => setTenantId(e.target.value)}>
+                <option value="">—</option>
+                {agents.map((a) => (
+                  <option key={a.companyId} value={a.companyId}>{a.name} ({a.code})</option>
+                ))}
+              </ErpSelect>
+            </ErpField>
+          </ErpFormRow>
+          <ErpFormRow span={2}>
+            <ErpField label={lang === "bn" ? "লাইন বর্ণনা" : "Line description"} required>
+              <ErpInput value={itemDesc} onChange={(e) => setItemDesc(e.target.value)} />
+            </ErpField>
+          </ErpFormRow>
+          <ErpField label={lang === "bn" ? "পরিমাণ" : "Qty"} required>
+            <ErpInput type="number" value={itemQty} onChange={(e) => setItemQty(e.target.value)} />
+          </ErpField>
+          <ErpField label={lang === "bn" ? "ইউনিট (SAR)" : "Unit (SAR)"} required>
+            <ErpInput type="number" value={itemUnit} onChange={(e) => setItemUnit(e.target.value)} />
+          </ErpField>
+          <ErpFormRow span={2}>
+            <ErpField label={lang === "bn" ? "নোট" : "Notes"}>
+              <ErpTextarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            </ErpField>
+          </ErpFormRow>
+        </ErpForm>
+      </ErpDrawer>
 
       <ErpDrawer
         open={!!sel}
@@ -1887,9 +2024,31 @@ function PLScreen() {
         </div>
       </FinDoc>
       <div className="flex gap-2">
-        <ActionBtn label="Download PDF" color={FIN} icon={Download} />
-        <ActionBtn label="Print" icon={Printer} />
-        <ActionBtn label="Export Excel" icon={Download} />
+        <ActionBtn label="Download PDF" color={FIN} icon={Download} onClick={() => window.print()} />
+        <ActionBtn label="Print" icon={Printer} onClick={() => window.print()} />
+        <ActionBtn
+          label="Export Excel"
+          icon={Download}
+          onClick={() => {
+            if (!d) return;
+            downloadCsv(
+              `pl-${new Date().toISOString().slice(0, 10)}.csv`,
+              ["Section", "Line", "Amount"],
+              [
+                ...d.revenue.map((r) => ["Revenue", r.name, r.amount]),
+                ["Revenue", "Total Revenue", d.totalRevenue],
+                ...d.cogs.map((r) => ["COGS", r.name, r.amount]),
+                ["COGS", "Total COGS", d.totalCogs],
+                ["Summary", "Gross Profit", d.grossProfit],
+                ...d.opex.map((r) => ["Opex", r.name, r.amount]),
+                ["Opex", "Total Opex", d.totalOpex],
+                ["Summary", "EBITDA", d.ebitda],
+                ["Summary", "Net Profit", d.netProfit],
+              ],
+            );
+            erpToast.success("P&L CSV downloaded");
+          }}
+        />
       </div>
     </div>
   );
@@ -1998,9 +2157,31 @@ function BSScreen() {
         )}
       </FinDoc>
       <div className="flex gap-2 mt-4">
-        <ActionBtn label="Download PDF" color={FIN} icon={Download} />
-        <ActionBtn label="Print" icon={Printer} />
-        <ActionBtn label="Export Excel" icon={Download} />
+        <ActionBtn label="Download PDF" color={FIN} icon={Download} onClick={() => window.print()} />
+        <ActionBtn label="Print" icon={Printer} onClick={() => window.print()} />
+        <ActionBtn
+          label="Export Excel"
+          icon={Download}
+          onClick={() => {
+            if (live) {
+              downloadCsv(
+                `bs-${new Date().toISOString().slice(0, 10)}.csv`,
+                ["Section", "Line", "Amount"],
+                [
+                  ...live.assets.map((a) => ["Assets", a.name, a.amount]),
+                  ["Assets", "Total Assets", live.totalAssets],
+                  ...live.liabilities.map((l) => ["Liabilities", l.name, l.amount]),
+                  ["Liabilities", "Total Liabilities", live.totalLiabilities],
+                  ...live.equity.map((eq) => ["Equity", eq.name, eq.amount]),
+                  ["Equity", "Total Equity", live.totalEquity],
+                ],
+              );
+            } else {
+              downloadCsv(`bs-demo.csv`, ["Section", "Line", "Amount"], [["Assets", "Total Assets", totalAssets]]);
+            }
+            erpToast.success("Balance sheet CSV downloaded");
+          }}
+        />
       </div>
     </div>
   );

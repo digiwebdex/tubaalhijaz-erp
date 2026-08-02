@@ -16,6 +16,7 @@ import {
 } from "../components/erp";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
+import { downloadCsv } from "../lib/exportCsv";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -877,7 +878,21 @@ function LogScreen() {
       <ErpPageTemplate
         title={lang === "bn" ? "বিজ্ঞপ্তি ইতিহাস" : "Notification History"}
         subtitle={`${emgCount} ${lang === "bn" ? "জরুরি অ্যালার্ট" : "emergency alerts"}`}
-        primaryAction={<ABtn label={lang === "bn" ? "এক্সপোর্ট" : "Export"} color={AUTO} icon={Download} />}
+        primaryAction={
+          <ABtn
+            label={lang === "bn" ? "এক্সপোর্ট CSV" : "Export CSV"}
+            color={AUTO}
+            icon={Download}
+            onClick={() => {
+              downloadCsv(
+                `notification-log-${new Date().toISOString().slice(0, 10)}.csv`,
+                ["ID", "Time", "Channel", "Event", "Recipient", "Preview", "Status", "Priority"],
+                filtered.map((n) => [n.id, n.time, n.ch, n.event, n.rcpt, n.preview, n.status, n.priority]),
+              );
+              erpToast.success(lang === "bn" ? "CSV ডাউনলোড হয়েছে" : "CSV downloaded", lang);
+            }}
+          />
+        }
         toolbar={
           <div className="flex flex-col gap-3 w-full">
             <ErpSearchBar

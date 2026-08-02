@@ -32,6 +32,7 @@ import {
   validateWhatsappUx,
 } from "../lib/group-foundation";
 import { OcrIntakeModal } from "./OCRCenter";
+import { downloadCsv } from "../lib/exportCsv";
 
 const AGENT = "#0EA5E9";
 const GOLD  = "#C9A24B";
@@ -405,6 +406,110 @@ function ManualPassengerDrawer({ groupId, open, onClose, onAdded }: {
         </ErpField>
         <ErpField label={lang === "bn" ? "পাসপোর্ট মেয়াদ" : "Passport Expiry"}>
           <ErpInput type="date" value={f.passportExpiry} onChange={(e) => set("passportExpiry", e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "ফোন" : "Phone"}>
+          <ErpInput value={f.phone} onChange={(e) => set("phone", e.target.value)} />
+        </ErpField>
+      </ErpForm>
+      {err && <div className="mt-3 text-xs font-medium" style={{ color: "#DC2626" }} role="alert">{err}</div>}
+    </ErpDrawer>
+  );
+}
+
+/** Edit existing passenger — PATCH /passengers/:id (same fields as create). */
+function EditPassengerDrawer({ pax, open, onClose, onSaved }: {
+  pax: Pax | null; open: boolean; onClose: () => void; onSaved: () => void;
+}) {
+  const { lang } = useLang();
+  const [f, setF] = useState({ name: "", passportNo: "", nationality: "", gender: "MALE", dob: "", phone: "" });
+  const set = (k: keyof typeof f, v: string) => setF((st) => ({ ...st, [k]: v }));
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!pax || !open) return;
+    setF({
+      name: pax.name,
+      passportNo: pax.passport,
+      nationality: pax.nat,
+      gender: pax.gender === "F" ? "FEMALE" : "MALE",
+      dob: pax.dob && pax.dob !== "—" ? pax.dob : "",
+      phone: "",
+    });
+    setErr(null);
+  }, [pax, open]);
+
+  const submit = async () => {
+    if (!pax?.pid) {
+      setErr(lang === "bn" ? "যাত্রী আইডি নেই" : "Passenger id missing");
+      return;
+    }
+    if (f.name.trim().length < 2) {
+      setErr(lang === "bn" ? "পূর্ণ নাম আবশ্যক।" : "Full name is required.");
+      return;
+    }
+    if (f.passportNo.trim().length < 3) {
+      setErr(lang === "bn" ? "পাসপোর্ট নম্বর আবশ্যক।" : "Passport number is required.");
+      return;
+    }
+    setBusy(true); setErr(null);
+    try {
+      await api.patch(`/passengers/${pax.pid}`, {
+        name: f.name.trim(),
+        passportNo: f.passportNo.trim(),
+        nationality: f.nationality.trim() || undefined,
+        gender: f.gender,
+        ...(f.dob ? { dob: new Date(f.dob).toISOString() } : {}),
+        ...(f.phone.trim() ? { phone: f.phone.trim() } : {}),
+      });
+      erpToast.success(lang === "bn" ? "যাত্রী আপডেট হয়েছে" : "Passenger updated", lang);
+      onSaved();
+      onClose();
+    } catch (e) {
+      setErr(errMsg(e, lang === "bn" ? "আপডেট ব্যর্থ" : "Update failed"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <ErpDrawer
+      open={open && !!pax}
+      onClose={onClose}
+      title={lang === "bn" ? "যাত্রী সম্পাদনা" : "Edit Passenger"}
+      subtitle={pax?.id}
+      lang={lang}
+      footer={
+        <ErpDrawerFooterActions
+          lang={lang}
+          onCancel={onClose}
+          onSave={submit}
+          saving={busy}
+          saveLabel={lang === "bn" ? "সংরক্ষণ" : "Save"}
+        />
+      }
+    >
+      <ErpForm columns={2}>
+        <ErpFormRow span={2}>
+          <ErpField label={lang === "bn" ? "পূর্ণ নাম" : "Full Name"} required>
+            <ErpInput value={f.name} onChange={(e) => set("name", e.target.value)} />
+          </ErpField>
+        </ErpFormRow>
+        <ErpField label={lang === "bn" ? "পাসপোর্ট নম্বর" : "Passport Number"} required>
+          <ErpInput value={f.passportNo} onChange={(e) => set("passportNo", e.target.value)} style={{ fontFamily: "var(--font-mono)" }} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "জাতীয়তা" : "Nationality"}>
+          <ErpInput list="pax-edit-nat" value={f.nationality} onChange={(e) => set("nationality", e.target.value)} />
+          <datalist id="pax-edit-nat">{NATIONALITIES.map((n) => <option key={n} value={n} />)}</datalist>
+        </ErpField>
+        <ErpField label={lang === "bn" ? "লিঙ্গ" : "Gender"}>
+          <ErpSelect value={f.gender} onChange={(e) => set("gender", e.target.value)}>
+            <option value="MALE">{lang === "bn" ? "পুরুষ" : "Male"}</option>
+            <option value="FEMALE">{lang === "bn" ? "মহিলা" : "Female"}</option>
+          </ErpSelect>
+        </ErpField>
+        <ErpField label={lang === "bn" ? "জন্ম তারিখ" : "Date of Birth"}>
+          <ErpInput type="date" value={f.dob} onChange={(e) => set("dob", e.target.value)} />
         </ErpField>
         <ErpField label={lang === "bn" ? "ফোন" : "Phone"}>
           <ErpInput value={f.phone} onChange={(e) => set("phone", e.target.value)} />
@@ -822,9 +927,26 @@ function GroupsListView({ onSelect, onNew, authed, groups, loading, error, refre
         title={lang === "bn" ? "গ্রুপ" : "Groups"}
         subtitle={lang === "bn" ? "গ্রুপ তৈরি, খোঁজ ও ব্যবস্থাপনা" : "Create, search, and manage groups"}
         primaryAction={
-          <ErpButton variant="primary" icon={<Plus size={15} />} onClick={onNew}>
-            {lang === "bn" ? "নতুন গ্রুপ" : "New Group"}
-          </ErpButton>
+          <div className="flex flex-wrap items-center gap-2">
+            <ErpButton
+              variant="outline"
+              icon={<Download size={14} />}
+              disabled={!shown.length}
+              onClick={() => {
+                downloadCsv(
+                  `groups-${new Date().toISOString().slice(0, 10)}.csv`,
+                  ["Code", "Name", "Destination", "Pax", "Depart", "Return", "Status", "Package", "Nusuk"],
+                  shown.map((g) => [g.id, g.name, g.dest, g.pax, g.depart, g.ret, g.status, g.pkg, g.nusukGroupNumber ?? ""]),
+                );
+                erpToast.success(lang === "bn" ? "CSV ডাউনলোড হয়েছে" : "CSV downloaded", lang);
+              }}
+            >
+              {lang === "bn" ? "এক্সপোর্ট CSV" : "Export CSV"}
+            </ErpButton>
+            <ErpButton variant="primary" icon={<Plus size={15} />} onClick={onNew}>
+              {lang === "bn" ? "নতুন গ্রুপ" : "New Group"}
+            </ErpButton>
+          </div>
         }
         toolbar={
           <div className="flex flex-col sm:flex-row gap-3 w-full">
@@ -835,8 +957,8 @@ function GroupsListView({ onSelect, onNew, authed, groups, loading, error, refre
                 onChange={(e) => { setQ(e.target.value); setPage(1); }}
                 onClear={() => { setQ(""); setPage(1); }}
                 placeholder={lang === "bn"
-                  ? "নাম, পাসপোর্ট নম্বর অথবা গ্রুপ নম্বর লিখুন"
-                  : "Search by name, passport, or group number"}
+                  ? "কোড, নাম অথবা নুসুক নম্বর লিখুন"
+                  : "Search by code, name, or Nusuk number"}
               />
             </div>
             <ErpFilterPanel
@@ -846,14 +968,20 @@ function GroupsListView({ onSelect, onNew, authed, groups, loading, error, refre
               activeCount={filter === "all" ? 0 : 1}
             >
               <div className="flex flex-wrap gap-2">
-                {["all", "in_progress", "pending", "verified", "completed"].map((f) => (
+                {([
+                  { id: "all", bn: "সব", en: "All" },
+                  { id: "in_progress", bn: "চলমান", en: "In progress" },
+                  { id: "pending", bn: "অপেক্ষমাণ", en: "Pending" },
+                  { id: "verified", bn: "যাচাইকৃত", en: "Verified" },
+                  { id: "completed", bn: "সম্পন্ন", en: "Completed" },
+                ] as const).map((f) => (
                   <ErpButton
-                    key={f}
+                    key={f.id}
                     size="sm"
-                    variant={filter === f ? "primary" : "outline"}
-                    onClick={() => { setFilter(f); setPage(1); }}
+                    variant={filter === f.id ? "primary" : "outline"}
+                    onClick={() => { setFilter(f.id); setPage(1); }}
                   >
-                    {f === "all" ? (lang === "bn" ? "সব" : "All") : f.replace("_", " ")}
+                    {lang === "bn" ? f.bn : f.en}
                   </ErpButton>
                 ))}
               </div>
@@ -1059,20 +1187,6 @@ function GroupWizard({ onBack, onDone, onCreated }: {
               <ErpField label={lang === "bn" ? "হাজি হোয়াটসঅ্যাপ" : "Haji WhatsApp"}>
                 <ErpInput value={hajiWhatsapp} onChange={(e) => setHajiWhatsapp(e.target.value)} placeholder="+966… / +880…" />
               </ErpField>
-              <ErpField label={lang === "bn" ? "সর্বোচ্চ ধারণক্ষমতা" : "Max Capacity"}>
-                <ErpInput type="number" value={maxCapacity} onChange={(e) => setMaxCapacity(e.target.value)} />
-              </ErpField>
-              <ErpField label={lang === "bn" ? "যাত্রার তারিখ" : "Departure"}>
-                <ErpInput type="date" value={departDate} onChange={(e) => setDepartDate(e.target.value)} />
-              </ErpField>
-              <ErpField label={lang === "bn" ? "ফেরার তারিখ" : "Return"}>
-                <ErpInput type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
-              </ErpField>
-              <ErpFormRow span={2}>
-                <ErpField label={lang === "bn" ? "নোট" : "Notes"}>
-                  <ErpTextarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
-                </ErpField>
-              </ErpFormRow>
             </ErpForm>
             <div className="flex justify-end pt-2">
               <ErpButton variant="primary" onClick={goNextFrom1}>
@@ -1086,7 +1200,7 @@ function GroupWizard({ onBack, onDone, onCreated }: {
           <div className="rounded-xl p-5 md:p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
             <h2 className="text-base font-bold text-[#0B1E3F] mb-1">{lang === "bn" ? "২ · প্যাকেজ" : "2 · Package"}</h2>
             <p className="text-xs mb-4" style={{ color: "rgba(11,30,63,0.55)" }}>
-              {lang === "bn" ? "ভিসার ধরন ও প্যাকেজ নির্বাচন করুন।" : "Select visa type and package tier."}
+              {lang === "bn" ? "ভিসা, প্যাকেজ, তারিখ ও ধারণক্ষমতা।" : "Visa, package, travel dates, and capacity."}
             </p>
             <div className="mb-2 text-[11px] font-semibold" style={{ color: "rgba(11,30,63,0.55)" }}>
               {lang === "bn" ? "প্যাকেজ টাইপ" : "Package Type"}
@@ -1144,6 +1258,22 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                 </button>
               ))}
             </div>
+            <ErpForm columns={2} className="mt-5">
+              <ErpField label={lang === "bn" ? "সর্বোচ্চ ধারণক্ষমতা" : "Max Capacity"}>
+                <ErpInput type="number" value={maxCapacity} onChange={(e) => setMaxCapacity(e.target.value)} />
+              </ErpField>
+              <ErpField label={lang === "bn" ? "যাত্রার তারিখ" : "Departure"}>
+                <ErpInput type="date" value={departDate} onChange={(e) => setDepartDate(e.target.value)} />
+              </ErpField>
+              <ErpField label={lang === "bn" ? "ফেরার তারিখ" : "Return"}>
+                <ErpInput type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} />
+              </ErpField>
+              <ErpFormRow span={2}>
+                <ErpField label={lang === "bn" ? "নোট" : "Notes"}>
+                  <ErpTextarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+                </ErpField>
+              </ErpFormRow>
+            </ErpForm>
             <div className="flex gap-2 mt-5">
               <ErpButton variant="secondary" onClick={() => setStep(1)}>{lang === "bn" ? "পিছনে" : "Back"}</ErpButton>
               <ErpButton
@@ -1241,6 +1371,7 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [deleteCodes, setDeleteCodes] = useState<string[] | null>(null);
   const [detailPax, setDetailPax] = useState<Pax | null>(null);
+  const [editPax, setEditPax] = useState<Pax | null>(null);
   const { lang } = useLang();
 
   const load = () => {
@@ -1323,7 +1454,7 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
                   {[
                     { label: lang === "bn" ? "ম্যানুয়াল এন্ট্রি" : "Manual Entry", icon: Users, on: () => setShowManual(true) },
                     { label: lang === "bn" ? "পাসপোর্ট OCR" : "Passport OCR", icon: ScanLine, on: () => setShowOcr(true) },
-                    { label: lang === "bn" ? "CSV ইমপোর্ট" : "CSV Import", icon: FileText, on: () => setShowCsv(true) },
+                    { label: lang === "bn" ? "Excel / CSV ইমপোর্ট" : "Excel / CSV Import", icon: FileText, on: () => setShowCsv(true) },
                   ].map(({ label, icon: Icon, on }) => (
                     <button
                       key={label}
@@ -1340,11 +1471,29 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
           </div>
         }
         secondaryAction={
-          selected.size > 0 ? (
-            <ErpButton variant="danger" size="sm" icon={<Trash2 size={13} />} disabled={busy} onClick={() => setDeleteCodes([...selected])}>
-              {lang === "bn" ? `মুছুন (${selected.size})` : `Delete (${selected.size})`}
+          <div className="flex flex-wrap items-center gap-2">
+            <ErpButton
+              variant="outline"
+              size="sm"
+              icon={<Download size={13} />}
+              disabled={!filtered.length}
+              onClick={() => {
+                downloadCsv(
+                  `passengers-${group.id}-${new Date().toISOString().slice(0, 10)}.csv`,
+                  ["Code", "Name", "Passport", "Nationality", "Gender", "DOB", "Visa", "Hotel", "Transport", "MoH"],
+                  filtered.map((p) => [p.id, p.name, p.passport, p.nat, p.gender, p.dob, p.visa, p.hotel, p.transport, p.moh]),
+                );
+                erpToast.success(lang === "bn" ? "CSV ডাউনলোড হয়েছে" : "CSV downloaded", lang);
+              }}
+            >
+              {lang === "bn" ? "এক্সপোর্ট CSV" : "Export CSV"}
             </ErpButton>
-          ) : undefined
+            {selected.size > 0 ? (
+              <ErpButton variant="danger" size="sm" icon={<Trash2 size={13} />} disabled={busy} onClick={() => setDeleteCodes([...selected])}>
+                {lang === "bn" ? `মুছুন (${selected.size})` : `Delete (${selected.size})`}
+              </ErpButton>
+            ) : null}
+          </div>
         }
         toolbar={
           <div className="flex flex-col sm:flex-row gap-3 w-full">
@@ -1355,15 +1504,20 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
                 onChange={(e) => { setQ(e.target.value); setPage(1); }}
                 onClear={() => { setQ(""); setPage(1); }}
                 placeholder={lang === "bn"
-                  ? "নাম, পাসপোর্ট নম্বর অথবা গ্রুপ নম্বর লিখুন"
-                  : "Search by name, passport, or group number"}
+                  ? "নাম অথবা পাসপোর্ট নম্বর লিখুন"
+                  : "Search by name or passport number"}
               />
             </div>
             <ErpFilterPanel open={filtersOpen} onOpenChange={setFiltersOpen} lang={lang} activeCount={statusFilter === "all" ? 0 : 1}>
               <div className="flex flex-wrap gap-2">
-                {["all", "approved", "pending", "rejected"].map((st) => (
-                  <ErpButton key={st} size="sm" variant={statusFilter === st ? "primary" : "outline"} onClick={() => { setStatusFilter(st); setPage(1); }}>
-                    {st === "all" ? (lang === "bn" ? "সব" : "All") : st}
+                {([
+                  { id: "all", bn: "সব", en: "All" },
+                  { id: "approved", bn: "অনুমোদিত", en: "Approved" },
+                  { id: "pending", bn: "অপেক্ষমাণ", en: "Pending" },
+                  { id: "rejected", bn: "প্রত্যাখ্যাত", en: "Rejected" },
+                ] as const).map((st) => (
+                  <ErpButton key={st.id} size="sm" variant={statusFilter === st.id ? "primary" : "outline"} onClick={() => { setStatusFilter(st.id); setPage(1); }}>
+                    {lang === "bn" ? st.bn : st.en}
                   </ErpButton>
                 ))}
               </div>
@@ -1397,6 +1551,7 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
             rowActions={(p) => (
               <>
                 <ErpButton size="sm" variant="ghost" icon={<Eye size={13} />} onClick={(e) => { e.stopPropagation(); setDetailPax(p); }} aria-label="View" />
+                <ErpButton size="sm" variant="ghost" icon={<Pencil size={13} />} onClick={(e) => { e.stopPropagation(); setEditPax(p); }} aria-label="Edit" disabled={!p.pid} />
                 <ErpButton size="sm" variant="ghost" icon={<Trash2 size={13} />} onClick={(e) => { e.stopPropagation(); setDeleteCodes([p.id]); }} aria-label="Delete" />
               </>
             )}
@@ -1405,6 +1560,7 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
       </ErpPageTemplate>
 
       <ManualPassengerDrawer groupId={groupId} open={showManual && !!groupId} onClose={() => setShowManual(false)} onAdded={refreshAll} />
+      <EditPassengerDrawer pax={editPax} open={!!editPax} onClose={() => setEditPax(null)} onSaved={refreshAll} />
       {showOcr && groupId && <OcrIntakeModal groupId={groupId} onClose={() => setShowOcr(false)} onApproved={refreshAll} />}
       {showCsv && groupId && <CsvImportModal groupId={groupId} onClose={() => setShowCsv(false)} onImported={refreshAll} />}
 
@@ -1415,9 +1571,20 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
         subtitle={detailPax?.id}
         lang={lang}
         footer={
-          <ErpButton variant="secondary" onClick={() => setDetailPax(null)}>
-            {lang === "bn" ? "বন্ধ" : "Close"}
-          </ErpButton>
+          <div className="flex gap-2">
+            <ErpButton variant="secondary" onClick={() => setDetailPax(null)}>
+              {lang === "bn" ? "বন্ধ" : "Close"}
+            </ErpButton>
+            {detailPax?.pid && (
+              <ErpButton
+                variant="primary"
+                icon={<Pencil size={13} />}
+                onClick={() => { setEditPax(detailPax); setDetailPax(null); }}
+              >
+                {lang === "bn" ? "সম্পাদনা" : "Edit"}
+              </ErpButton>
+            )}
+          </div>
         }
       >
         {detailPax && (

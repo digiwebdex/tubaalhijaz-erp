@@ -11,6 +11,7 @@ import { EmptyState, LoadingSkeleton, ErrorState } from "../components/States";
 import { api, ApiError, getStoredUser, isLoggedIn } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
+import { downloadCsv } from "../lib/exportCsv";
 
 const FIN   = "#16A34A";   // Finance green (ERP module colour)
 const GOLD  = "#C9A24B";
@@ -466,8 +467,21 @@ function LedgerScreen() {
           <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(11,30,63,0.50)" }} />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by description or reference…" className="w-full pl-8 pr-4 py-2 text-xs rounded-xl focus:outline-none" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)", color: "#0B1E3F" }} />
         </div>
-        <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs" style={{ border: "1px solid rgba(11,30,63,0.11)", color: "rgba(11,30,63,0.58)" }}>
-          <Download size={12} /> Export
+        <button
+          type="button"
+          disabled={!shown.length}
+          onClick={() => {
+            downloadCsv(
+              `wallet-ledger-${new Date().toISOString().slice(0, 10)}.csv`,
+              ["Date", "Type", "Description", "Reference", "Amount", "Balance"],
+              shown.map((e) => [e.date, e.type, e.desc, e.ref, e.amount, e.balance]),
+            );
+            toast.success("CSV downloaded");
+          }}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs disabled:opacity-50"
+          style={{ border: "1px solid rgba(11,30,63,0.11)", color: "rgba(11,30,63,0.58)" }}
+        >
+          <Download size={12} /> Export CSV
         </button>
       </div>
 
@@ -781,13 +795,40 @@ function StatementsScreen() {
                   <div className="text-[10px] mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>Period: 01 Jan 2025 – 16 Jul 2025</div>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold" style={{ backgroundColor: `${FIN}20`, color: FIN }}>
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
+                    style={{ backgroundColor: `${FIN}20`, color: FIN }}
+                    title="Print / Save as PDF"
+                  >
                     <Download size={12} /> PDF
                   </button>
-                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold" style={{ backgroundColor: "#F5F7FA", color: "rgba(11,30,63,0.76)" }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const all = (stmt?.entries ?? []).map((e) => ({
+                        date: fmtDate(e.date), desc: e.description, ref: e.ref ?? "—",
+                        debit: e.debit, credit: e.credit, balance: e.balance,
+                      }));
+                      downloadCsv(
+                        `agent-statement-${new Date().toISOString().slice(0, 10)}.csv`,
+                        ["Date", "Description", "Ref", "Debit", "Credit", "Balance"],
+                        all.map((e) => [e.date, e.desc, e.ref, e.debit, e.credit, e.balance]),
+                      );
+                      toast.success("Statement CSV downloaded");
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
+                    style={{ backgroundColor: "#F5F7FA", color: "rgba(11,30,63,0.76)" }}
+                  >
                     <Download size={12} /> Excel
                   </button>
-                  <button className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#F5F7FA", color: "rgba(11,30,63,0.58)" }}>
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="w-8 h-8 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: "#F5F7FA", color: "rgba(11,30,63,0.58)" }}
+                  >
                     <Printer size={14} />
                   </button>
                 </div>

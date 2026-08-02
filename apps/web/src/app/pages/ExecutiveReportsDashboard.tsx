@@ -6,11 +6,11 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import {
   RefreshCw, TrendingUp, ClipboardList,
-  FileCheck, CalendarDays, DollarSign, Activity, ChevronRight, Eye,
+  FileCheck, CalendarDays, DollarSign, Activity, ChevronRight, Eye, Download,
 } from "lucide-react";
 import {
   ErpPageTemplate, ErpButton, ErpSearchBar, ErpFilterPanel, ErpDataTable,
-  ErpPagination, ErpDrawer, ErpStatusChip, type ErpColumn, type ErpStatusKind,
+  ErpPagination, ErpDrawer, ErpStatusChip, erpToast, type ErpColumn, type ErpStatusKind,
 } from "../components/erp";
 import { EmptyState, LoadingSkeleton, ErrorState } from "../components/States";
 import { useDash } from "../lib/useDash";
@@ -18,6 +18,7 @@ import { canAccessPath } from "../lib/rbac";
 import { isLoggedIn } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
+import { downloadCsv } from "../lib/exportCsv";
 
 // ─── Types (mirror Dashboards.tsx — read-only API shapes) ────────────────────
 
@@ -699,6 +700,21 @@ export function ReportsManagementView({ onOpenExecutive }: { onOpenExecutive?: (
         subtitle={lang === "bn" ? "সহজ · পাঠযোগ্য · বিদ্যমান এগ্রিগেশন" : "Simple · readable · existing aggregations"}
         primaryAction={
           <div className="flex flex-wrap gap-2">
+            <ErpButton
+              variant="outline"
+              icon={<Download size={14} />}
+              disabled={!filtered.length}
+              onClick={() => {
+                downloadCsv(
+                  `report-${kind}-${new Date().toISOString().slice(0, 10)}.csv`,
+                  ["Name", "Value", "Type", "Note"],
+                  filtered.map((r) => [r.col1, r.col2, r.col3, r.col4]),
+                );
+                erpToast.success(lang === "bn" ? "CSV ডাউনলোড হয়েছে" : "CSV downloaded", lang);
+              }}
+            >
+              {lang === "bn" ? "এক্সপোর্ট CSV" : "Export CSV"}
+            </ErpButton>
             <ErpButton variant="secondary" icon={<RefreshCw size={14} />} onClick={refetch}>
               {lang === "bn" ? "রিফ্রেশ" : "Refresh"}
             </ErpButton>

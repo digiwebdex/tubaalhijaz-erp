@@ -654,6 +654,27 @@ function OCRCenterBody() {
             lang={lang}
             onRowClick={(r) => setOpenId(r.id)}
             emptyTitle={lang === "bn" ? "কোনো মিল নেই" : "No matching documents"}
+            rowActions={(r) => (
+              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                <ErpButton size="sm" variant="ghost" onClick={() => setOpenId(r.id)}>
+                  {lang === "bn" ? "খুলুন" : "Open"}
+                </ErpButton>
+                {r.reviewStatus === "PENDING" && (
+                  <ErpButton
+                    size="sm"
+                    variant="outline"
+                    icon={<RefreshCw size={12} />}
+                    onClick={() => {
+                      void api.post(`/ocr/documents/${r.id}/reprocess`, {})
+                        .then(() => { erpToast.success(lang === "bn" ? "পুনরায় প্রসেস কিউ হয়েছে" : "Reprocess queued", lang); load(); })
+                        .catch((e) => erpToast.error(errMsg(e, lang === "bn" ? "রিপ্রসেস ব্যর্থ" : "Reprocess failed"), lang));
+                    }}
+                  >
+                    {lang === "bn" ? "রিপ্রসেস" : "Reprocess"}
+                  </ErpButton>
+                )}
+              </div>
+            )}
           />
         )}
       </ErpPageTemplate>

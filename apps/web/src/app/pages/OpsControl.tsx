@@ -749,6 +749,7 @@ function GroupMaster({ apiGroups, demo, state, onRetry }: { apiGroups: ApiGroup[
 
 function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: FlightRec[] | null; connected: boolean; onRefresh: () => void; demo: boolean; state: FeedState }) {
   const [time, setTime] = useState(() => new Date().toLocaleTimeString("en-GB", { hour12:false }));
+  const [busyId, setBusyId] = useState<string | null>(null);
   useEffect(() => {
     const t = setInterval(() => setTime(new Date().toLocaleTimeString("en-GB", { hour12:false })), 1000);
     return () => clearInterval(t);
@@ -757,6 +758,21 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
   const data = demo ? ARRIVALS : (rows ?? []);
   const ready = demo || state === "ready";
   const active = (s: ArrivalStatus) => ["AT_GATE","LANDING","EN_ROUTE","IMMIGRATION","BAGGAGE"].includes(s);
+  const ARRIVAL_OPTS: ArrivalStatus[] = ["SCHEDULED", "DELAYED", "LANDING", "AT_GATE", "IMMIGRATION", "BAGGAGE", "EN_ROUTE", "DELIVERED"];
+
+  const setFlightStatus = async (id: string, status: ArrivalStatus) => {
+    if (demo) return;
+    setBusyId(id);
+    try {
+      await api.patch(`/ops/flights/${id}/status`, { status });
+      erpToast.success(`Flight → ${status}`);
+      onRefresh();
+    } catch (e) {
+      erpToast.error(e instanceof ApiError ? e.message : "Status update failed");
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <div style={{ backgroundColor:CR_BG, minHeight:"100%" }}>
@@ -833,7 +849,19 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
                   )}
                 </td>
                 <td className="px-5 py-4">
-                  <BStat s={a.status} map={ARR_STAT} />
+                  {demo ? (
+                    <BStat s={a.status} map={ARR_STAT} />
+                  ) : (
+                    <select
+                      value={a.status}
+                      disabled={busyId === a.id}
+                      onChange={(e) => void setFlightStatus(a.id, e.target.value as ArrivalStatus)}
+                      className="px-2 py-1.5 rounded-lg text-[10px] font-bold focus:outline-none"
+                      style={{ backgroundColor: ARR_STAT[a.status]?.bg ?? "#F5F7FA", color: ARR_STAT[a.status]?.color ?? "#0B1E3F", border: "1px solid rgba(11,30,63,0.15)" }}
+                    >
+                      {ARRIVAL_OPTS.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  )}
                 </td>
               </tr>
             );
@@ -852,6 +880,7 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
 
 function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: DepRec[] | null; connected: boolean; demo: boolean; state: FeedState; onRefresh: () => void }) {
   const [time, setTime] = useState(() => new Date().toLocaleTimeString("en-GB", { hour12:false }));
+  const [busyId, setBusyId] = useState<string | null>(null);
   useEffect(() => {
     const t = setInterval(() => setTime(new Date().toLocaleTimeString("en-GB", { hour12:false })), 1000);
     return () => clearInterval(t);
@@ -859,6 +888,21 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
 
   const data = demo ? DEPARTURES : (rows ?? []);
   const ready = demo || state === "ready";
+  const DEP_OPTS: DepartureStatus[] = ["SCHEDULED", "STANDBY", "CHECK_IN", "BOARDING", "DEPARTED", "DELAYED"];
+
+  const setFlightStatus = async (id: string, status: DepartureStatus) => {
+    if (demo) return;
+    setBusyId(id);
+    try {
+      await api.patch(`/ops/flights/${id}/status`, { status });
+      erpToast.success(`Flight → ${status}`);
+      onRefresh();
+    } catch (e) {
+      erpToast.error(e instanceof ApiError ? e.message : "Status update failed");
+    } finally {
+      setBusyId(null);
+    }
+  };
   return (
     <div style={{ backgroundColor:CR_BG, minHeight:"100%" }}>
       <div className="flex items-center justify-between px-8 py-4" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:CR_SURFACE }}>
@@ -925,7 +969,21 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
                     <span className="text-xs whitespace-nowrap" style={{ color:"rgba(11,30,63,0.38)" }}>Not Assigned</span>
                   )}
                 </td>
-                <td className="px-5 py-4"><BStat s={d.status} map={DEP_STAT} /></td>
+                <td className="px-5 py-4">
+                  {demo ? (
+                    <BStat s={d.status} map={DEP_STAT} />
+                  ) : (
+                    <select
+                      value={d.status}
+                      disabled={busyId === d.id}
+                      onChange={(e) => void setFlightStatus(d.id, e.target.value as DepartureStatus)}
+                      className="px-2 py-1.5 rounded-lg text-[10px] font-bold focus:outline-none"
+                      style={{ backgroundColor: DEP_STAT[d.status]?.bg ?? "#F5F7FA", color: DEP_STAT[d.status]?.color ?? "#0B1E3F", border: "1px solid rgba(11,30,63,0.15)" }}
+                    >
+                      {DEP_OPTS.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  )}
+                </td>
               </tr>
             );
           })}
@@ -1016,8 +1074,23 @@ function NewDispatchModal({ apiGroups, onClose, onCreated }: { apiGroups: ApiGro
 function DispatchBoard({ rows, connected, apiGroups, onRefresh, demo, state }: { rows: DispatchOrder[] | null; connected: boolean; apiGroups: ApiGroup[] | null; onRefresh: () => void; demo: boolean; state: FeedState }) {
   const COLS: DispatchStatus[] = ["ASSIGNED","EN_ROUTE","COMPLETED","DELAYED"];
   const [showCreate, setShowCreate] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const data = demo ? DISPATCHES : (rows ?? []);
   const ready = demo || state === "ready";
+
+  const setDispatchStatus = async (id: string, status: DispatchStatus) => {
+    if (demo) return;
+    setBusyId(id);
+    try {
+      await api.patch(`/ops/dispatches/${id}/status`, { status });
+      erpToast.success(`Dispatch → ${status}`);
+      onRefresh();
+    } catch (e) {
+      erpToast.error(e instanceof ApiError ? e.message : "Dispatch status failed");
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <div style={{ backgroundColor:CR_BG, minHeight:"100%" }}>
@@ -1089,6 +1162,17 @@ function DispatchBoard({ rows, connected, apiGroups, onRefresh, demo, state }: {
                         <AlertTriangle size={10} style={{ color:"#B45309", flexShrink:0, marginTop:1 }} />
                         <span className="text-[9px]" style={{ color:"#B45309" }}>{o.note}</span>
                       </div>
+                    )}
+                    {!demo && (
+                      <select
+                        value={o.status}
+                        disabled={busyId === o.id}
+                        onChange={(e) => void setDispatchStatus(o.id, e.target.value as DispatchStatus)}
+                        className="mt-2 w-full px-2 py-1.5 rounded-lg text-[10px] font-bold focus:outline-none"
+                        style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.12)", color: "#0B1E3F" }}
+                      >
+                        {COLS.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </select>
                     )}
                   </div>
                 ))}
@@ -1694,12 +1778,140 @@ function LongStayDrawer({
   );
 }
 
-function LongStayScreen({ signal }: { signal: number }) {
+function CreateLongStayDrawer({
+  apiGroups,
+  open,
+  onClose,
+  onCreated,
+  demo,
+}: {
+  apiGroups: ApiGroup[] | null;
+  open: boolean;
+  onClose: () => void;
+  onCreated: () => void;
+  demo: boolean;
+}) {
+  const { lang } = useLang();
+  const opts = groupOptions(apiGroups);
+  const [groupId, setGroupId] = useState("");
+  const [hotelName, setHotelName] = useState("");
+  const [city, setCity] = useState("Makkah");
+  const [nights, setNights] = useState("30");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [pax, setPax] = useState("1");
+  const [hostName, setHostName] = useState("");
+  const [hostWhatsapp, setHostWhatsapp] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setGroupId(opts[0]?.value ?? "");
+    setHotelName("");
+    setCity("Makkah");
+    setNights("30");
+    setCheckIn("");
+    setCheckOut("");
+    setPax("1");
+    setHostName("");
+    setHostWhatsapp("");
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const submit = async () => {
+    if (demo) {
+      erpToast.error(lang === "bn" ? "ডেমো — সাইন ইন করুন" : "Demo — sign in to create", lang);
+      return;
+    }
+    if (!groupId || !hotelName.trim() || !city.trim() || !checkIn || !checkOut) {
+      erpToast.error(lang === "bn" ? "গ্রুপ, হোটেল, শহর ও তারিখ আবশ্যক" : "Group, hotel, city and dates are required", lang);
+      return;
+    }
+    const n = Math.max(1, Number(nights) || 1);
+    const p = Math.max(0, Number(pax) || 0);
+    setBusy(true);
+    try {
+      await api.post("/ops/long-stays", {
+        groupId,
+        hotelName: hotelName.trim(),
+        city: city.trim(),
+        nights: n,
+        checkIn: new Date(checkIn).toISOString(),
+        checkOut: new Date(checkOut).toISOString(),
+        pax: p,
+        ...(hostName.trim() ? { hostName: hostName.trim(), registerHost: true } : {}),
+        ...(hostWhatsapp.trim() ? { hostWhatsapp: hostWhatsapp.trim() } : {}),
+      });
+      erpToast.success(lang === "bn" ? "লং স্টে তৈরি হয়েছে" : "Long stay created", lang);
+      onCreated();
+      onClose();
+    } catch (e) {
+      erpToast.error(e instanceof ApiError ? e.message : (lang === "bn" ? "তৈরি ব্যর্থ" : "Create failed"), lang);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <ErpDrawer
+      open={open}
+      onClose={onClose}
+      title={lang === "bn" ? "নতুন লং স্টে" : "New Long Stay"}
+      lang={lang}
+      footer={
+        <ErpDrawerFooterActions
+          lang={lang}
+          onCancel={onClose}
+          onSave={submit}
+          saving={busy}
+          saveLabel={lang === "bn" ? "তৈরি করুন" : "Create"}
+        />
+      }
+    >
+      <ErpForm columns={2}>
+        <ErpFormRow span={2}>
+          <ErpField label={lang === "bn" ? "গ্রুপ" : "Group"} required>
+            <ErpSelect value={groupId} onChange={(e) => setGroupId(e.target.value)}>
+              <option value="">—</option>
+              {opts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </ErpSelect>
+          </ErpField>
+        </ErpFormRow>
+        <ErpField label={lang === "bn" ? "হোটেল" : "Hotel"} required>
+          <ErpInput value={hotelName} onChange={(e) => setHotelName(e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "শহর" : "City"} required>
+          <ErpInput value={city} onChange={(e) => setCity(e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "রাত" : "Nights"} required>
+          <ErpInput type="number" value={nights} onChange={(e) => setNights(e.target.value)} />
+        </ErpField>
+        <ErpField label="Pax" required>
+          <ErpInput type="number" value={pax} onChange={(e) => setPax(e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "চেক-ইন" : "Check-in"} required>
+          <ErpInput type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "চেক-আউট" : "Check-out"} required>
+          <ErpInput type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "হোস্টের নাম" : "Host name"}>
+          <ErpInput value={hostName} onChange={(e) => setHostName(e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "হোস্ট হোয়াটসঅ্যাপ" : "Host WhatsApp"}>
+          <ErpInput value={hostWhatsapp} onChange={(e) => setHostWhatsapp(e.target.value)} />
+        </ErpField>
+      </ErpForm>
+    </ErpDrawer>
+  );
+}
+
+function LongStayScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiGroup[] | null }) {
   const { lang } = useLang();
   const demo = !isLoggedIn();
   const [live, setLive] = useState<ApiLongStay[] | null>(null);
   const [state, setState] = useState<FeedState>(demo ? "ready" : "loading");
   const [sel, setSel] = useState<ApiLongStay | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
   const [quick, setQuick] = useState<LsQuickFilter>("");
   const [q, setQ] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -1845,9 +2057,14 @@ function LongStayScreen({ signal }: { signal: number }) {
         title={lang === "bn" ? "লং স্টে" : "Long Stay"}
         subtitle={lang === "bn" ? "হোস্ট · ইকামা · Day-85 কমপ্লায়েন্স" : "Host · Iqama · Day-85 compliance"}
         primaryAction={
-          <ErpButton variant="secondary" icon={<RefreshCw size={14} />} onClick={refresh}>
-            {lang === "bn" ? "রিফ্রেশ" : "Refresh"}
-          </ErpButton>
+          <div className="flex flex-wrap gap-2">
+            <ErpButton variant="secondary" icon={<RefreshCw size={14} />} onClick={refresh}>
+              {lang === "bn" ? "রিফ্রেশ" : "Refresh"}
+            </ErpButton>
+            <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)} disabled={demo}>
+              {lang === "bn" ? "নতুন লং স্টে" : "New Long Stay"}
+            </ErpButton>
+          </div>
         }
         toolbar={
           <div className="flex flex-col gap-3 w-full">
@@ -1970,6 +2187,13 @@ function LongStayScreen({ signal }: { signal: number }) {
         open={!!sel}
         onClose={() => setSel(null)}
         onSaved={refresh}
+        demo={demo}
+      />
+      <CreateLongStayDrawer
+        apiGroups={apiGroups}
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        onCreated={refresh}
         demo={demo}
       />
     </div>
@@ -2260,7 +2484,7 @@ export default function OpsControl() {
     dispatch:   <DispatchBoard rows={dispatches} connected={connected} apiGroups={apiGroups} onRefresh={loadDispatches} demo={demo} state={feed.dispatches} />,
     maassist:   <MeetAssist arrivals={arrivals} maUpdate={maUpdate} demo={demo} state={feed.arrivals} onRetry={loadArrivals} />,
     ziyarah:    <ZiyarahScreen signal={ziyarahSignal} apiGroups={apiGroups} />,
-    longstay:   <LongStayScreen signal={longStaySignal} />,
+    longstay:   <LongStayScreen signal={longStaySignal} apiGroups={apiGroups} />,
     brn:        <BRNManagement signal={brnSignal} apiGroups={apiGroups} />,
     vouchers:   (
       <div className="p-7">

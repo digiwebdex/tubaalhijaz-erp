@@ -10,6 +10,8 @@ import {
   ErpField, ErpInput, ErpSelect, ErpStatusChip, erpToast, type ErpStatusKind,
 } from "../components/erp";
 import { api, ApiError, getStoredUser, isLoggedIn } from "../lib/api";
+import { useLang } from "../lib/LangContext";
+import { fontFor } from "@tuba/shared";
 
 // ─── Constants & types ────────────────────────────────────────────────────────
 
@@ -134,18 +136,21 @@ const SUPPLIER_META: Record<SupplierType, { name: string; code: string; icon: Ic
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
 const SUPPLIER_NAV: NavItem[] = [
-  { id: "dashboard",  label: "Dashboard",          icon: LayoutDashboard as IconFC, badge: 5 },
-  { id: "bookings",   label: "Booking Acceptance", icon: Calendar as IconFC,        badge: 3 },
-  { id: "vouchers",   label: "Voucher Upload",     icon: Upload as IconFC },
-  { id: "invoices",   label: "Invoice Upload",     icon: FileText as IconFC },
-  { id: "statement",  label: "Statement",          icon: List as IconFC },
-  { id: "payments",   label: "Payments",           icon: Wallet as IconFC },
+  { id: "dashboard",  label: "Dashboard",          labelBn: "ড্যাশবোর্ড",           icon: LayoutDashboard as IconFC, badge: 5 },
+  { id: "bookings",   label: "Booking Acceptance", labelBn: "বুকিং গ্রহণ",          icon: Calendar as IconFC,        badge: 3 },
+  { id: "vouchers",   label: "Voucher Upload",     labelBn: "ভাউচার আপলোড",         icon: Upload as IconFC },
+  { id: "invoices",   label: "Invoice Upload",     labelBn: "ইনভয়েস আপলোড",        icon: FileText as IconFC },
+  { id: "statement",  label: "Statement",          labelBn: "স্টেটমেন্ট",            icon: List as IconFC },
+  { id: "payments",   label: "Payments",           labelBn: "পেমেন্ট",               icon: Wallet as IconFC },
 ];
 
-const SCREEN_LABELS: Record<string, string> = {
-  dashboard: "Dashboard", bookings: "Booking Acceptance",
-  vouchers:  "Voucher Upload", invoices: "Invoice Upload",
-  statement: "Statement", payments: "Payments",
+const SCREEN_LABELS: Record<string, { en: string; bn: string }> = {
+  dashboard: { en: "Dashboard", bn: "ড্যাশবোর্ড" },
+  bookings:  { en: "Booking Acceptance", bn: "বুকিং গ্রহণ" },
+  vouchers:  { en: "Voucher Upload", bn: "ভাউচার আপলোড" },
+  invoices:  { en: "Invoice Upload", bn: "ইনভয়েস আপলোড" },
+  statement: { en: "Statement", bn: "স্টেটমেন্ট" },
+  payments:  { en: "Payments", bn: "পেমেন্ট" },
 };
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
@@ -973,6 +978,7 @@ function PaymentsScreen(_p: { type: SupplierType; demo: boolean }) {
 }
 
 export default function SupplierPortal() {
+  const { lang } = useLang();
   const [screen, setScreen]   = useState("dashboard");
   const [supType, setSupType] = useState<SupplierType>(() => {
     const st = getStoredUser()?.company?.supplierType?.toLowerCase();
@@ -1027,21 +1033,25 @@ export default function SupplierPortal() {
     payments:  <PaymentsScreen  type={supType} demo={demo} />,
   };
 
+  const screenLabel = SCREEN_LABELS[screen]
+    ? (lang === "bn" ? SCREEN_LABELS[screen].bn : SCREEN_LABELS[screen].en)
+    : screen;
+
   return (
     <ERPShell
       moduleId="supplier"
-      moduleName="Supplier Portal"
+      moduleName={lang === "bn" ? "সাপ্লায়ার পোর্টাল" : "Supplier Portal"}
       moduleColor={color}
       moduleIcon={meta.icon}
       navItems={SUPPLIER_NAV}
       activeItem={screen}
       onItemClick={setScreen}
-      breadcrumb={[companyName, SCREEN_LABELS[screen] ?? screen]}
+      breadcrumb={[companyName, screenLabel]}
       notificationCount={3}
       userName={companyName}
-      userRole={`Supplier · ${companyCode}`}
+      userRole={`${lang === "bn" ? "সাপ্লায়ার" : "Supplier"} · ${companyCode}`}
     >
-      <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex flex-col h-full overflow-hidden" style={{ fontFamily: fontFor(lang) }}>
         <TypeSwitcher type={supType} onChange={(t) => { setSupType(t); setScreen("dashboard"); }} />
         <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(11,30,63,0.38) transparent" }}>
           {content[screen]}
