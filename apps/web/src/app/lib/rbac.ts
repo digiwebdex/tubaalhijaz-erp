@@ -38,6 +38,7 @@ const PATH_ANY_OF: Record<string, readonly string[]> = {
   "/finance-erp": [P.FINANCIAL_REPORTS],
   "/automation": [P.CONFIGURE_WORKFLOWS],
   "/workflow-map": [P.VIEW_DASHBOARD],
+  "/rate-cards": [P.MANAGE_SYSTEM_SETTINGS],
   "/super-admin": [
     P.MANAGE_USERS,
     P.APPROVE_COMPANIES,

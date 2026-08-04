@@ -131,7 +131,13 @@ export class VoucherGeneratorService {
     // ── Footer ─────────────────────────────────────────────────────────────────
     page.drawRectangle({ x: 0, y: 0, width, height: 56, color: NAVY });
     page.drawText(`${data.voucherNo} · TUBA-1446H`, { x: 48, y: 24, size: 8, font, color: GOLD });
-    const contact = "operations@tubalhijaz.com · +966 12 XXX XXXX · Makkah Al-Mukarramah, KSA";
+    // Never print placeholder phone digits on issued vouchers.
+    const opsEmail = process.env.COMPANY_OPS_EMAIL?.trim() || "operations@tubalhijaz.com";
+    const opsPhone = process.env.COMPANY_PHONE?.trim();
+    const opsCity = process.env.COMPANY_ADDRESS?.trim() || "Makkah Al-Mukarramah, KSA";
+    const contact = opsPhone
+      ? `${opsEmail} · ${opsPhone} · ${opsCity}`
+      : `${opsEmail} · ${opsCity}`;
     page.drawText(contact, {
       x: width - 48 - font.widthOfTextAtSize(contact, 8),
       y: 24, size: 8, font, color: rgb(1, 1, 1),

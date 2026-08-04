@@ -546,9 +546,9 @@ function FlightComingSoon() {
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: `${C_FLIGHT}12`, border: `1px solid ${C_FLIGHT}25` }}>
           <Clock size={22} style={{ color: C_FLIGHT }} />
         </div>
-        <h3 className="text-sm font-bold text-[#0B1E3F] mb-1.5">Flights — coming soon</h3>
+        <h3 className="text-sm font-bold text-[#0B1E3F] mb-1.5">ফ্লাইট</h3>
         <p className="text-xs max-w-sm" style={{ color: "rgba(11,30,63,0.58)" }}>
-          Flight capture and ticket upload are not connected to a backend service yet, so this tab is intentionally inactive. Visa, Hotel, Transport, Catering and Additional Services are all live.
+          এই মডিউল এখনও কনফিগার করা হয়নি। ভিসা, হোটেল, পরিবহন, ক্যাটারিং ও অতিরিক্ত সেবা লাইভ।
         </p>
       </div>
     </div>

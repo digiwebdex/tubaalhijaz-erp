@@ -10,7 +10,9 @@ import {
 } from "@nestjs/common";
 import { ServiceRequestStatus } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { IsNumber, IsString, MaxLength, Min } from "class-validator";
 import { AuthUser, CurrentUser } from "../common/decorators/current-user.decorator";
+import { RequirePermissions } from "../common/decorators/require-permissions.decorator";
 import { ServicesService } from "./services.service";
 import { SERVICE_KEYS, ServiceKey } from "./service-types";
 import {
@@ -27,6 +29,11 @@ function parseService(service: string): ServiceKey {
     throw new BadRequestException(`Unknown service '${service}' — use ${SERVICE_KEYS.join("|")}`);
   }
   return service as ServiceKey;
+}
+
+class PriceOverrideDto {
+  @IsNumber() @Min(0) price!: number;
+  @IsString() @MaxLength(500) reason!: string;
 }
 
 @Controller()
@@ -106,6 +113,18 @@ export class ServicesController {
   }
 
   /** Agent-side voucher list (tenant-scoped automatically). */
+  /** Staff price override (B-10) - audit records original/new/user/reason. */
+  @Patch("services/:service/:id/price")
+  @RequirePermissions("EDIT_FINANCIAL_RECORDS")
+  overridePrice(
+    @Param("service") service: string,
+    @Param("id") id: string,
+    @Body() dto: PriceOverrideDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.services.overridePrice(parseService(service), id, dto.price, dto.reason, user);
+  }
+
   @Get("vouchers")
   vouchers(@Query("groupId") groupId?: string) {
     return this.prisma.scoped.voucher.findMany({

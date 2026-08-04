@@ -80,6 +80,9 @@ export class UsersController {
   async createUser(@Body() dto: CreateUserDto, @CurrentUser() actor: AuthUser, @Req() req: Request) {
     const role = await this.prisma.role.findUnique({ where: { key: dto.roleKey } });
     if (!role) throw new BadRequestException(`Unknown role: ${dto.roleKey}`);
+    if (dto.roleKey === "SUPER_ADMIN" && actor.role !== "SUPER_ADMIN") {
+      throw new ForbiddenException("Only a Super Admin can assign the Super Admin role");
+    }
     const email = dto.email.toLowerCase();
     if (await this.prisma.user.findUnique({ where: { email } })) {
       throw new BadRequestException("An account with this email already exists");
@@ -121,11 +124,17 @@ export class UsersController {
   ) {
     const existing = await this.prisma.user.findUnique({ where: { id }, include: { role: true } });
     if (!existing) throw new NotFoundException("User not found");
+    if (existing.role.key === "SUPER_ADMIN" && actor.role !== "SUPER_ADMIN") {
+      throw new ForbiddenException("Only a Super Admin can modify a Super Admin account");
+    }
     if (id === actor.sub && (dto.status === "INACTIVE" || dto.status === "SUSPENDED")) {
       throw new ForbiddenException("You cannot deactivate your own account");
     }
     let roleId: string | undefined;
     if (dto.roleKey) {
+      if (dto.roleKey === "SUPER_ADMIN" && actor.role !== "SUPER_ADMIN") {
+        throw new ForbiddenException("Only a Super Admin can assign the Super Admin role");
+      }
       const role = await this.prisma.role.findUnique({ where: { key: dto.roleKey } });
       if (!role) throw new BadRequestException(`Unknown role: ${dto.roleKey}`);
       roleId = role.id;

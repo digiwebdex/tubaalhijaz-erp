@@ -5,9 +5,9 @@
 import type { CSSProperties } from "react";
 import {
   LayoutDashboard, Users, Building2, UserRound, FileCheck, CalendarDays,
-  Wallet, BarChart3, Settings, Cpu, ScanLine, GitBranch, Zap, ClipboardCheck,
+  Wallet, BarChart3, ScanLine, Zap, ClipboardCheck,
   Bell, Truck, Navigation, Building, Bus, UtensilsCrossed, Shield,
-  FileText, MessageCircle, LayoutGrid, type LucideIcon,
+  FileText, LayoutGrid, type LucideIcon,
 } from "lucide-react";
 import {
   canAccessPath,
@@ -215,16 +215,6 @@ export const STAFF_NAV_GROUPS: GlobalNavGroup[] = [
     labelEn: "Settings",
     items: [
       {
-        id: "settings-home",
-        labelBn: "সিস্টেম সেটিংস",
-        labelEn: "System Settings",
-        icon: asIcon(Settings),
-        path: "/super-admin?tab=settings",
-        matchPath: "/super-admin",
-        matchTab: "settings",
-        anyOf: [P.MANAGE_SYSTEM_SETTINGS],
-      },
-      {
         id: "users",
         labelBn: "ব্যবহারকারী",
         labelEn: "Users & Roles",
@@ -244,6 +234,8 @@ export const STAFF_NAV_GROUPS: GlobalNavGroup[] = [
         matchTab: "dashboard",
         anyOf: [P.MANAGE_USERS, P.APPROVE_COMPANIES, P.MANAGE_SYSTEM_SETTINGS],
       },
+      // System Settings / AI / Workflow engines have no production backend UI yet —
+      // SA ?tab=settings|ai-engine|workflows still renders an honest Bangla empty state.
     ],
   },
 ];
@@ -251,34 +243,12 @@ export const STAFF_NAV_GROUPS: GlobalNavGroup[] = [
 /** Settings → Advanced Tools (not top-level). */
 export const ADVANCED_TOOLS: GlobalNavItem[] = [
   {
-    id: "adv-ai",
-    labelBn: "এআই ইঞ্জিন",
-    labelEn: "AI Engine",
-    icon: asIcon(Cpu),
-    path: "/super-admin?tab=ai-engine",
-    matchPath: "/super-admin",
-    matchTab: "ai-engine",
-    anyOf: [P.MANAGE_SYSTEM_SETTINGS],
-    advanced: true,
-  },
-  {
     id: "adv-ocr",
     labelBn: "ওসিআর কেন্দ্র",
     labelEn: "OCR Center",
     icon: asIcon(ScanLine),
     path: "/ocr-center",
     anyOf: [P.REVIEW_OCR_QUEUE],
-    advanced: true,
-  },
-  {
-    id: "adv-workflow",
-    labelBn: "ওয়ার্কফ্লো",
-    labelEn: "Workflow Engine",
-    icon: asIcon(GitBranch),
-    path: "/super-admin?tab=workflows",
-    matchPath: "/super-admin",
-    matchTab: "workflows",
-    anyOf: [P.CONFIGURE_WORKFLOWS],
     advanced: true,
   },
   {
@@ -335,7 +305,7 @@ export const AGENT_NAV_GROUPS: GlobalNavGroup[] = [
       { id: "a-docs", labelBn: "নথিপত্র", labelEn: "Documents", icon: asIcon(FileText), path: "/agent-portal", portalTab: "documents" },
       { id: "a-hotel", labelBn: "হোটেল", labelEn: "Hotels", icon: asIcon(Building), path: "/agent-portal", portalTab: "hotels" },
       { id: "a-transport", labelBn: "পরিবহন", labelEn: "Transport", icon: asIcon(Bus), path: "/agent-portal", portalTab: "transport" },
-      { id: "a-support", labelBn: "সাপোর্ট", labelEn: "Support", icon: asIcon(MessageCircle), path: "/agent-portal", portalTab: "support" },
+      // Support desk has no backend — removed from production nav (screen still safe if deep-linked).
     ],
   },
 ];
@@ -349,8 +319,7 @@ export const SUPPLIER_NAV_GROUPS: GlobalNavGroup[] = [
       { id: "s-book", labelBn: "বুকিং", labelEn: "Bookings", icon: asIcon(LayoutGrid), path: "/supplier-portal", portalTab: "bookings" },
       { id: "s-vouch", labelBn: "ভাউচার", labelEn: "Vouchers", icon: asIcon(FileText), path: "/supplier-portal", portalTab: "vouchers" },
       { id: "s-inv", labelBn: "চালান", labelEn: "Invoices", icon: asIcon(Wallet), path: "/supplier-portal", portalTab: "invoices" },
-      { id: "s-stmt", labelBn: "স্টেটমেন্ট", labelEn: "Statement", icon: asIcon(BarChart3), path: "/supplier-portal", portalTab: "statement" },
-      { id: "s-pay", labelBn: "পেমেন্ট", labelEn: "Payments", icon: asIcon(Wallet), path: "/supplier-portal", portalTab: "payments" },
+      // Statement / payouts deferred — no supplier ledger API in this release.
     ],
   },
 ];

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, lazy, Suspense, type ChangeEvent } from "r
 import { toast } from "sonner";
 import {
   LayoutDashboard, Building2, FileText, Users, FileCheck, Building, Bus,
-  Wallet, MessageCircle, AlertCircle,
+  Wallet, AlertCircle,
   Clock, RefreshCw, Eye, Upload,
   Plus, Download, LayoutGrid, List,
   Search,
@@ -43,7 +43,6 @@ const AGENT_NAV: NavItem[] = [
   { id: "hotels",     label: "Hotel Bookings",     icon: Building as IconFC },
   { id: "transport",  label: "Transport",          icon: Bus as IconFC },
   { id: "finance",    label: "Finance & Billing",  icon: Wallet as IconFC },
-  { id: "support",    label: "Support",            icon: MessageCircle as IconFC },
 ];
 
 const SCREEN_LABELS: Record<string, string> = {
@@ -366,10 +365,8 @@ function CompanyProfileScreen() {
         </div>
         <EmptyState
           tone="light"
-          title={lang === "bn" ? "পূর্ণ প্রোফাইল শীঘ্রই আসছে" : "Full company profile coming soon"}
-          hint={lang === "bn"
-            ? "নিবন্ধন নথি, মালিক প্রোফাইল ও ব্যাংকিং বিবরণ পরবর্তী রিলিজে এখানে সম্পাদনাযোগ্য হবে। উপরের পরিচয় লাইভ।"
-            : "Registration documents, owner profile and banking details will be editable here in a later release. Identity above is live."}
+          title={lang === "bn" ? "পূর্ণ প্রোফাইল" : "Full company profile"}
+          hint="এই মডিউল এখনও কনফিগার করা হয়নি। উপরের পরিচয় লাইভ।"
         />
       </ErpPageTemplate>
     </div>
@@ -768,11 +765,11 @@ function DocumentsVaultScreen() {
   );
 }
 
-// ─── Coming Soon placeholder ──────────────────────────────────────────────────
+// ─── Not configured (no support backend yet) ─────────────────────────────────
 
-function ComingSoon({ label }: { label: string }) {
+function SupportNotConfigured({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
+    <div className="flex flex-col items-center justify-center py-24 text-center px-6">
       <div
         className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
         style={{ backgroundColor: `${AGENT}12`, border: `1px solid ${AGENT}25` }}
@@ -781,7 +778,7 @@ function ComingSoon({ label }: { label: string }) {
       </div>
       <h3 className="text-sm font-bold text-[#0B1E3F] mb-1.5">{label}</h3>
       <p className="text-xs max-w-xs" style={{ color: "rgba(11,30,63,0.58)" }}>
-        This module will be designed in a future prompt. The shell and navigation are already wired.
+        এই মডিউল এখনও কনফিগার করা হয়নি।
       </p>
     </div>
   );
@@ -814,7 +811,7 @@ export default function AgentPortal() {
               : screen === "hotels" ? <ServicesModule initial="hotel" />
                 : screen === "transport" ? <ServicesModule initial="transport" />
                   : screen === "finance" ? <FinanceModule />
-                    : screen === "support" ? <ComingSoon label={lang === "bn" ? "সাপোর্ট" : "Support"} />
+                    : screen === "support" ? <SupportNotConfigured label={lang === "bn" ? "সাপোর্ট" : "Support"} />
                       : null;
 
   const lazyDesk =

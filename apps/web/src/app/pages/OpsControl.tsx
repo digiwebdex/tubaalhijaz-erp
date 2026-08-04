@@ -31,6 +31,7 @@ import {
 } from "../lib/group-foundation";
 import { useOpsEvents } from "../lib/opsSocket";
 import { toast } from "sonner";
+import { GroupCreateWizard } from "./AgentPortalGroups";
 
 // ─── Module constants ─────────────────────────────────────────────────────────
 
@@ -257,7 +258,7 @@ const OPS_NAV: NavItem[] = [
   { id:"ziyarah",    label:"Ziyarah",           labelBn:"জিয়ারাত",          icon: Map as IconFC },
   { id:"longstay",   label:"Long Stay",         labelBn:"লং স্টে",           icon: Calendar as IconFC },
   { id:"brn",        label:"BRN Management",    labelBn:"বিআরএন",            icon: Hash as IconFC },
-  { id:"vouchers",   label:"Voucher Generator", labelBn:"ভাউচার",            icon: FileText as IconFC },
+  // Voucher Generator has no Ops API yet — reachable only via ?tab=vouchers (honest empty state).
 ];
 
 const OPS_TAB_IDS = [
@@ -548,10 +549,21 @@ function GroupMaster({ apiGroups, demo, state, onRetry }: { apiGroups: ApiGroup[
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [edit, setEdit] = useState<GroupRec | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
   /** Optimistic gate overrides keyed by apiId|code */
   const [gateLocal, setGateLocal] = useState<Record<string, GateState>>({});
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const PAGE = 20;
+
+  if (showWizard) {
+    return (
+      <GroupCreateWizard
+        onBack={() => setShowWizard(false)}
+        onCreated={onRetry}
+        onDone={() => { setShowWizard(false); onRetry(); }}
+      />
+    );
+  }
 
   const source = demo ? GROUPS : (apiGroups ?? []).map(toGroupRec);
   const ready = demo || state === "ready";
@@ -673,9 +685,14 @@ function GroupMaster({ apiGroups, demo, state, onRetry }: { apiGroups: ApiGroup[
         title={lang === "bn" ? "গ্রুপ মাস্টার" : "Group Master"}
         subtitle={lang === "bn" ? "সিজন ১৪৪৬হি · প্রস্তুতি বোর্ড" : "Season 1446H · Readiness board"}
         primaryAction={
-          <ErpButton variant="secondary" icon={<RefreshCw size={14} />} onClick={onRetry}>
-            {lang === "bn" ? "রিফ্রেশ" : "Refresh"}
-          </ErpButton>
+          <div className="flex flex-wrap gap-2">
+            <ErpButton variant="secondary" icon={<RefreshCw size={14} />} onClick={onRetry}>
+              {lang === "bn" ? "রিফ্রেশ" : "Refresh"}
+            </ErpButton>
+            <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowWizard(true)} disabled={demo}>
+              {lang === "bn" ? "নতুন গ্রুপ" : "New Group"}
+            </ErpButton>
+          </div>
         }
         toolbar={
           <div className="flex flex-col sm:flex-row gap-3 w-full">
@@ -727,6 +744,13 @@ function GroupMaster({ apiGroups, demo, state, onRetry }: { apiGroups: ApiGroup[
           onRowClick={(g) => setEdit(g)}
           emptyTitle={lang === "bn" ? "কোনো তথ্য পাওয়া যায়নি" : (source.length === 0 ? "No groups this season" : "No matching groups")}
           emptyHint={lang === "bn" ? "এজেন্ট বুকিং জমা দিলে গ্রুপ এখানে দেখা যাবে।" : "Groups appear once agents submit bookings."}
+          emptyAction={
+            !demo ? (
+              <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowWizard(true)}>
+                {lang === "bn" ? "নতুন তৈরি করুন" : "Create new"}
+              </ErpButton>
+            ) : undefined
+          }
           rowActions={(g) => (
             <ErpButton size="sm" variant="ghost" icon={<Eye size={13} />} onClick={(e) => { e.stopPropagation(); setEdit(g); }}>
               {lang === "bn" ? "সম্পাদনা" : "Edit"}
@@ -2490,8 +2514,8 @@ export default function OpsControl() {
       <div className="p-7">
         <EmptyState
           tone="light"
-          title="Voucher Generator — coming soon"
-          hint="Vouchers are issued automatically when a supplier accepts a service request. On-demand voucher generation from Ops has no backend endpoint yet and is a follow-up."
+          title="ভাউচার জেনারেটর"
+          hint="এই মডিউল এখনও কনফিগার করা হয়নি। সাপ্লায়ার গ্রহণের পর ভাউচার স্বয়ংক্রিয়ভাবে ইস্যু হয়।"
         />
       </div>
     ),

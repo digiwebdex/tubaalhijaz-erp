@@ -222,7 +222,7 @@ export default function Login() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-semibold" style={{ color: "rgba(11,30,63,0.76)" }}>Password</label>
-                <button type="button" onClick={() => toast.info("Password reset by email isn't available yet — please contact your administrator to reset your password.")} className="text-xs" style={{ color: GOLD }}>Forgot password?</button>
+                <button type="button" onClick={() => navigate("/reset-password")} className="text-xs" style={{ color: GOLD }}>Forgot password?</button>
               </div>
               <div className="relative">
                 <input

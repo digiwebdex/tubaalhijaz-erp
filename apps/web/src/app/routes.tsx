@@ -13,8 +13,10 @@ const Services = lazy(() => import("./pages/Services"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const AuthOnboarding = lazy(() => import("./pages/AuthOnboarding"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AgentPortal = lazy(() => import("./pages/AgentPortal"));
 const SuperAdmin = lazy(() => import("./pages/SuperAdmin"));
+const RateCards = lazy(() => import("./pages/RateCards"));
 const OCRCenter = lazy(() => import("./pages/OCRCenter"));
 const SupplierPortal = lazy(() => import("./pages/SupplierPortal"));
 const OpsControl = lazy(() => import("./pages/OpsControl"));
@@ -54,6 +56,7 @@ export const router = createBrowserRouter([
   // Public
   { path: "/login", Component: Login },
   { path: "/auth-onboarding", element: <LazyPage><AuthOnboarding /></LazyPage> },
+  { path: "/reset-password", element: <LazyPage><ResetPassword /></LazyPage> },
 
   // Portals (tenancy via company.type — UX)
   { path: "/agent-portal", element: priv(<AgentPortal />, "/agent-portal") },
@@ -68,6 +71,7 @@ export const router = createBrowserRouter([
   { path: "/automation", element: priv(<AutomationNotifications />, "/automation") },
   { path: "/dashboards", element: priv(<Dashboards />, "/dashboards") },
   { path: "/super-admin", element: priv(<SuperAdmin />, "/super-admin") },
+  { path: "/rate-cards", element: priv(<RateCards />, "/rate-cards") },
   { path: "/workflow-map", element: priv(<WorkflowMap />, "/workflow-map") },
   { path: "/mobile-apps", Component: ComingSoon },
   { path: "/tablet", Component: ComingSoon },

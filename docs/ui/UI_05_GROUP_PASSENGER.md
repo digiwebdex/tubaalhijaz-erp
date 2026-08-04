@@ -25,12 +25,26 @@ Replace legacy Group / Passenger chrome with the Enterprise Component Kit while 
 
 **Create wizard**
 
-1. **গ্রুপ তথ্য** — name, destination, foundation fields (Nusuk, WhatsApp, consulate, company)  
-2. **প্যাকেজ** — visa type, package, dates, capacity, notes  
-3. **যাত্রী** — info only (Manual / OCR / CSV after create)  
-4. **নিশ্চিত করুন** — review + `POST /groups` then open detail  
+1. **গ্রুপ তথ্য** — name, destination, foundation fields; staff pick Agent or Direct Customer + `tenantId`  
+2. **প্যাকেজ** — visa type, package, dates, capacity, notes → advances with draft `POST /groups`  
+3. **যাত্রী** — Manual drawer / Passport OCR / Excel·CSV (wired); counter; Next requires ≥1 passenger  
+4. **নিশ্চিত করুন** — review + finish (group already created on step 2→3)  
 
-No random create modal; passenger add after create uses drawer / existing OCR+CSV modals.
+Staff Ops Group Master also exposes **New Group** → same wizard. Passengers use existing drawer / OCR / CSV APIs.
+
+### Agent Portal — Group detail tabs
+
+| Tab | API Exists | UI Connected | Missing Backend | Ready |
+|-----|------------|--------------|-----------------|-------|
+| Passengers | Yes (`/passengers`, group detail) | Yes — kit table + CRUD | — | ✓ |
+| Flights | Yes (read: `GET /groups/:id` → `flightInfos`) | Yes — search/filter/table (read-only) | Agent create flight | ✓ |
+| Hotel | Yes (`GET/POST /services/hotel`, status PATCH) | Yes — list + create + cancel | Edit booking | ✓ |
+| Transport | Yes (`GET/POST /services/transport`, status PATCH) | Yes — list + create + cancel | Edit booking | ✓ |
+| Catering | Yes (`GET/POST /services/catering`, status PATCH) | Yes — list + create + cancel | Edit booking | ✓ |
+| Documents | Yes (`GET /vouchers?groupId=`) | Yes — list + download via `fileBlobUrl` | Group document vault / upload (company `/documents` has no `groupId`) | ✓ |
+| Timeline | Yes (`GET /audit-logs` + `entityType`/`entityId`) staff only | Yes when `ACCESS_AUDIT_LOGS`; else Bangla not-configured | Agent-safe group timeline | ✓ |
+
+Unwired tabs show: **এই মডিউল এখনও কনফিগার করা হয়নি।** — no fake buttons.
 
 ### Agent Portal — Passengers (group detail → Passengers tab)
 

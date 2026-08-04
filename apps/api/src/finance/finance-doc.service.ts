@@ -69,7 +69,12 @@ export class FinanceDocService {
     if (data.groupCode) page.drawText(`Group: ${data.groupCode}`, { x: 48, y: y - 43, size: 9, font, color: MUTED });
     page.drawText("PAYMENT TERMS", { x: width / 2 + 20, y, size: 8, font: bold, color: MUTED });
     page.drawText(data.dueDate ? `Net - due ${fmtDate(data.dueDate)}` : "Due on receipt", { x: width / 2 + 20, y: y - 15, size: 11, font: bold, color: INK });
-    page.drawText("Al Rajhi Bank - SA29 0000 0001 XXXX XXXX 1234", { x: width / 2 + 20, y: y - 30, size: 8, font, color: MUTED });
+    // Never print a fabricated IBAN. Set COMPANY_BANK_LINE in API env for the real
+    // settlement line; when unset, omit the bank line entirely.
+    const bankLine = process.env.COMPANY_BANK_LINE?.trim();
+    if (bankLine) {
+      page.drawText(bankLine, { x: width / 2 + 20, y: y - 30, size: 8, font, color: MUTED });
+    }
 
     // items table
     y -= 74;
@@ -107,7 +112,10 @@ export class FinanceDocService {
     // footer
     page.drawRectangle({ x: 0, y: 0, width, height: 48, color: NAVY });
     page.drawText(`${data.docNo} - TUBA-FIN-1446H`, { x: 48, y: 20, size: 8, font, color: GOLD });
-    const contact = "finance@tubalhijaz.com - +966 12 XXX XXXX";
+    // Same policy as VAT: real phone from env only — never "XXX" placeholders on live PDFs.
+    const financeEmail = process.env.COMPANY_FINANCE_EMAIL?.trim() || "finance@tubalhijaz.com";
+    const financePhone = process.env.COMPANY_PHONE?.trim();
+    const contact = financePhone ? `${financeEmail} - ${financePhone}` : financeEmail;
     page.drawText(contact, { x: width - 48 - font.widthOfTextAtSize(contact, 8), y: 20, size: 8, font, color: rgb(1, 1, 1) });
 
     return doc.save();

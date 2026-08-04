@@ -84,7 +84,7 @@
 | Passenger CRUD + bulk | ✅ Complete | — |
 | Passport OCR intake into group | 🟡 Partial | Works; review gated (S1-01); agent submit/poll JWT; vault live (S1-06) |
 | Excel passenger import | ⚫ Deprecated / 🔴 Missing | `xlsx` removed; UI may still hint; no API |
-| Group detail service tabs (hotel/transport/…) | 🟡 Partial | Create flows in Services module; detail tabs ComingSoon |
+| Group detail service tabs (hotel/transport/…) | 🟢 Wired | Detail tabs use `/services/*`, `/vouchers`, staff `/audit-logs`; see `UI_05_GROUP_PASSENGER.md` |
 | Flight info service UI | ⚪ Planned Only | `FlightComingSoon` in AgentPortalServices |
 | Visa/hotel/transport/catering/additional APIs | ✅ Complete | — |
 | Supplier accept/reject + voucher PDF | ✅ Complete | — |

@@ -378,7 +378,7 @@ function OpsDash() {
       }
       side={
         <DCard title="Pending Action Queue" color="#DC4E2A">
-          <EmptyState tone="light" title="Coming soon" hint="A prioritized action queue needs a backend task feed (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>
       }
       widgets={[
@@ -388,7 +388,7 @@ function OpsDash() {
             : deptData.map(([n,v]) => <MBar key={n as string} label={n as string} value={v as number} max={deptMax} color="#DC4E2A" fmt={v=>`${v} tasks`} />)}
         </DCard>,
         <DCard title="Today's Flight Schedule" color="#DC4E2A">
-          <EmptyState tone="light" title="Coming soon" hint="Today's flight schedule will surface once flight records are populated (see the Arrival/Departure boards for live flights)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="Visa Pipeline Backlog" sub="Mutamer states · drill to Visa Desk" action="Visa Desk" color={VISA_C}>
           {visa.loading ? <LoadingSkeleton tone="light" rows={4} /> :
@@ -603,13 +603,13 @@ function FinanceDash() {
       }
       widgets={[
         <DCard title="Revenue by Category" color="#16A34A">
-          <EmptyState tone="light" title="Coming soon" hint="Revenue-by-service breakdown needs a categorised revenue aggregation (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="AP Aging" color="#16A34A">
-          <EmptyState tone="light" title="Coming soon" hint="Accounts-payable aging needs a supplier-payables aggregation (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="Recent Transactions" color="#16A34A">
-          <EmptyState tone="light" title="Coming soon" hint="A recent-transactions feed needs a ledger endpoint (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
       ]}
     />
@@ -688,18 +688,18 @@ function DispatchDash() {
       }
       side={
         <DCard title="Driver Status" color="#EA580C">
-          <EmptyState tone="light" title="Coming soon" hint="Driver status needs a live driver roster (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>
       }
       widgets={[
         <DCard title="Vehicle Utilization" color="#EA580C">
-          <EmptyState tone="light" title="Coming soon" hint="Vehicle utilization needs a fleet-usage aggregation (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="SLA Compliance — Today" color="#EA580C">
-          <EmptyState tone="light" title="Coming soon" hint="SLA compliance needs a dispatch-SLA aggregation (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="Route Performance" color="#EA580C">
-          <EmptyState tone="light" title="Coming soon" hint="Route performance needs a route-timing aggregation (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
       ]}
     />
@@ -786,18 +786,18 @@ function ArrivalDash() {
       }
       side={
         <DCard title="Ground Services Queue" color={DASH}>
-          <EmptyState tone="light" title="Coming soon" hint="Ground-services queue needs a backend feed (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>
       }
       widgets={[
         <DCard title="Immigration Queue" color={DASH}>
-          <EmptyState tone="light" title="Coming soon" hint="Immigration queue needs a backend feed (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="Bus Assignments" color={DASH}>
-          <EmptyState tone="light" title="Coming soon" hint="Bus assignments need a dispatch-assignment feed (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="Today's Summary" color={DASH}>
-          <EmptyState tone="light" title="Coming soon" hint="This summary needs a backend aggregation (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
       ]}
     />
@@ -880,18 +880,18 @@ function DepartureDash() {
       }
       side={
         <DCard title="Departure Actions Queue" color={DASH}>
-          <EmptyState tone="light" title="Coming soon" hint="Departure actions queue needs a backend feed (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>
       }
       widgets={[
         <DCard title="Baggage Status" color={DASH}>
-          <EmptyState tone="light" title="Coming soon" hint="Baggage status needs a backend feed (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="Gate Information" color={DASH}>
-          <EmptyState tone="light" title="Coming soon" hint="Gate information needs a backend feed (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="Today's Summary" color={DASH}>
-          <EmptyState tone="light" title="Coming soon" hint="This summary needs a backend aggregation (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
       ]}
     />
@@ -952,7 +952,7 @@ function AgentDash() {
       }
       side={
         <DCard title="Recent Activity" color={AGT_C}>
-          <EmptyState tone="light" title="Coming soon" hint="An agent activity feed needs a backend event stream (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>
       }
       widgets={[
@@ -1018,23 +1018,23 @@ function SupplierDash() {
       ]}
       main={
         <DCard title="Booking Forecast — Aug–Nov 2025" color={SUP_C}>
-          <EmptyState tone="light" title="Coming soon" hint="Booking forecast needs a supplier-forecast aggregation (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>
       }
       side={
         <DCard title="Booking Acceptance Queue" color={SUP_C}>
-          <EmptyState tone="light" title="Coming soon" hint="Acceptance queue needs a supplier-booking feed (not yet available)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>
       }
       widgets={[
         <DCard title="Upcoming Services" color={SUP_C}>
-          <EmptyState tone="light" title="Coming soon" hint="Upcoming services need a supplier-schedule aggregation (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="Payment Schedule" color={SUP_C}>
-          <EmptyState tone="light" title="Coming soon" hint="Payment schedule needs a supplier-payables aggregation (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="Performance Metrics" color={SUP_C}>
-          <EmptyState tone="light" title="Coming soon" hint="Performance metrics need a supplier-scoring aggregation (not yet on the backend)." />
+          <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
       ]}
     />

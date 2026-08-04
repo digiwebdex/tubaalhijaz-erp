@@ -2,9 +2,9 @@ import { useState, useEffect, useMemo, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Navigate, useSearchParams } from "react-router";
 import { api, ApiError, isLoggedIn, getStoredUser } from "../lib/api";
-import { filterNavByPerms, hasAnyPermission, SA_NAV_PERMS } from "../lib/rbac";
+import { filterNavByPerms, hasAnyPermission, hasPermission, SA_NAV_PERMS } from "../lib/rbac";
 import {
-  LayoutDashboard, Building2, Users, Settings, Shield,
+  LayoutDashboard, Building2, Users, Shield,
   TrendingUp, ArrowUp, ArrowDown, CheckCircle, AlertCircle, XCircle, Clock,
   MoreHorizontal, Eye, Trash2, Plus, Filter,
   RefreshCw, Check, X, FileText, Wallet, Building,
@@ -64,12 +64,12 @@ const SA_NAV: NavItem[] = [
   { id: "dashboard", label: "Dashboard",          labelBn: "ড্যাশবোর্ড",           icon: LayoutDashboard as IconFC },
   { id: "companies", label: "Company Management", labelBn: "কোম্পানি ব্যবস্থাপনা", icon: Building2 as IconFC },
   { id: "users",     label: "Users & Roles",      labelBn: "ব্যবহারকারী ও রোল",   icon: Users as IconFC },
-  { id: "settings",  label: "System Settings",    labelBn: "সিস্টেম সেটিংস",       icon: Settings as IconFC },
+  // settings reachable via ?tab=settings — honest empty state (no production settings API UI yet)
 ];
 
 /** Still reachable via Advanced Tools / ?tab= — not top-level nav. */
 const SA_ADVANCED_IDS = new Set([
-  "workflows", "automation", "ai-engine", "ocr", "notifications", "audit",
+  "settings", "workflows", "automation", "ai-engine", "ocr", "notifications", "audit",
 ]);
 
 // ─── Reusable helpers ────────────────────────────────────────────────────────
@@ -236,8 +236,8 @@ function DashboardScreen() {
     setLoading(true);
     setError("");
     Promise.all([
-      api.get<ApiCompanyListItem[]>("/companies"),
-      api.get<{ id: string }[]>("/users"),
+      hasPermission("APPROVE_COMPANIES") ? api.get<ApiCompanyListItem[]>("/companies") : Promise.resolve([] as ApiCompanyListItem[]),
+      hasPermission("MANAGE_USERS") ? api.get<{ id: string }[]>("/users") : Promise.resolve([] as { id: string }[]),
     ])
       .then(([c, u]) => { setCompanies(c); setUserCount(u.length); })
       .catch((e) => { setCompanies(null); setUserCount(null); setError(failMessage(e, "Could not load the overview")); })
@@ -1230,21 +1230,22 @@ function UserRoleScreen() {
 function SAComingSoon({ label }: { label: string }) {
   return (
     <div className="p-7">
-      <div className="rounded-2xl p-10 text-center" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
-        <div className="text-sm font-bold" style={{ color: NAVY }}>{label} — coming soon</div>
-        <div className="text-xs mt-1" style={{ color: "rgba(11,30,63,0.58)" }}>This console is not part of the current release yet.</div>
-      </div>
+      <EmptyState
+        tone="light"
+        title={label}
+        hint="এই মডিউল এখনও কনফিগার করা হয়নি।"
+      />
     </div>
   );
 }
-function WorkflowScreen() { return <SAComingSoon label="Workflow Engine" />; }
+function WorkflowScreen() { return <SAComingSoon label="ওয়ার্কফ্লো ইঞ্জিন" />; }
 /** S2-05: land on the dedicated Automation Admin module (do not nest ERPShell). */
 function AutomationScreen() { return <Navigate to="/automation" replace />; }
-function AIEngineScreen() { return <SAComingSoon label="AI Engine" />; }
+function AIEngineScreen() { return <SAComingSoon label="এআই ইঞ্জিন" />; }
 /** UI-02 — Advanced Tools OCR opens the live OCR Center route. */
 function OCRCenterScreen() { return <Navigate to="/ocr-center" replace />; }
 function NotifCenterScreen() { return <Navigate to="/automation?tab=notifications" replace />; }
-function SystemSettingsScreen() { return <SAComingSoon label="System Settings" />; }
+function SystemSettingsScreen() { return <SAComingSoon label="সিস্টেম সেটিংস" />; }
 
 // ── Audit Logs (S2-01) — read-only list over GET /audit-logs ─────────────────
 

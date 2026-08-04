@@ -140,6 +140,7 @@ async function main() {
     ["MANAGE_SYSTEM_SETTINGS", "Manage System Settings", "সিস্টেম সেটিংস ব্যবস্থাপনা"],
     ["API_KEY_ACCESS", "API Key Access", "এপিআই কী অ্যাক্সেস"],
     ["MANAGE_FLEET", "Manage Fleet", "ফ্লিট ব্যবস্থাপনা"],
+    ["MANAGE_OPS", "Manage Operations", "অপারেশন ব্যবস্থাপনা"],
   ] as const;
   const perms: Record<string, string> = {};
   for (const [key, name, nameBn] of PERMS) {
@@ -151,7 +152,7 @@ async function main() {
   // DB data so Super Admin's "User & Role Management" can edit it dynamically.
   const ROLES: Array<[string, string, string, string[]]> = [
     ["SUPER_ADMIN", "Super Admin", "সুপার অ্যাডমিন", PERMS.map((p) => p[0])],
-    ["OPS_STAFF", "Operations Staff", "অপারেশন কর্মী", ["VIEW_DASHBOARD", "APPROVE_COMPANIES", "CONFIGURE_WORKFLOWS", "REVIEW_OCR_QUEUE"]],
+    ["OPS_STAFF", "Operations Staff", "অপারেশন কর্মী", ["VIEW_DASHBOARD", "APPROVE_COMPANIES", "CONFIGURE_WORKFLOWS", "REVIEW_OCR_QUEUE", "MANAGE_OPS"]],
     ["FINANCE_STAFF", "Finance Staff", "অর্থ কর্মী", ["VIEW_DASHBOARD", "FINANCIAL_REPORTS", "EDIT_FINANCIAL_RECORDS", "ACCESS_AUDIT_LOGS"]],
     ["FLEET_STAFF", "Fleet Staff", "ফ্লিট কর্মী", ["VIEW_DASHBOARD", "MANAGE_FLEET"]],
     ["CEO_VIEWER", "CEO Viewer", "সিইও ভিউয়ার", ["VIEW_DASHBOARD", "FINANCIAL_REPORTS", "ACCESS_AUDIT_LOGS"]],

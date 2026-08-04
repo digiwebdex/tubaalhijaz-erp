@@ -424,7 +424,7 @@ function DashboardScreen({ onGo }: { onGo: (s: FinScreen) => void }) {
   ];
 
   if (!d) {
-    return (
+  return (
       <div className="p-7" style={{ fontFamily: fontFor(lang) }}>
         <Gate loading={loading} error={error} onRetry={refetch} rows={6} />
       </div>
@@ -470,13 +470,13 @@ function DashboardScreen({ onGo }: { onGo: (s: FinScreen) => void }) {
               <ErpButton size="sm" variant="outline" icon={<BookOpen size={14} />} onClick={() => onGo("income")}>
                 {lang === "bn" ? "ভাউচার" : "Voucher"}
               </ErpButton>
-            </div>
+          </div>
             <p className="text-[10px]" style={{ color: "rgba(11,30,63,0.45)" }}>
               {lang === "bn"
                 ? "আজকের কালেকশন/পেমেন্ট API-তে নেই — YTD রাজস্ব ও বিদ্যমান কেপিআই দেখানো হয়েছে।"
                 : "Today’s collection/payment are not on the API — showing YTD revenue and existing KPIs."}
             </p>
-          </div>
+        </div>
         }
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
@@ -484,19 +484,19 @@ function DashboardScreen({ onGo }: { onGo: (s: FinScreen) => void }) {
             <div className="text-xs font-bold text-[#0B1E3F] mb-3">{lang === "bn" ? "AR এজিং" : "AR Aging"}</div>
             {([["0–30", "#16A34A", d.arAging.cur], ["31–60", "#B45309", d.arAging.d30], ["61–90", "#FB923C", d.arAging.d60], ["90+", "#DC2626", d.arAging.d90]] as const).map(([l, c, v]) => {
               const pct = arTotal > 0 ? Math.round((v / arTotal) * 100) : 0;
-              return (
+            return (
                 <div key={l} className="mb-2">
                   <div className="flex justify-between text-[11px] mb-1">
                     <span style={{ color: "rgba(11,30,63,0.66)" }}>{l}</span>
                     <span className="font-mono font-bold" style={{ color: c }}>{fmtMoney(v)}</span>
-                  </div>
+                </div>
                   <div className="h-1.5 rounded-full" style={{ backgroundColor: "#EEF1F6" }}>
                     <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: c }} />
                   </div>
-                </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
+        </div>
           <div>
             <div className="text-xs font-bold text-[#0B1E3F] mb-2">{lang === "bn" ? "সাম্প্রতিক লেনদেন" : "Recent Transactions"}</div>
             <ErpDataTable
@@ -514,8 +514,8 @@ function DashboardScreen({ onGo }: { onGo: (s: FinScreen) => void }) {
                 </ErpButton>
               }
             />
-          </div>
-        </div>
+                </div>
+              </div>
         {!demo && (
           <SampleDataBanner tone="light" detail={lang === "bn" ? "মাসিক ক্যাশ চার্ট লাইভ নয়।" : "Monthly cash chart is not connected to live data."} />
         )}
@@ -606,10 +606,10 @@ function IncExpScreen({ type }: { type:"income"|"expenses" }) {
   ];
 
   if (error && !demo) {
-    return (
+  return (
       <div className="p-7" style={{ fontFamily: fontFor(lang) }}>
         <ErrorState tone="light" lang={lang} onRetry={refresh} />
-      </div>
+          </div>
     );
   }
 
@@ -641,9 +641,9 @@ function IncExpScreen({ type }: { type:"income"|"expenses" }) {
                     {st === "all" ? (lang === "bn" ? "সব" : "All") : st}
                   </ErpButton>
                 ))}
-              </div>
-            </ErpFilterPanel>
           </div>
+            </ErpFilterPanel>
+        </div>
         }
         footer={<ErpPagination page={safePage} pageSize={PAGE} total={filtered.length} onPageChange={setPage} lang={lang} />}
       >
@@ -739,8 +739,8 @@ function IncExpScreen({ type }: { type:"income"|"expenses" }) {
               <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
                 <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
                 <dd className="font-semibold text-[#0B1E3F]">{v}</dd>
-              </div>
-            ))}
+                </div>
+              ))}
           </dl>
         )}
       </ErpDrawer>
@@ -998,8 +998,8 @@ function ARAPScreen({ type }: { type: "ar" | "ap" }) {
           <div className="flex flex-col gap-3 w-full">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {buckets.map(([l, c, k]) => {
-                const v = sum(k);
-                return (
+            const v = sum(k);
+            return (
                   <button
                     key={k}
                     type="button"
@@ -1013,9 +1013,9 @@ function ARAPScreen({ type }: { type: "ar" | "ap" }) {
                     <div className="text-sm font-bold tabular-nums" style={{ color: c, fontFamily: "var(--font-mono)" }}>{pctOf(v)}%</div>
                     <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.55)" }}>{l} · {fmtMoney(v)}</div>
                   </button>
-                );
-              })}
-            </div>
+            );
+          })}
+        </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full">
               <div className="flex-1">
                 <ErpSearchBar
@@ -1025,7 +1025,7 @@ function ARAPScreen({ type }: { type: "ar" | "ap" }) {
                   onClear={() => setQ("")}
                   placeholder={lang === "bn" ? "পক্ষ খুঁজুন…" : "Search party…"}
                 />
-              </div>
+        </div>
               <ErpFilterPanel open={filtersOpen} onOpenChange={setFiltersOpen} lang={lang} activeCount={bucket === "all" ? 0 : 1}>
                 <div className="flex flex-wrap gap-2">
                   <ErpButton size="sm" variant={bucket === "all" ? "primary" : "outline"} onClick={() => { setBucket("all"); setPage(1); }}>
@@ -1036,7 +1036,7 @@ function ARAPScreen({ type }: { type: "ar" | "ap" }) {
                       {l}
                     </ErpButton>
                   ))}
-                </div>
+      </div>
               </ErpFilterPanel>
             </div>
           </div>
@@ -1076,7 +1076,7 @@ function ARAPScreen({ type }: { type: "ar" | "ap" }) {
               <div key={k} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
                 <dt style={{ color: "rgba(11,30,63,0.50)" }}>{l}</dt>
                 <dd className="font-mono font-bold" style={{ color: c }}>SAR {(sel[k] as number).toLocaleString()}</dd>
-              </div>
+      </div>
             ))}
             <div className="flex justify-between gap-3 pt-2 font-bold">
               <dt>{lang === "bn" ? "মোট" : "Total"}</dt>
@@ -1157,13 +1157,13 @@ function CashBankScreen() {
                     <div className="flex items-center gap-2 mb-1">
                       <Building size={14} style={{ color: FIN }} />
                       <ErpStatusChip status="approved" label="ACTIVE" lang={lang} />
-                    </div>
+      </div>
                     <div className="text-sm font-bold tabular-nums" style={{ color: FIN, fontFamily: "var(--font-mono)" }}>{fmtMoney(b.balance)}</div>
                     <div className="text-[11px] font-semibold text-[#0B1E3F] truncate" title={b.name}>{b.name}</div>
                     <div className="text-[10px] truncate" style={{ color: "rgba(11,30,63,0.50)" }}>{b.acct}</div>
-                  </div>
+            </div>
                 ))}
-              </div>
+          </div>
             )}
             <div className="flex flex-col sm:flex-row gap-3 w-full">
               <div className="flex-1">
@@ -1181,8 +1181,8 @@ function CashBankScreen() {
                     <ErpButton key={st} size="sm" variant={typeFilter === st ? "primary" : "outline"} onClick={() => { setTypeFilter(st); setPage(1); }}>
                       {st === "all" ? (lang === "bn" ? "সব" : "All") : st === "cr" ? "CREDIT" : "DEBIT"}
                     </ErpButton>
-                  ))}
-                </div>
+        ))}
+      </div>
               </ErpFilterPanel>
             </div>
           </div>
@@ -1224,7 +1224,7 @@ function CashBankScreen() {
               <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
                 <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
                 <dd className="font-semibold text-[#0B1E3F] text-right">{v}</dd>
-              </div>
+        </div>
             ))}
           </dl>
         )}
@@ -1486,14 +1486,14 @@ function InvoicesScreen() {
             <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)} disabled={demo}>
               {lang === "bn" ? "নতুন ইনভয়েস" : "New Invoice"}
             </ErpButton>
-          </div>
+        </div>
         }
         toolbar={
           <div className="flex flex-col sm:flex-row gap-3 w-full">
             <div className="flex-1">
               <ErpSearchBar lang={lang} value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} onClear={() => setQ("")}
                 placeholder={lang === "bn" ? "ইনভয়েস, পক্ষ বা গ্রুপ…" : "Invoice, party, or group…"} />
-            </div>
+              </div>
             <ErpFilterPanel open={filtersOpen} onOpenChange={setFiltersOpen} lang={lang} activeCount={statusFilter === "all" ? 0 : 1}>
               <div className="flex flex-wrap gap-2">
                 {["all", "OUTSTANDING", "PAID", "OVERDUE", "DRAFT"].map((st) => (
@@ -1501,9 +1501,9 @@ function InvoicesScreen() {
                     {st === "all" ? (lang === "bn" ? "সব" : "All") : st}
                   </ErpButton>
                 ))}
-              </div>
+        </div>
             </ErpFilterPanel>
-          </div>
+      </div>
         }
         footer={<ErpPagination page={safePage} pageSize={PAGE} total={filtered.length} onPageChange={setPage} lang={lang} />}
       >
@@ -1589,7 +1589,7 @@ function InvoicesScreen() {
             <ErpButton variant="primary" icon={<CheckCircle size={14} />} disabled={busy !== null} onClick={() => void markPaid()}>
               {lang === "bn" ? "পেইড চিহ্নিত" : "Mark Paid"}
             </ErpButton>
-          </div>
+            </div>
         }
       >
         {sel && (
@@ -1605,27 +1605,27 @@ function InvoicesScreen() {
                 <div>
                   <div className="text-[9px] font-black uppercase text-gray-400 mb-1">Bill From</div>
                   <div className="text-sm font-black">TUBA AL HIJAZ</div>
-                </div>
-              </div>
-              <DocTable
+            </div>
+          </div>
+          <DocTable
                 cols={["Description", "Qty", "Unit", "Total"]}
                 rows={sel.items.map((it) => [
-                  <span key="d">{it.desc}</span>,
+              <span key="d">{it.desc}</span>,
                   <span key="q" style={{ fontFamily: "var(--font-mono)" }}>{it.qty}</span>,
                   <span key="u" style={{ fontFamily: "var(--font-mono)" }}>SAR {it.unit.toLocaleString()}</span>,
                   <span key="t" style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>SAR {it.total.toLocaleString()}</span>,
-                ])}
-              />
+            ])}
+          />
               <div className="flex justify-end mt-2">
                 <div className="w-56 space-y-1 text-xs">
                   <div className="flex justify-between"><span>Subtotal</span><span className="font-mono">{fmtMoney(sel.subtotal)}</span></div>
                   <div className="flex justify-between"><span>VAT</span><span className="font-mono">{fmtMoney(sel.vat)}</span></div>
                   <div className="flex justify-between font-bold" style={{ color: FIN }}><span>Total</span><span className="font-mono">{fmtMoney(sel.total)}</span></div>
                 </div>
-              </div>
-            </FinDoc>
-            <ErpStatusChip status={finStatusKind(sel.status)} label={sel.status} lang={lang} />
           </div>
+        </FinDoc>
+            <ErpStatusChip status={finStatusKind(sel.status)} label={sel.status} lang={lang} />
+        </div>
         )}
       </ErpDrawer>
     </div>
@@ -1687,7 +1687,7 @@ function ReceiptsScreen() {
             <div className="flex-1">
               <ErpSearchBar lang={lang} value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} onClear={() => setQ("")}
                 placeholder={lang === "bn" ? "রসিদ, পক্ষ বা ব্যাংক রেফ…" : "Receipt, party, or bank ref…"} />
-            </div>
+              </div>
             <ErpFilterPanel open={filtersOpen} onOpenChange={setFiltersOpen} lang={lang} activeCount={statusFilter === "all" ? 0 : 1}>
               <div className="flex flex-wrap gap-2">
                 {["all", "CONFIRMED", "PENDING"].map((st) => (
@@ -1695,9 +1695,9 @@ function ReceiptsScreen() {
                     {st === "all" ? (lang === "bn" ? "সব" : "All") : st}
                   </ErpButton>
                 ))}
-              </div>
+        </div>
             </ErpFilterPanel>
-          </div>
+      </div>
         }
         footer={<ErpPagination page={safePage} pageSize={PAGE} total={filtered.length} onPageChange={setPage} lang={lang} />}
       >
@@ -1746,11 +1746,11 @@ function ReceiptsScreen() {
                 <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
                   <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
                   <dd className="font-semibold text-[#0B1E3F] text-right">{v}</dd>
-                </div>
-              ))}
+            </div>
+          ))}
             </dl>
             <div className="mt-3"><ErpStatusChip status={finStatusKind(sel.status)} label={sel.status} lang={lang} /></div>
-          </FinDoc>
+        </FinDoc>
         )}
       </ErpDrawer>
     </div>
