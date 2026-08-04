@@ -42,7 +42,7 @@ const NAVY  = "#0B1E3F";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type GroupView  = "list" | "wizard" | "detail";
-type DetailTab  = "passengers" | "flights" | "hotel" | "transport" | "catering" | "documents" | "timeline";
+type DetailTab  = "foundation" | "passengers" | "flights" | "hotel" | "transport" | "catering" | "documents" | "timeline";
 type OcrState   = "idle" | "scanning" | "done";
 type ImportStep = 0 | 1 | 2 | 3;
 
@@ -424,7 +424,7 @@ function GroupFlightsTab({
             rowKey={(f) => f.id}
             loading={loading}
             lang={lang}
-            emptyTitle={lang === "bn" ? "কোনো ফ্লাইট নেই" : "No flights assigned"}
+            emptyTitle={lang === "bn" ? "কোনো ফ্লাইট নেই" : "No flights added yet."}
             emptyHint={lang === "bn" ? "অপস ফ্লাইট অ্যাসাইন করলে এখানে দেখা যাবে। এজেন্ট তৈরি API নেই।" : "Flights appear when ops assigns them. No agent create API."}
           />
         )}
@@ -2710,7 +2710,7 @@ function GroupFoundationPanel({
 
 function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => void }) {
   const { lang } = useLang();
-  const [tab, setTab] = useState<DetailTab>("passengers");
+  const [tab, setTab] = useState<DetailTab>("foundation");
   const authed = isLoggedIn();
   // Only real (API-backed) groups have a uuid to fetch; the demo rows do not.
   const live = authed && !!group.apiId;
@@ -2777,6 +2777,7 @@ function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => voi
     : { v: group.visa, h: group.hotel, t: group.transport, c: group.catering };
 
   const TABS: { id: DetailTab; label: string; icon: typeof FileCheck }[] = [
+    { id: "foundation", label: "Foundation", icon: FileCheck },
     { id: "passengers", label: "Passengers", icon: Users },
     { id: "flights",    label: "Flights",    icon: Plane },
     { id: "hotel",      label: "Hotel",      icon: Building },
@@ -2858,8 +2859,10 @@ function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => voi
 
       {/* Tab content (scrollable) */}
       <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(11,30,63,0.38) transparent" }}>
-        {live && (
-          <GroupFoundationPanel groupId={group.apiId!} detail={detail} onSaved={refresh} />
+        {tab === "foundation" && (
+          live
+            ? <GroupFoundationPanel groupId={group.apiId!} detail={detail} onSaved={refresh} />
+            : <ModuleNotConfigured title="Foundation" />
         )}
         {tab === "passengers" && <PassengersTab group={group} onChanged={refresh} />}
 
