@@ -118,30 +118,37 @@ export class OpsController {
   @Get("arrivals") arrivals(@Query("date") date?: string) { return this.ops.board("ARRIVAL", date); }
   @Get("departures") departures(@Query("date") date?: string) { return this.ops.board("DEPARTURE", date); }
 
+  @RequirePermissions("MANAGE_OPS")
   @Patch("flights/:id/status")
   flightStatus(@Param("id") id: string, @Body() dto: FlightStatusDto, @CurrentUser() u: AuthUser) {
     return this.ops.setFlightStatus(id, dto.status, u);
   }
 
   @Get("dispatches") dispatches(@Query("status") status?: string) { return this.ops.dispatches(status); }
+  @RequirePermissions("MANAGE_OPS")
   @Post("dispatches") createDispatch(@Body() dto: CreateDispatchDto, @CurrentUser() u: AuthUser) { return this.ops.createDispatch(dto, u); }
+  @RequirePermissions("MANAGE_OPS")
   @Patch("dispatches/:id/status")
   dispatchStatus(@Param("id") id: string, @Body() dto: DispatchStatusDto, @CurrentUser() u: AuthUser) {
     return this.ops.setDispatchStatus(id, dto.status, dto.note, u);
   }
+  @RequirePermissions("MANAGE_OPS")
   @Post("dispatches/:id/flag-delayed")
   flagDelayed(@Param("id") id: string, @Body() dto: FlagDelayedDto, @CurrentUser() u: AuthUser) {
     return this.ops.flagDelayed(id, dto.note, u);
   }
 
   @Get("meet-assist/:flightInfoId") meetAssist(@Param("flightInfoId") id: string) { return this.ops.meetAssist(id); }
+  @RequirePermissions("MANAGE_OPS")
   @Patch("meet-assist/:flightInfoId/step")
   toggleStep(@Param("flightInfoId") id: string, @Body() dto: MaStepDto, @CurrentUser() u: AuthUser) {
     return this.ops.toggleMeetAssist(id, dto.stepNo, dto.done, u);
   }
 
   @Get("ziyarah") ziyarah(@Query("status") status?: string) { return this.ops.ziyarah(status); }
+  @RequirePermissions("MANAGE_OPS")
   @Post("ziyarah") createZiyarah(@Body() dto: CreateZiyarahDto, @CurrentUser() u: AuthUser) { return this.ops.createZiyarah(dto, u); }
+  @RequirePermissions("MANAGE_OPS")
   @Patch("ziyarah/:id/status") ziyarahStatus(@Param("id") id: string, @Body() dto: ZiyarahStatusDto, @CurrentUser() u: AuthUser) { return this.ops.setZiyarahStatus(id, dto.status, u); }
 
   /** `day85` filters the compliance board (stage name or `red`) — read-only (T002-08). */
@@ -149,10 +156,14 @@ export class OpsController {
   longStays(@Query("status") status?: string, @Query("day85") day85?: string) {
     return this.ops.longStays(status, day85);
   }
+  @RequirePermissions("MANAGE_OPS")
   @Post("long-stays") createLongStay(@Body() dto: CreateLongStayDto, @CurrentUser() u: AuthUser) { return this.ops.createLongStay(dto, u); }
+  @RequirePermissions("MANAGE_OPS")
   @Patch("long-stays/:id") updateLongStay(@Param("id") id: string, @Body() dto: UpdateLongStayDto, @CurrentUser() u: AuthUser) { return this.ops.updateLongStay(id, dto, u); }
 
   @Get("brns") brns(@Query("status") status?: string) { return this.ops.brns(status); }
+  @RequirePermissions("MANAGE_OPS")
   @Post("brns") createBrn(@Body() dto: CreateBrnDto, @CurrentUser() u: AuthUser) { return this.ops.createBrn(dto, u); }
+  @RequirePermissions("MANAGE_OPS")
   @Patch("brns/:id/status") brnStatus(@Param("id") id: string, @Body() dto: BrnStatusDto, @CurrentUser() u: AuthUser) { return this.ops.setBrnStatus(id, dto.status, u); }
 }

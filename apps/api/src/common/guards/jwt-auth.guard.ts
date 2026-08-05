@@ -4,6 +4,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
 import { AuthUser } from "../decorators/current-user.decorator";
 import { tenantContext } from "../tenant-context";
+import { auditContext } from "../audit-context";
 
 /**
  * Global JWT guard. Routes marked @Public() skip authentication.
@@ -48,6 +49,13 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
       store.roleKey = user.role;
       store.companyId = user.companyId;
       store.companyType = user.companyType;
+    }
+    const astore = auditContext.getStore();
+    if (user && astore) {
+      astore.actualUserId = user.impersonatorSub ?? user.sub;
+      astore.actingAsUserId = user.impersonatorSub ? user.sub : null;
+      astore.actorLabel = user.impersonatorSub ? `${user.impersonatorEmail ?? "admin"} on behalf of ${user.email}` : null;
+      if (user.impersonationSessionId) { astore.sessionId = user.impersonationSessionId; astore.correlationId = user.impersonationSessionId; }
     }
   }
 }

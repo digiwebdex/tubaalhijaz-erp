@@ -17,7 +17,8 @@ import {
 } from "../components/erp";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
-import { api, ApiError, isLoggedIn } from "../lib/api";
+import { api, ApiError, getStoredUser, isLoggedIn } from "../lib/api";
+import { hasPermission, isPlatformStaff, P } from "../lib/rbac";
 import {
   GATE_LABELS,
   PKG_LABEL as PKG_LABEL_FOUNDATION,
@@ -41,7 +42,7 @@ const NAVY  = "#0B1E3F";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type GroupView  = "list" | "wizard" | "detail";
-type DetailTab  = "passengers" | "flights" | "hotel" | "transport" | "catering" | "documents" | "timeline";
+type DetailTab  = "foundation" | "passengers" | "flights" | "hotel" | "transport" | "catering" | "documents" | "timeline";
 type OcrState   = "idle" | "scanning" | "done";
 type ImportStep = 0 | 1 | 2 | 3;
 
@@ -104,7 +105,7 @@ interface ApiGroup {
   gatePackage?: boolean;
   gatePayment?: boolean;
   gateBill?: boolean;
-  tenant?: { code: string; name: string } | null;
+  tenant?: { id?: string; code: string; name: string; nameBn?: string | null } | null;
   season?: { code: string; hijriYear: number } | null;
   workflowStage?: { id: number; labelEn: string; labelBn: string } | null;
   _count?: { passengers: number } | null;
@@ -298,12 +299,662 @@ function THead({ cols }: { cols: string[] }) {
   );
 }
 
-// ─── Shared coming-soon panel (for out-of-Module-2 detail tabs) ───────────────
-
-function ComingSoonPanel({ title, hint }: { title: string; hint: string }) {
+/** Visible tab with no inventable API — no fake actions. */
+function ModuleNotConfigured({ title }: { title?: string }) {
+  const { lang } = useLang();
   return (
-    <div className="p-7">
-      <EmptyState tone="light" title={title} hint={hint} icon={<Clock size={30} style={{ color: "rgba(11,30,63,0.35)" }} />} />
+    <div className="p-7" style={{ fontFamily: fontFor(lang) }}>
+      <EmptyState
+        tone="light"
+        title={title ?? (lang === "bn" ? "মডিউল প্রস্তুত নয়" : "Module not ready")}
+        hint="এই মডিউল এখনও কনফিগার করা হয়নি।"
+        icon={<AlertCircle size={30} style={{ color: "rgba(11,30,63,0.35)" }} />}
+      />
+    </div>
+  );
+}
+
+// ─── Group detail service bookings (existing /services/* APIs) ────────────────
+
+interface SvcRow {
+  id: string; code: string; status: string; createdAt: string;
+  hotel?: { name: string; stars: number } | null;
+  checkIn?: string; checkOut?: string; nights?: number;
+  doubleRooms?: number; tripleRooms?: number; singleRooms?: number; mealPlan?: string;
+  vehicleType?: string; vehicleCount?: number; departurePoint?: string; destination?: string;
+  departAt?: string; returnAt?: string | null;
+  halalCount?: number; vegetarianCount?: number; diabeticCount?: number;
+  voucher?: { id: string; code: string; fileId: string } | null;
+}
+
+interface HotelOpt { id: string; name: string; city: string; stars: number; available: boolean }
+
+interface VoucherRow {
+  id: string; code: string; type: string; status: string; issueDate: string; fileId: string | null;
+  group?: { code: string; name: string } | null;
+}
+
+interface AuditRow {
+  id: string; createdAt: string; action: string; module: string;
+  entityType: string; entityId: string; actorLabel?: string | null;
+  actorUser?: { name: string; email: string } | null;
+}
+
+function svcStatusKind(s: string): ErpStatusKind {
+  if (s === "COMPLETED" || s === "VOUCHER_ISSUED" || s === "CONFIRMED") return "approved";
+  if (s === "REJECTED" || s === "CANCELLED") return "rejected";
+  if (s === "ASSIGNED") return "info";
+  return "pending";
+}
+
+function GroupFlightsTab({
+  flights, loading, error, onRetry, live,
+}: {
+  flights: ApiFlightInfo[];
+  loading: boolean;
+  error: boolean;
+  onRetry: () => void;
+  live: boolean;
+}) {
+  const { lang } = useLang();
+  const [q, setQ] = useState("");
+  const [dir, setDir] = useState<"all" | "ARRIVAL" | "DEPARTURE">("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const PAGE = 20;
+
+  if (!live) {
+    return <ModuleNotConfigured title={lang === "bn" ? "ফ্লাইট" : "Flights"} />;
+  }
+
+  const filtered = flights.filter((f) => {
+    if (dir !== "all" && f.direction !== dir) return false;
+    const qq = q.trim().toLowerCase();
+    if (!qq) return true;
+    return [f.flightNo, f.airline, f.originAirport, f.destAirport, f.code, f.status]
+      .join(" ").toLowerCase().includes(qq);
+  });
+  const safePage = Math.min(page, Math.max(1, Math.ceil(filtered.length / PAGE)));
+  const pageRows = filtered.slice((safePage - 1) * PAGE, safePage * PAGE);
+
+  const columns: ErpColumn<ApiFlightInfo>[] = [
+    { id: "code", header: lang === "bn" ? "কোড" : "Code", cell: (f) => <span className="text-[11px] font-mono" style={{ color: AGENT }}>{f.code}</span> },
+    { id: "dir", header: lang === "bn" ? "ধরন" : "Dir", cell: (f) => f.direction === "ARRIVAL" ? (lang === "bn" ? "আগমন" : "Arrival") : (lang === "bn" ? "প্রস্থান" : "Departure") },
+    { id: "flight", header: lang === "bn" ? "ফ্লাইট" : "Flight", cell: (f) => <span className="text-xs font-semibold">{f.airline} · {f.flightNo}</span> },
+    { id: "route", header: lang === "bn" ? "রুট" : "Route", cell: (f) => <span className="text-[11px] font-mono">{f.originAirport} → {f.destAirport}</span> },
+    { id: "when", header: lang === "bn" ? "সময়" : "When", cell: (f) => <span className="text-[11px]">{fmtDate(f.scheduledAt)} · {fmtTime(f.scheduledAt)}</span> },
+    { id: "pax", header: "Pax", align: "center", cell: (f) => <span className="font-mono font-bold">{f.paxCount}</span> },
+    { id: "st", header: lang === "bn" ? "স্ট্যাটাস" : "Status", cell: (f) => <ErpStatusChip status={svcStatusKind(f.status)} label={f.status} lang={lang} /> },
+  ];
+
+  return (
+    <div className="p-4 md:p-5" style={{ fontFamily: fontFor(lang) }}>
+      <ErpPageTemplate
+        title={lang === "bn" ? "ফ্লাইট" : "Flights"}
+        subtitle={lang === "bn" ? "গ্রুপের অ্যাসাইন করা ফ্লাইট (পঠনযোগ্য)" : "Assigned flights for this group (read-only)"}
+        toolbar={
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
+            <div className="flex-1">
+              <ErpSearchBar lang={lang} value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} onClear={() => setQ("")}
+                placeholder={lang === "bn" ? "ফ্লাইট নম্বর বা এয়ারলাইন…" : "Flight no or airline…"} />
+            </div>
+            <ErpFilterPanel open={filtersOpen} onOpenChange={setFiltersOpen} lang={lang} activeCount={dir === "all" ? 0 : 1}>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  { id: "all" as const, bn: "সব", en: "All" },
+                  { id: "ARRIVAL" as const, bn: "আগমন", en: "Arrival" },
+                  { id: "DEPARTURE" as const, bn: "প্রস্থান", en: "Departure" },
+                ]).map((d) => (
+                  <ErpButton key={d.id} size="sm" variant={dir === d.id ? "primary" : "outline"} onClick={() => { setDir(d.id); setPage(1); }}>
+                    {lang === "bn" ? d.bn : d.en}
+                  </ErpButton>
+                ))}
+              </div>
+            </ErpFilterPanel>
+          </div>
+        }
+        footer={<ErpPagination page={safePage} pageSize={PAGE} total={filtered.length} onPageChange={setPage} lang={lang} />}
+      >
+        {error ? (
+          <ErrorState tone="light" lang={lang} onRetry={onRetry} />
+        ) : (
+          <ErpDataTable
+            columns={columns}
+            rows={loading ? [] : pageRows}
+            rowKey={(f) => f.id}
+            loading={loading}
+            lang={lang}
+            emptyTitle={lang === "bn" ? "কোনো ফ্লাইট নেই" : "No flights added yet."}
+            emptyHint={lang === "bn" ? "অপস ফ্লাইট অ্যাসাইন করলে এখানে দেখা যাবে। এজেন্ট তৈরি API নেই।" : "Flights appear when ops assigns them. No agent create API."}
+          />
+        )}
+      </ErpPageTemplate>
+    </div>
+  );
+}
+
+function GroupServiceTab({
+  groupId, service, titleBn, titleEn,
+}: {
+  groupId: string;
+  service: "hotel" | "transport" | "catering";
+  titleBn: string;
+  titleEn: string;
+}) {
+  const { lang } = useLang();
+  const [rows, setRows] = useState<SvcRow[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [showCreate, setShowCreate] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const PAGE = 20;
+
+  const load = () => {
+    if (!isLoggedIn() || !groupId) { setLoading(false); return; }
+    setLoading(true); setError(false);
+    api.get<SvcRow[]>(`/services/${service}?groupId=${encodeURIComponent(groupId)}`)
+      .then((r) => { setRows(r); setError(false); })
+      .catch(() => { setRows(null); setError(true); })
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    const t = setTimeout(load, 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupId, service]);
+
+  const list = rows ?? [];
+  const filtered = list.filter((r) => {
+    if (statusFilter !== "all" && r.status !== statusFilter) return false;
+    const qq = q.trim().toLowerCase();
+    if (!qq) return true;
+    return [r.code, r.status, r.hotel?.name, r.vehicleType, r.destination, r.mealPlan]
+      .filter(Boolean).join(" ").toLowerCase().includes(qq);
+  });
+  const safePage = Math.min(page, Math.max(1, Math.ceil(filtered.length / PAGE)));
+  const pageRows = filtered.slice((safePage - 1) * PAGE, safePage * PAGE);
+
+  const cancel = async (id: string) => {
+    setBusyId(id);
+    try {
+      await api.patch(`/services/${service}/${id}/status`, { status: "CANCELLED" });
+      erpToast.success(lang === "bn" ? "বাতিল হয়েছে" : "Cancelled", lang);
+      load();
+    } catch (e) {
+      erpToast.error(errMsg(e, lang === "bn" ? "বাতিল ব্যর্থ" : "Cancel failed"), lang);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const columns: ErpColumn<SvcRow>[] = [
+    { id: "code", header: lang === "bn" ? "কোড" : "Code", cell: (r) => <span className="text-[11px] font-mono" style={{ color: AGENT }}>{r.code}</span> },
+    {
+      id: "detail",
+      header: lang === "bn" ? "বিবরণ" : "Detail",
+      cell: (r) => {
+        if (service === "hotel") {
+          return <span className="text-xs">{r.hotel?.name ?? "—"} · {fmtDate(r.checkIn)} → {fmtDate(r.checkOut)}</span>;
+        }
+        if (service === "transport") {
+          return <span className="text-xs">{r.vehicleType} ×{r.vehicleCount} · {r.departurePoint} → {r.destination}</span>;
+        }
+        return <span className="text-xs">{r.mealPlan} · H{r.halalCount ?? 0}/V{r.vegetarianCount ?? 0}</span>;
+      },
+    },
+    { id: "st", header: lang === "bn" ? "স্ট্যাটাস" : "Status", cell: (r) => <ErpStatusChip status={svcStatusKind(r.status)} label={r.status} lang={lang} /> },
+    { id: "created", header: lang === "bn" ? "তৈরি" : "Created", cell: (r) => <span className="text-[11px]">{fmtDate(r.createdAt)}</span> },
+  ];
+
+  return (
+    <div className="p-4 md:p-5" style={{ fontFamily: fontFor(lang) }}>
+      <ErpPageTemplate
+        title={lang === "bn" ? titleBn : titleEn}
+        subtitle={lang === "bn" ? "বিদ্যমান সার্ভিস API" : "Existing services API"}
+        primaryAction={
+          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)} disabled={!groupId}>
+            {lang === "bn" ? "নতুন অনুরোধ" : "New request"}
+          </ErpButton>
+        }
+        toolbar={
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
+            <div className="flex-1">
+              <ErpSearchBar lang={lang} value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} onClear={() => setQ("")}
+                placeholder={lang === "bn" ? "কোড বা বিবরণ…" : "Code or detail…"} />
+            </div>
+            <ErpFilterPanel open={filtersOpen} onOpenChange={setFiltersOpen} lang={lang} activeCount={statusFilter === "all" ? 0 : 1}>
+              <div className="flex flex-wrap gap-2">
+                {["all", "REQUESTED", "ASSIGNED", "CONFIRMED", "VOUCHER_ISSUED", "COMPLETED", "CANCELLED"].map((st) => (
+                  <ErpButton key={st} size="sm" variant={statusFilter === st ? "primary" : "outline"} onClick={() => { setStatusFilter(st); setPage(1); }}>
+                    {st === "all" ? (lang === "bn" ? "সব" : "All") : st}
+                  </ErpButton>
+                ))}
+              </div>
+            </ErpFilterPanel>
+          </div>
+        }
+        footer={<ErpPagination page={safePage} pageSize={PAGE} total={filtered.length} onPageChange={setPage} lang={lang} />}
+      >
+        {error ? (
+          <ErrorState tone="light" lang={lang} onRetry={load} />
+        ) : (
+          <ErpDataTable
+            columns={columns}
+            rows={loading ? [] : pageRows}
+            rowKey={(r) => r.id}
+            loading={loading}
+            lang={lang}
+            emptyTitle={lang === "bn" ? "কোনো তথ্য পাওয়া যায়নি" : "No bookings yet"}
+            emptyHint={lang === "bn" ? "নতুন অনুরোধ দিয়ে শুরু করুন।" : "Submit a new request to get started."}
+            emptyAction={
+              <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowCreate(true)}>
+                {lang === "bn" ? "নতুন তৈরি করুন" : "Create new"}
+              </ErpButton>
+            }
+            rowActions={(r) => (
+              <ErpButton
+                size="sm"
+                variant="ghost"
+                disabled={busyId === r.id || r.status === "CANCELLED" || r.status === "COMPLETED"}
+                onClick={(e) => { e.stopPropagation(); void cancel(r.id); }}
+              >
+                {lang === "bn" ? "বাতিল" : "Cancel"}
+              </ErpButton>
+            )}
+          />
+        )}
+      </ErpPageTemplate>
+
+      {service === "hotel" && (
+        <HotelCreateDrawer groupId={groupId} open={showCreate} onClose={() => setShowCreate(false)} onCreated={load} />
+      )}
+      {service === "transport" && (
+        <TransportCreateDrawer groupId={groupId} open={showCreate} onClose={() => setShowCreate(false)} onCreated={load} />
+      )}
+      {service === "catering" && (
+        <CateringCreateDrawer groupId={groupId} open={showCreate} onClose={() => setShowCreate(false)} onCreated={load} />
+      )}
+    </div>
+  );
+}
+
+function HotelCreateDrawer({ groupId, open, onClose, onCreated }: {
+  groupId: string; open: boolean; onClose: () => void; onCreated: () => void;
+}) {
+  const { lang } = useLang();
+  const [hotels, setHotels] = useState<HotelOpt[]>([]);
+  const [hotelId, setHotelId] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [doubleRooms, setDoubleRooms] = useState("0");
+  const [tripleRooms, setTripleRooms] = useState("0");
+  const [mealPlan, setMealPlan] = useState("FULL_BOARD");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!open || !isLoggedIn()) return;
+    api.get<HotelOpt[]>("/hotels")
+      .then((hs) => {
+        setHotels(hs);
+        const first = hs.find((h) => h.available) ?? hs[0];
+        if (first) setHotelId(first.id);
+      })
+      .catch(() => setHotels([]));
+  }, [open]);
+
+  const submit = async () => {
+    if (!checkIn || !checkOut) {
+      erpToast.error(lang === "bn" ? "চেক-ইন/আউট দিন" : "Check-in and check-out required", lang);
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.post("/services/hotel", {
+        groupId,
+        ...(hotelId ? { hotelId } : {}),
+        checkIn, checkOut,
+        doubleRooms: parseInt(doubleRooms, 10) || 0,
+        tripleRooms: parseInt(tripleRooms, 10) || 0,
+        mealPlan,
+      });
+      erpToast.success(lang === "bn" ? "হোটেল অনুরোধ জমা" : "Hotel request submitted", lang);
+      onCreated();
+      onClose();
+    } catch (e) {
+      erpToast.error(errMsg(e, lang === "bn" ? "জমা ব্যর্থ" : "Submit failed"), lang);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <ErpDrawer open={open} onClose={onClose} title={lang === "bn" ? "হোটেল অনুরোধ" : "Hotel request"} lang={lang}
+      footer={<ErpDrawerFooterActions lang={lang} onCancel={onClose} onSave={submit} saving={busy} saveLabel={lang === "bn" ? "জমা দিন" : "Submit"} />}>
+      <ErpForm columns={2}>
+        <ErpFormRow span={2}>
+          <ErpField label={lang === "bn" ? "হোটেল" : "Hotel"}>
+            <ErpSelect value={hotelId} onChange={(e) => setHotelId(e.target.value)}>
+              <option value="">—</option>
+              {hotels.map((h) => <option key={h.id} value={h.id}>{h.name} ({h.city}){"★".repeat(h.stars)}</option>)}
+            </ErpSelect>
+          </ErpField>
+        </ErpFormRow>
+        <ErpField label={lang === "bn" ? "চেক-ইন" : "Check-in"} required>
+          <ErpInput type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "চেক-আউট" : "Check-out"} required>
+          <ErpInput type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "ডাবল রুম" : "Double rooms"}>
+          <ErpInput type="number" value={doubleRooms} onChange={(e) => setDoubleRooms(e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "ট্রিপল রুম" : "Triple rooms"}>
+          <ErpInput type="number" value={tripleRooms} onChange={(e) => setTripleRooms(e.target.value)} />
+        </ErpField>
+        <ErpFormRow span={2}>
+          <ErpField label={lang === "bn" ? "মিল প্ল্যান" : "Meal plan"}>
+            <ErpSelect value={mealPlan} onChange={(e) => setMealPlan(e.target.value)}>
+              <option value="FULL_BOARD">Full Board</option>
+              <option value="HALF_BOARD">Half Board</option>
+              <option value="BED_BREAKFAST">Bed & Breakfast</option>
+              <option value="ROOM_ONLY">Room Only</option>
+            </ErpSelect>
+          </ErpField>
+        </ErpFormRow>
+      </ErpForm>
+    </ErpDrawer>
+  );
+}
+
+function TransportCreateDrawer({ groupId, open, onClose, onCreated }: {
+  groupId: string; open: boolean; onClose: () => void; onCreated: () => void;
+}) {
+  const { lang } = useLang();
+  const [vehicleType, setVehicleType] = useState("BUS");
+  const [vehicleCount, setVehicleCount] = useState("1");
+  const [departurePoint, setDeparturePoint] = useState("");
+  const [destination, setDestination] = useState("");
+  const [departAt, setDepartAt] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (!departurePoint.trim() || !destination.trim() || !departAt) {
+      erpToast.error(lang === "bn" ? "রুট ও সময় আবশ্যক" : "Route and departure required", lang);
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.post("/services/transport", {
+        groupId,
+        vehicleType,
+        vehicleCount: Math.max(1, parseInt(vehicleCount, 10) || 1),
+        departurePoint: departurePoint.trim(),
+        destination: destination.trim(),
+        departAt: new Date(departAt).toISOString(),
+      });
+      erpToast.success(lang === "bn" ? "ট্রান্সপোর্ট অনুরোধ জমা" : "Transport request submitted", lang);
+      onCreated();
+      onClose();
+    } catch (e) {
+      erpToast.error(errMsg(e, lang === "bn" ? "জমা ব্যর্থ" : "Submit failed"), lang);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <ErpDrawer open={open} onClose={onClose} title={lang === "bn" ? "ট্রান্সপোর্ট অনুরোধ" : "Transport request"} lang={lang}
+      footer={<ErpDrawerFooterActions lang={lang} onCancel={onClose} onSave={submit} saving={busy} saveLabel={lang === "bn" ? "জমা দিন" : "Submit"} />}>
+      <ErpForm columns={2}>
+        <ErpField label={lang === "bn" ? "যানবাহন" : "Vehicle"}>
+          <ErpSelect value={vehicleType} onChange={(e) => setVehicleType(e.target.value)}>
+            {["SEDAN", "HIACE", "COASTER", "BUS", "VAN"].map((v) => <option key={v} value={v}>{v}</option>)}
+          </ErpSelect>
+        </ErpField>
+        <ErpField label={lang === "bn" ? "সংখ্যা" : "Count"}>
+          <ErpInput type="number" value={vehicleCount} onChange={(e) => setVehicleCount(e.target.value)} />
+        </ErpField>
+        <ErpFormRow span={2}>
+          <ErpField label={lang === "bn" ? "যাত্রাস্থল" : "From"} required>
+            <ErpInput value={departurePoint} onChange={(e) => setDeparturePoint(e.target.value)} />
+          </ErpField>
+        </ErpFormRow>
+        <ErpFormRow span={2}>
+          <ErpField label={lang === "bn" ? "গন্তব্য" : "To"} required>
+            <ErpInput value={destination} onChange={(e) => setDestination(e.target.value)} />
+          </ErpField>
+        </ErpFormRow>
+        <ErpFormRow span={2}>
+          <ErpField label={lang === "bn" ? "যাত্রার সময়" : "Depart at"} required>
+            <ErpInput type="datetime-local" value={departAt} onChange={(e) => setDepartAt(e.target.value)} />
+          </ErpField>
+        </ErpFormRow>
+      </ErpForm>
+    </ErpDrawer>
+  );
+}
+
+function CateringCreateDrawer({ groupId, open, onClose, onCreated }: {
+  groupId: string; open: boolean; onClose: () => void; onCreated: () => void;
+}) {
+  const { lang } = useLang();
+  const [mealPlan, setMealPlan] = useState("FULL_BOARD");
+  const [halalCount, setHalalCount] = useState("0");
+  const [vegetarianCount, setVegetarianCount] = useState("0");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      await api.post("/services/catering", {
+        groupId,
+        mealPlan,
+        halalCount: parseInt(halalCount, 10) || 0,
+        vegetarianCount: parseInt(vegetarianCount, 10) || 0,
+      });
+      erpToast.success(lang === "bn" ? "ক্যাটারিং অনুরোধ জমা" : "Catering request submitted", lang);
+      onCreated();
+      onClose();
+    } catch (e) {
+      erpToast.error(errMsg(e, lang === "bn" ? "জমা ব্যর্থ" : "Submit failed"), lang);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <ErpDrawer open={open} onClose={onClose} title={lang === "bn" ? "ক্যাটারিং অনুরোধ" : "Catering request"} lang={lang}
+      footer={<ErpDrawerFooterActions lang={lang} onCancel={onClose} onSave={submit} saving={busy} saveLabel={lang === "bn" ? "জমা দিন" : "Submit"} />}>
+      <ErpForm columns={2}>
+        <ErpFormRow span={2}>
+          <ErpField label={lang === "bn" ? "মিল প্ল্যান" : "Meal plan"}>
+            <ErpSelect value={mealPlan} onChange={(e) => setMealPlan(e.target.value)}>
+              <option value="BREAKFAST_ONLY">Breakfast only</option>
+              <option value="HALF_BOARD">Half board</option>
+              <option value="FULL_BOARD">Full board</option>
+              <option value="PREMIUM">Premium</option>
+            </ErpSelect>
+          </ErpField>
+        </ErpFormRow>
+        <ErpField label={lang === "bn" ? "হালাল" : "Halal"}>
+          <ErpInput type="number" value={halalCount} onChange={(e) => setHalalCount(e.target.value)} />
+        </ErpField>
+        <ErpField label={lang === "bn" ? "ভেজিটেরিয়ান" : "Vegetarian"}>
+          <ErpInput type="number" value={vegetarianCount} onChange={(e) => setVegetarianCount(e.target.value)} />
+        </ErpField>
+      </ErpForm>
+    </ErpDrawer>
+  );
+}
+
+function GroupDocumentsTab({ groupId, live }: { groupId: string; live: boolean }) {
+  const { lang } = useLang();
+  const [rows, setRows] = useState<VoucherRow[] | null>(null);
+  const [loading, setLoading] = useState(live);
+  const [error, setError] = useState(false);
+  const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE = 20;
+
+  const load = () => {
+    if (!isLoggedIn() || !groupId) { setLoading(false); return; }
+    setLoading(true); setError(false);
+    api.get<VoucherRow[]>(`/vouchers?groupId=${encodeURIComponent(groupId)}`)
+      .then((r) => { setRows(r); setError(false); })
+      .catch(() => { setRows(null); setError(true); })
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    const t = setTimeout(load, 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupId, live]);
+
+  if (!live) return <ModuleNotConfigured title={lang === "bn" ? "ডকুমেন্টস" : "Documents"} />;
+
+  const list = rows ?? [];
+  const filtered = list.filter((r) => {
+    const qq = q.trim().toLowerCase();
+    if (!qq) return true;
+    return [r.code, r.type, r.status].join(" ").toLowerCase().includes(qq);
+  });
+  const safePage = Math.min(page, Math.max(1, Math.ceil(filtered.length / PAGE)));
+  const pageRows = filtered.slice((safePage - 1) * PAGE, safePage * PAGE);
+
+  const download = async (fileId: string | null) => {
+    if (!fileId) {
+      erpToast.error(lang === "bn" ? "ফাইল নেই" : "No file", lang);
+      return;
+    }
+    try {
+      const url = await api.fileBlobUrl(fileId);
+      window.open(url, "_blank");
+    } catch (e) {
+      erpToast.error(errMsg(e, lang === "bn" ? "ডাউনলোড ব্যর্থ" : "Download failed"), lang);
+    }
+  };
+
+  const columns: ErpColumn<VoucherRow>[] = [
+    { id: "code", header: lang === "bn" ? "কোড" : "Code", cell: (r) => <span className="text-[11px] font-mono" style={{ color: AGENT }}>{r.code}</span> },
+    { id: "type", header: lang === "bn" ? "ধরন" : "Type", cell: (r) => r.type },
+    { id: "st", header: lang === "bn" ? "স্ট্যাটাস" : "Status", cell: (r) => <ErpStatusChip status={svcStatusKind(r.status)} label={r.status} lang={lang} /> },
+    { id: "date", header: lang === "bn" ? "ইস্যু" : "Issued", cell: (r) => fmtDate(r.issueDate) },
+  ];
+
+  return (
+    <div className="p-4 md:p-5" style={{ fontFamily: fontFor(lang) }}>
+      <ErpPageTemplate
+        title={lang === "bn" ? "ডকুমেন্টস" : "Documents"}
+        subtitle={lang === "bn" ? "গ্রুপ ভাউচার তালিকা" : "Group vouchers"}
+        toolbar={
+          <ErpSearchBar lang={lang} value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} onClear={() => setQ("")}
+            placeholder={lang === "bn" ? "কোড বা ধরন…" : "Code or type…"} />
+        }
+        footer={<ErpPagination page={safePage} pageSize={PAGE} total={filtered.length} onPageChange={setPage} lang={lang} />}
+      >
+        {error ? (
+          <ErrorState tone="light" lang={lang} onRetry={load} />
+        ) : (
+          <ErpDataTable
+            columns={columns}
+            rows={loading ? [] : pageRows}
+            rowKey={(r) => r.id}
+            loading={loading}
+            lang={lang}
+            emptyTitle={lang === "bn" ? "কোনো ভাউচার নেই" : "No vouchers yet"}
+            emptyHint={lang === "bn" ? "সাপ্লায়ার গ্রহণ/ইস্যু করলে ভাউচার এখানে আসবে।" : "Vouchers appear after supplier acceptance / issue."}
+            rowActions={(r) => (
+              <ErpButton size="sm" variant="ghost" icon={<Download size={13} />} disabled={!r.fileId} onClick={(e) => { e.stopPropagation(); void download(r.fileId); }}>
+                {lang === "bn" ? "ডাউনলোড" : "Download"}
+              </ErpButton>
+            )}
+          />
+        )}
+      </ErpPageTemplate>
+    </div>
+  );
+}
+
+function GroupTimelineTab({ groupId, live }: { groupId: string; live: boolean }) {
+  const { lang } = useLang();
+  const canAudit = hasPermission(P.ACCESS_AUDIT_LOGS);
+  const [rows, setRows] = useState<AuditRow[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE = 20;
+
+  const load = () => {
+    if (!live || !canAudit || !groupId) return;
+    setLoading(true); setError(false);
+    api.get<{ items?: AuditRow[] } | AuditRow[]>(
+      `/audit-logs?entityType=Group&entityId=${encodeURIComponent(groupId)}&pageSize=50`,
+    )
+      .then((res) => {
+        const items = Array.isArray(res) ? res : (res.items ?? []);
+        setRows(items);
+        setError(false);
+      })
+      .catch(() => { setRows(null); setError(true); })
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    const t = setTimeout(load, 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupId, live, canAudit]);
+
+  if (!live || !canAudit) {
+    return <ModuleNotConfigured title={lang === "bn" ? "টাইমলাইন" : "Timeline"} />;
+  }
+
+  const list = rows ?? [];
+  const filtered = list.filter((r) => {
+    const qq = q.trim().toLowerCase();
+    if (!qq) return true;
+    return [r.action, r.module, r.entityType, r.actorLabel, r.actorUser?.name]
+      .filter(Boolean).join(" ").toLowerCase().includes(qq);
+  });
+  const safePage = Math.min(page, Math.max(1, Math.ceil(filtered.length / PAGE)));
+  const pageRows = filtered.slice((safePage - 1) * PAGE, safePage * PAGE);
+
+  const columns: ErpColumn<AuditRow>[] = [
+    { id: "when", header: lang === "bn" ? "সময়" : "When", cell: (r) => <span className="text-[11px]">{fmtDate(r.createdAt)} {fmtTime(r.createdAt)}</span> },
+    { id: "act", header: lang === "bn" ? "অ্যাকশন" : "Action", cell: (r) => <span className="text-xs font-semibold">{r.action}</span> },
+    { id: "mod", header: lang === "bn" ? "মডিউল" : "Module", cell: (r) => r.module },
+    { id: "who", header: lang === "bn" ? "কে" : "Actor", cell: (r) => r.actorUser?.name ?? r.actorLabel ?? "—" },
+  ];
+
+  return (
+    <div className="p-4 md:p-5" style={{ fontFamily: fontFor(lang) }}>
+      <ErpPageTemplate
+        title={lang === "bn" ? "টাইমলাইন" : "Timeline"}
+        subtitle={lang === "bn" ? "অডিট লগ (Group entity)" : "Audit log (Group entity)"}
+        toolbar={
+          <ErpSearchBar lang={lang} value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} onClear={() => setQ("")}
+            placeholder={lang === "bn" ? "অ্যাকশন বা মডিউল…" : "Action or module…"} />
+        }
+        footer={<ErpPagination page={safePage} pageSize={PAGE} total={filtered.length} onPageChange={setPage} lang={lang} />}
+      >
+        {error ? (
+          <ErrorState tone="light" lang={lang} onRetry={load} />
+        ) : (
+          <ErpDataTable
+            columns={columns}
+            rows={loading ? [] : pageRows}
+            rowKey={(r) => r.id}
+            loading={loading}
+            lang={lang}
+            emptyTitle={lang === "bn" ? "কোনো ইভেন্ট নেই" : "No audit events"}
+            emptyHint={lang === "bn" ? "গ্রুপ পরিবর্তন হলে এখানে দেখা যাবে।" : "Group mutations appear here when audited."}
+          />
+        )}
+      </ErpPageTemplate>
     </div>
   );
 }
@@ -1034,10 +1685,33 @@ function GroupsListView({ onSelect, onNew, authed, groups, loading, error, refre
 
 // ─── Screen B: Group Creation Wizard ─────────────────────────────────────────
 
+interface AgentTenantOpt { id: string; code: string; name: string }
+
+/** Load agent companies for staff ownership (existing GET /companies or tenants from GET /groups). */
+async function loadAgentTenants(): Promise<AgentTenantOpt[]> {
+  try {
+    const rows = await api.get<Array<{ id: string; code: string; name: string; type?: string }>>("/companies?type=AGENT");
+    return rows.map((c) => ({ id: c.id, code: c.code, name: c.name }));
+  } catch {
+    try {
+      const groups = await api.get<ApiGroup[]>("/groups");
+      const map = new Map<string, AgentTenantOpt>();
+      for (const g of groups) {
+        const t = g.tenant;
+        if (t?.id) map.set(t.id, { id: t.id, code: t.code, name: t.name });
+      }
+      return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+    } catch {
+      return [];
+    }
+  }
+}
+
 function GroupWizard({ onBack, onDone, onCreated }: {
   onBack: () => void; onDone: (g: GroupRec) => void; onCreated: () => void;
 }) {
   const { lang } = useLang();
+  const staff = isPlatformStaff(getStoredUser());
   const [step, setStep] = useState(1);
   const [visaType, setVisaType] = useState<VisaTypeUi | null>(null);
   const [dest, setDest] = useState("Makkah");
@@ -1054,6 +1728,18 @@ function GroupWizard({ onBack, onDone, onCreated }: {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  /** Staff: agent company vs direct-customer booking (same POST /groups + tenantId). */
+  const [ownership, setOwnership] = useState<"agent" | "direct">("agent");
+  const [tenantId, setTenantId] = useState("");
+  const [agentTenants, setAgentTenants] = useState<AgentTenantOpt[]>([]);
+  /** Draft group created before passenger intake (needed for POST passengers / OCR / CSV). */
+  const [draftGroup, setDraftGroup] = useState<GroupRec | null>(null);
+  const [paxCount, setPaxCount] = useState(0);
+  const [paxError, setPaxError] = useState(false);
+  const [showManual, setShowManual] = useState(false);
+  const [showOcr, setShowOcr] = useState(false);
+  const [showCsv, setShowCsv] = useState(false);
+  const [draftBusy, setDraftBusy] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn()) return;
@@ -1062,10 +1748,21 @@ function GroupWizard({ onBack, onDone, onCreated }: {
       .catch(() => setUmrahCompanies([]));
   }, []);
 
+  useEffect(() => {
+    if (!isLoggedIn() || !staff) return;
+    loadAgentTenants()
+      .then((rows) => {
+        setAgentTenants(rows);
+        if (rows[0] && !tenantId) setTenantId(rows[0].id);
+      })
+      .catch(() => setAgentTenants([]));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [staff]);
+
   const protoGroup: GroupRec = {
     id: "GRP-1446-2999", name: name || "New Group", dest,
     type: visaType ? VISA_TYPE_LABEL[VISA_UI_TO_ENUM[visaType]] : "—",
-    pax: 0, status: "pending", depart: departDate || "—", ret: returnDate || "—",
+    pax: paxCount, status: "pending", depart: departDate || "—", ret: returnDate || "—",
     visa: 0, hotel: 0, transport: 0, catering: 0, created: "—", pkg,
     nusukGroupNumber: nusukGroupNumber || null, hajiWhatsapp: hajiWhatsapp || null,
   };
@@ -1073,40 +1770,156 @@ function GroupWizard({ onBack, onDone, onCreated }: {
     ? ["গ্রুপ তথ্য", "প্যাকেজ", "যাত্রী", "নিশ্চিত করুন"]
     : ["Group Info", "Package", "Passengers", "Confirm"];
 
-  /** Same POST /groups contract — fired on Confirm (step 4), then open detail for passenger intake. */
-  const submit = async () => {
-    if (!visaType) return;
-    if (!isLoggedIn()) { onDone(protoGroup); return; }
+  const refreshPaxCount = async (apiId: string) => {
+    try {
+      const ps = await api.get<ApiPassenger[]>(`/groups/${apiId}/passengers`);
+      setPaxCount(ps.length);
+      if (ps.length > 0) setPaxError(false);
+    } catch {
+      /* keep prior count */
+    }
+  };
+
+  const buildCreateBody = () => {
+    if (!visaType) return null;
+    const cap = parseInt(maxCapacity, 10);
+    return {
+      name: name.trim(),
+      destination: DEST_ENUM[dest] ?? "MAKKAH",
+      ...foundationPayload({
+        visaTypeUi: visaType,
+        packageTypeDisplay: pkg,
+        nusukGroupNumber,
+        hajiWhatsapp,
+        consulate,
+        umrahCompanyId: umrahCompanyId || undefined,
+      }),
+      ...(Number.isFinite(cap) && cap >= 1 ? { maxCapacity: cap } : {}),
+      ...(departDate ? { departDate: new Date(departDate).toISOString() } : {}),
+      ...(returnDate ? { returnDate: new Date(returnDate).toISOString() } : {}),
+      ...(notes.trim() ? { notes: notes.trim() } : {}),
+      ...(staff && tenantId ? { tenantId } : {}),
+      ...(staff && ownership === "direct" ? { uploadedByLabel: "Direct Customer" } : {}),
+    };
+  };
+
+  /** Create draft via existing POST /groups once — required before passenger APIs. */
+  const ensureDraftGroup = async (): Promise<GroupRec | null> => {
+    if (draftGroup?.apiId) return draftGroup;
+    if (!isLoggedIn()) return protoGroup;
+    if (!visaType) {
+      erpToast.error(lang === "bn" ? "ভিসার ধরন নির্বাচন করুন" : "Select a visa type", lang);
+      return null;
+    }
     if (name.trim().length < 2) {
       erpToast.error(lang === "bn" ? "গ্রুপের নাম দিন (কমপক্ষে ২ অক্ষর)" : "Enter a group name (at least 2 characters)", lang);
-      return;
+      return null;
+    }
+    if (staff && !tenantId) {
+      erpToast.error(lang === "bn" ? "এজেন্ট অথবা কোম্পানি নির্বাচন করুন" : "Select an agent company", lang);
+      return null;
     }
     const waErr = validateWhatsappUx(visaType, hajiWhatsapp);
-    if (waErr) { erpToast.error(waErr, lang); return; }
-    const cap = parseInt(maxCapacity, 10);
+    if (waErr) {
+      const waMsg = lang === "bn"
+        ? "উমরাহ/হজ গ্রুপের জন্য হাজি হোয়াটসঅ্যাপ দিন (কমপক্ষে ৫ অক্ষর)।"
+        : waErr;
+      erpToast.error(waMsg, lang);
+      setCreateError(waMsg);
+      return null;
+    }
+    const body = buildCreateBody();
+    if (!body) return null;
+    const g = await api.post<ApiGroup>("/groups", body);
+    const rec = toGroupRec(g);
+    setDraftGroup(rec);
+    return rec;
+  };
+
+  const goNextFrom2 = async () => {
+    if (!visaType) return;
+    if (!isLoggedIn()) { setStep(3); return; }
+    setDraftBusy(true);
+    setCreateError(null);
+    try {
+      const rec = await ensureDraftGroup();
+      // null = validation/UX guard already toasted + setCreateError — do not overwrite.
+      if (!rec) return;
+      if (!rec.apiId) {
+        setCreateError(lang === "bn" ? "গ্রুপ তৈরি করা যায়নি" : "Could not create the group");
+        return;
+      }
+      await refreshPaxCount(rec.apiId);
+      setStep(3);
+    } catch (e) {
+      setCreateError(errMsg(e, lang === "bn" ? "গ্রুপ তৈরি করা যায়নি" : "Could not create the group"));
+    } finally {
+      setDraftBusy(false);
+    }
+  };
+
+  const openIntake = async (kind: "manual" | "ocr" | "csv") => {
+    if (!isLoggedIn()) {
+      erpToast.error(lang === "bn" ? "সাইন ইন করুন" : "Sign in to add passengers", lang);
+      return;
+    }
+    setDraftBusy(true);
+    try {
+      const rec = await ensureDraftGroup();
+      if (!rec?.apiId) {
+        erpToast.error(lang === "bn" ? "গ্রুপ প্রস্তুত নয়" : "Group is not ready", lang);
+        return;
+      }
+      if (kind === "manual") setShowManual(true);
+      if (kind === "ocr") setShowOcr(true);
+      if (kind === "csv") setShowCsv(true);
+    } catch (e) {
+      erpToast.error(errMsg(e, lang === "bn" ? "গ্রুপ তৈরি করা যায়নি" : "Could not create the group"), lang);
+    } finally {
+      setDraftBusy(false);
+    }
+  };
+
+  const onPaxAdded = () => {
+    if (draftGroup?.apiId) void refreshPaxCount(draftGroup.apiId);
+    else setPaxCount((n) => n + 1);
+    setPaxError(false);
+  };
+
+  const goNextFrom3 = () => {
+    if (isLoggedIn() && paxCount < 1) {
+      setPaxError(true);
+      erpToast.error("কমপক্ষে ১ জন যাত্রী যোগ করুন।", lang);
+      return;
+    }
+    setPaxError(false);
+    setStep(4);
+  };
+
+  /** Confirm: draft already created on step 2→3; finish without inventing a second create. */
+  const submit = async () => {
+    if (!visaType) return;
+    if (!isLoggedIn()) { onDone({ ...protoGroup, pax: paxCount }); return; }
+    if (paxCount < 1) {
+      setPaxError(true);
+      setStep(3);
+      erpToast.error("কমপক্ষে ১ জন যাত্রী যোগ করুন।", lang);
+      return;
+    }
     setSubmitting(true);
     setCreateError(null);
     try {
-      const g = await api.post<ApiGroup>("/groups", {
-        name: name.trim(),
-        destination: DEST_ENUM[dest] ?? "MAKKAH",
-        ...foundationPayload({
-          visaTypeUi: visaType,
-          packageTypeDisplay: pkg,
-          nusukGroupNumber,
-          hajiWhatsapp,
-          consulate,
-          umrahCompanyId: umrahCompanyId || undefined,
-        }),
-        ...(Number.isFinite(cap) && cap >= 1 ? { maxCapacity: cap } : {}),
-        ...(departDate ? { departDate: new Date(departDate).toISOString() } : {}),
-        ...(returnDate ? { returnDate: new Date(returnDate).toISOString() } : {}),
-        ...(notes.trim() ? { notes: notes.trim() } : {}),
-      });
-      const rec = toGroupRec(g);
-      erpToast.success(lang === "bn" ? `গ্রুপ ${g.code} তৈরি হয়েছে` : `Group ${g.code} created`, lang);
+      let rec = draftGroup;
+      if (!rec?.apiId) {
+        rec = await ensureDraftGroup();
+      }
+      if (!rec?.apiId) {
+        setCreateError(lang === "bn" ? "গ্রুপ তৈরি করা যায়নি" : "Could not create the group");
+        return;
+      }
+      erpToast.success(lang === "bn" ? `গ্রুপ ${rec.id} প্রস্তুত` : `Group ${rec.id} ready`, lang);
       onCreated();
-      onDone(rec);
+      onDone({ ...rec, pax: paxCount });
     } catch (e) {
       setCreateError(errMsg(e, lang === "bn" ? "গ্রুপ তৈরি করা যায়নি" : "Could not create the group"));
     } finally {
@@ -1117,6 +1930,10 @@ function GroupWizard({ onBack, onDone, onCreated }: {
   const goNextFrom1 = () => {
     if (isLoggedIn() && name.trim().length < 2) {
       erpToast.error(lang === "bn" ? "গ্রুপের নাম দিন (কমপক্ষে ২ অক্ষর)" : "Enter a group name (at least 2 characters)", lang);
+      return;
+    }
+    if (isLoggedIn() && staff && !tenantId) {
+      erpToast.error(lang === "bn" ? "এজেন্ট অথবা কোম্পানি নির্বাচন করুন" : "Select an agent company", lang);
       return;
     }
     setStep(2);
@@ -1157,27 +1974,57 @@ function GroupWizard({ onBack, onDone, onCreated }: {
         {step === 1 && (
           <div className="rounded-xl p-5 md:p-6 space-y-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
             <h2 className="text-base font-bold text-[#0B1E3F]">{lang === "bn" ? "১ · গ্রুপ তথ্য" : "1 · Group Info"}</h2>
+            {staff && (
+              <div className="rounded-xl p-3 mb-1" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.10)" }}>
+                <div className="text-[11px] font-semibold mb-2" style={{ color: "rgba(11,30,63,0.55)" }}>
+                  {lang === "bn" ? "মালিকানা (স্টাফ)" : "Ownership (staff)"}
+                </div>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <ErpButton size="sm" variant={ownership === "agent" ? "primary" : "outline"} onClick={() => setOwnership("agent")}>
+                    {lang === "bn" ? "এজেন্ট" : "Agent"}
+                  </ErpButton>
+                  <ErpButton size="sm" variant={ownership === "direct" ? "primary" : "outline"} onClick={() => setOwnership("direct")}>
+                    {lang === "bn" ? "ডাইরেক্ট কাস্টমার" : "Direct Customer"}
+                  </ErpButton>
+                </div>
+                <ErpField label={lang === "bn" ? "এজেন্ট / কোম্পানি" : "Agent / company"} required>
+                  <ErpSelect value={tenantId} onChange={(e) => setTenantId(e.target.value)} disabled={!!draftGroup?.apiId}>
+                    <option value="">—</option>
+                    {agentTenants.map((a) => (
+                      <option key={a.id} value={a.id}>{a.name} ({a.code})</option>
+                    ))}
+                  </ErpSelect>
+                </ErpField>
+                {ownership === "direct" && (
+                  <p className="text-[11px] mt-2" style={{ color: "rgba(11,30,63,0.50)" }}>
+                    {lang === "bn"
+                      ? "ডাইরেক্ট কাস্টমার — নির্বাচিত কোম্পানির অধীনে তৈরি (uploadedByLabel = Direct Customer)।"
+                      : "Direct customer booking under the selected company account (uploadedByLabel = Direct Customer)."}
+                  </p>
+                )}
+              </div>
+            )}
             <ErpForm columns={2}>
               <ErpFormRow span={2}>
                 <ErpField label={lang === "bn" ? "গ্রুপের নাম" : "Group Name"} required>
-                  <ErpInput value={name} onChange={(e) => setName(e.target.value)} placeholder={lang === "bn" ? "গ্রুপের নাম লিখুন" : "Group name"} />
+                  <ErpInput value={name} onChange={(e) => setName(e.target.value)} placeholder={lang === "bn" ? "গ্রুপের নাম লিখুন" : "Group name"} disabled={!!draftGroup?.apiId} />
                 </ErpField>
               </ErpFormRow>
               <ErpField label={lang === "bn" ? "নুসুক গ্রুপ নম্বর" : "Nusuk Group Number"}>
-                <ErpInput value={nusukGroupNumber} onChange={(e) => setNusukGroupNumber(e.target.value)} style={{ fontFamily: "var(--font-mono)" }} />
+                <ErpInput value={nusukGroupNumber} onChange={(e) => setNusukGroupNumber(e.target.value)} style={{ fontFamily: "var(--font-mono)" }} disabled={!!draftGroup?.apiId} />
               </ErpField>
               <ErpField label={lang === "bn" ? "গন্তব্য" : "Destination"}>
-                <ErpSelect value={dest} onChange={(e) => setDest(e.target.value)}>
+                <ErpSelect value={dest} onChange={(e) => setDest(e.target.value)} disabled={!!draftGroup?.apiId}>
                   <option value="Makkah">Makkah</option>
                   <option value="Madinah">Madinah</option>
                   <option value="Makkah + Madinah">Makkah + Madinah</option>
                 </ErpSelect>
               </ErpField>
               <ErpField label={lang === "bn" ? "কনস্যুলেট" : "Consulate"}>
-                <ErpInput value={consulate} onChange={(e) => setConsulate(e.target.value)} />
+                <ErpInput value={consulate} onChange={(e) => setConsulate(e.target.value)} disabled={!!draftGroup?.apiId} />
               </ErpField>
               <ErpField label={lang === "bn" ? "উমরাহ কোম্পানি" : "Umrah Company"}>
-                <ErpSelect value={umrahCompanyId} onChange={(e) => setUmrahCompanyId(e.target.value)}>
+                <ErpSelect value={umrahCompanyId} onChange={(e) => setUmrahCompanyId(e.target.value)} disabled={!!draftGroup?.apiId}>
                   <option value="">—</option>
                   {umrahCompanies.map((c) => (
                     <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
@@ -1185,7 +2032,7 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                 </ErpSelect>
               </ErpField>
               <ErpField label={lang === "bn" ? "হাজি হোয়াটসঅ্যাপ" : "Haji WhatsApp"}>
-                <ErpInput value={hajiWhatsapp} onChange={(e) => setHajiWhatsapp(e.target.value)} placeholder="+966… / +880…" />
+                <ErpInput value={hajiWhatsapp} onChange={(e) => setHajiWhatsapp(e.target.value)} placeholder="+966… / +880…" disabled={!!draftGroup?.apiId} />
               </ErpField>
             </ErpForm>
             <div className="flex justify-end pt-2">
@@ -1274,12 +2121,16 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                 </ErpField>
               </ErpFormRow>
             </ErpForm>
+            {createError && step === 2 && (
+              <div className="mt-4"><ErrorState tone="light" lang={lang} message={createError} onRetry={() => void goNextFrom2()} /></div>
+            )}
             <div className="flex gap-2 mt-5">
-              <ErpButton variant="secondary" onClick={() => setStep(1)}>{lang === "bn" ? "পিছনে" : "Back"}</ErpButton>
+              <ErpButton variant="secondary" onClick={() => setStep(1)} disabled={draftBusy}>{lang === "bn" ? "পিছনে" : "Back"}</ErpButton>
               <ErpButton
                 variant="primary"
-                disabled={!visaType}
-                onClick={() => setStep(3)}
+                disabled={!visaType || draftBusy}
+                loading={draftBusy}
+                onClick={() => void goNextFrom2()}
               >
                 {lang === "bn" ? "পরবর্তী: যাত্রী →" : "Next: Passengers →"}
               </ErpButton>
@@ -1289,30 +2140,62 @@ function GroupWizard({ onBack, onDone, onCreated }: {
 
         {step === 3 && (
           <div className="rounded-xl p-5 md:p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-            <h2 className="text-base font-bold text-[#0B1E3F] mb-1">{lang === "bn" ? "৩ · যাত্রী" : "3 · Passengers"}</h2>
-            <p className="text-sm mb-4" style={{ color: "rgba(11,30,63,0.58)" }}>
-              {lang === "bn"
-                ? "গ্রুপ নিশ্চিত করার পর ম্যানুয়াল এন্ট্রি, পাসপোর্ট OCR অথবা CSV দিয়ে যাত্রী যোগ করুন।"
-                : "After confirm, add passengers via Manual, Passport OCR, or CSV on the group detail screen."}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-              {[
-                { icon: Users, titleBn: "ম্যানুয়াল", titleEn: "Manual" },
-                { icon: ScanLine, titleBn: "পাসপোর্ট OCR", titleEn: "Passport OCR" },
-                { icon: FileText, titleBn: "CSV ইমপোর্ট", titleEn: "CSV Import" },
-              ].map((m) => {
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+              <div>
+                <h2 className="text-base font-bold text-[#0B1E3F]">{lang === "bn" ? "৩ · যাত্রী" : "3 · Passengers"}</h2>
+                <p className="text-sm mt-1" style={{ color: "rgba(11,30,63,0.58)" }}>
+                  {lang === "bn"
+                    ? "ম্যানুয়াল, পাসপোর্ট OCR অথবা Excel/CSV দিয়ে যাত্রী যোগ করুন।"
+                    : "Add passengers via Manual, Passport OCR, or Excel/CSV."}
+                </p>
+              </div>
+              <div
+                className="rounded-xl px-3 py-2 text-center min-w-[88px]"
+                style={{ backgroundColor: paxCount > 0 ? "#16A34A12" : "#F5F7FA", border: `1px solid ${paxCount > 0 ? "#16A34A40" : "rgba(11,30,63,0.11)"}` }}
+              >
+                <div className="text-lg font-bold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: paxCount > 0 ? "#16A34A" : NAVY }}>{paxCount}</div>
+                <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.55)" }}>{lang === "bn" ? "যাত্রী" : "Passengers"}</div>
+              </div>
+            </div>
+            {draftGroup?.id && (
+              <p className="text-[11px] mb-3 font-mono" style={{ color: "rgba(11,30,63,0.45)" }}>
+                {draftGroup.id}
+              </p>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              {([
+                { kind: "manual" as const, icon: Users, titleBn: "ম্যানুয়াল", titleEn: "Manual" },
+                { kind: "ocr" as const, icon: ScanLine, titleBn: "পাসপোর্ট OCR", titleEn: "Passport OCR" },
+                { kind: "csv" as const, icon: FileText, titleBn: "CSV ইমপোর্ট", titleEn: "CSV Import" },
+              ]).map((m) => {
                 const Icon = m.icon;
                 return (
-                  <div key={m.titleEn} className="rounded-xl p-4" style={{ border: "1px solid rgba(11,30,63,0.10)", backgroundColor: "#FBFCFD" }}>
+                  <button
+                    key={m.kind}
+                    type="button"
+                    disabled={draftBusy}
+                    onClick={() => void openIntake(m.kind)}
+                    className="rounded-xl p-4 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
+                    style={{ border: `1px solid ${AGENT}40`, backgroundColor: `${AGENT}08`, outlineColor: GOLD }}
+                  >
                     <Icon size={18} style={{ color: AGENT }} className="mb-2" />
                     <div className="text-xs font-bold text-[#0B1E3F]">{lang === "bn" ? m.titleBn : m.titleEn}</div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
+            {paxError && (
+              <div className="mb-3 text-xs font-medium" style={{ color: "#DC2626" }} role="alert">
+                কমপক্ষে ১ জন যাত্রী যোগ করুন।
+              </div>
+            )}
             <div className="flex gap-2">
               <ErpButton variant="secondary" onClick={() => setStep(2)}>{lang === "bn" ? "পিছনে" : "Back"}</ErpButton>
-              <ErpButton variant="primary" onClick={() => setStep(4)}>
+              <ErpButton
+                variant="primary"
+                disabled={isLoggedIn() && paxCount < 1}
+                onClick={goNextFrom3}
+              >
                 {lang === "bn" ? "পরবর্তী: নিশ্চিত করুন →" : "Next: Confirm →"}
               </ErpButton>
             </div>
@@ -1330,6 +2213,8 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                 [lang === "bn" ? "ভিসা" : "Visa", visaType ? (lang === "bn" ? ({ umrah: "উমরাহ", hajj: "হজ", longstay: "লং স্টে" } as const)[visaType] : VISA_TYPE_LABEL[VISA_UI_TO_ENUM[visaType]]) : "—"],
                 ["Nusuk", nusukGroupNumber || "—"],
                 [lang === "bn" ? "তারিখ" : "Dates", `${departDate || "—"} → ${returnDate || "—"}`],
+                [lang === "bn" ? "যাত্রী" : "Passengers", String(paxCount)],
+                ...(staff ? [[lang === "bn" ? "মালিকানা" : "Ownership", ownership === "direct" ? (lang === "bn" ? "ডাইরেক্ট কাস্টমার" : "Direct Customer") : (lang === "bn" ? "এজেন্ট" : "Agent")]] : []),
               ].map(([k, v]) => (
                 <div key={String(k)} className="flex justify-between gap-4 py-2" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
                   <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
@@ -1340,15 +2225,47 @@ function GroupWizard({ onBack, onDone, onCreated }: {
             {createError && <div className="mb-4"><ErrorState tone="light" lang={lang} message={createError} onRetry={submit} /></div>}
             <div className="flex gap-2">
               <ErpButton variant="secondary" onClick={() => setStep(3)} disabled={submitting}>{lang === "bn" ? "পিছনে" : "Back"}</ErpButton>
-              <ErpButton variant="primary" loading={submitting} onClick={submit}>
+              <ErpButton variant="primary" loading={submitting} onClick={() => void submit()} disabled={isLoggedIn() && paxCount < 1}>
                 {lang === "bn" ? "নিশ্চিত করে তৈরি করুন" : "Confirm & Create"}
               </ErpButton>
             </div>
           </div>
         )}
       </div>
+
+      {draftGroup?.apiId && (
+        <>
+          <ManualPassengerDrawer
+            groupId={draftGroup.apiId}
+            open={showManual}
+            onClose={() => setShowManual(false)}
+            onAdded={onPaxAdded}
+          />
+          {showOcr && (
+            <OcrIntakeModal
+              groupId={draftGroup.apiId}
+              onClose={() => setShowOcr(false)}
+              onApproved={onPaxAdded}
+            />
+          )}
+          {showCsv && (
+            <CsvImportModal
+              groupId={draftGroup.apiId}
+              onClose={() => setShowCsv(false)}
+              onImported={onPaxAdded}
+            />
+          )}
+        </>
+      )}
     </div>
   );
+}
+
+/** Staff Ops / Agent Portal — same create wizard, existing POST /groups contract. */
+export function GroupCreateWizard(props: {
+  onBack: () => void; onDone: (g: GroupRec) => void; onCreated: () => void;
+}) {
+  return <GroupWizard {...props} />;
 }
 
 // ─── Passengers Tab (real GET/POST/DELETE) ───────────────────────────────────
@@ -1793,7 +2710,7 @@ function GroupFoundationPanel({
 
 function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => void }) {
   const { lang } = useLang();
-  const [tab, setTab] = useState<DetailTab>("passengers");
+  const [tab, setTab] = useState<DetailTab>("foundation");
   const authed = isLoggedIn();
   // Only real (API-backed) groups have a uuid to fetch; the demo rows do not.
   const live = authed && !!group.apiId;
@@ -1845,29 +2762,7 @@ function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => voi
     [live, detail],
   );
 
-  // Flights come from GET /groups/:id → flightInfos[].
-  const flightCards = live
-    ? (detail?.flightInfos ?? []).map((f) => ({
-        dir: f.direction === "ARRIVAL" ? "Arrival" : "Departure",
-        airline: f.airline,
-        flight: f.flightNo,
-        from: f.originAirport,
-        to: f.destAirport,
-        date: fmtDate(f.scheduledAt),
-        time: fmtTime(f.scheduledAt),
-        // TODO: FlightInfo has `gate` too, but the frozen card has no gate row.
-        terminal: f.terminal ?? "—",
-        pax: f.paxCount,
-      }))
-    : [];
-
-  const flightsState: ReactNode = !live ? null
-    : loading ? <LoadingSkeleton tone="light" rows={4} />
-    : error ? <ErrorState tone="light" onRetry={refresh} />
-    : flightCards.length === 0 ? (
-        <EmptyState tone="light" title="No flights yet" hint="Arrival and departure flights appear here once submitted." />
-      )
-    : null;
+  const groupApiId = group.apiId ?? "";
 
   // Header pipeline, derived from the real passenger statuses when signed in.
   // TODO: Passenger carries visaStatus/hotelStatus/transportStatus/mohStatus only —
@@ -1882,13 +2777,14 @@ function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => voi
     : { v: group.visa, h: group.hotel, t: group.transport, c: group.catering };
 
   const TABS: { id: DetailTab; label: string; icon: typeof FileCheck }[] = [
-    { id: "passengers", label: "Passengers",  icon: Users },
-    { id: "flights",    label: "Flights",     icon: Plane },
-    { id: "hotel",      label: "Hotel",       icon: Building },
-    { id: "transport",  label: "transport",   icon: Bus },
-    { id: "catering",   label: "Catering",    icon: UtensilsCrossed },
-    { id: "documents",  label: "Documents",   icon: FileText },
-    { id: "timeline",   label: "Timeline",    icon: Clock },
+    { id: "foundation", label: "Foundation", icon: FileCheck },
+    { id: "passengers", label: "Passengers", icon: Users },
+    { id: "flights",    label: "Flights",    icon: Plane },
+    { id: "hotel",      label: "Hotel",      icon: Building },
+    { id: "transport",  label: "Transport",  icon: Bus },
+    { id: "catering",   label: "Catering",   icon: UtensilsCrossed },
+    { id: "documents",  label: "Documents",  icon: FileText },
+    { id: "timeline",   label: "Timeline",   icon: Clock },
   ];
 
   return (
@@ -1963,45 +2859,44 @@ function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => voi
 
       {/* Tab content (scrollable) */}
       <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(11,30,63,0.38) transparent" }}>
-        {live && (
-          <GroupFoundationPanel groupId={group.apiId!} detail={detail} onSaved={refresh} />
+        {tab === "foundation" && (
+          live
+            ? <GroupFoundationPanel groupId={group.apiId!} detail={detail} onSaved={refresh} />
+            : <ModuleNotConfigured title="Foundation" />
         )}
         {tab === "passengers" && <PassengersTab group={group} onChanged={refresh} />}
 
         {tab === "flights" && (
-          <div className="p-7 grid grid-cols-2 gap-5">
-            {flightsState ? (
-              <div className="col-span-2">{flightsState}</div>
-            ) : flightCards.map((f) => (
-              <div key={`${f.dir}-${f.flight}`} className="rounded-2xl p-5" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${AGENT}18` }}><Plane size={14} style={{ color: AGENT }} /></div>
-                  <div className="min-w-0">
-                    <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>{f.dir} Flight</div>
-                    <div className="text-xs font-bold text-[#0B1E3F] truncate" title={f.airline}>{f.airline}</div>
-                  </div>
-                  <span className="ml-auto text-xs font-mono font-bold shrink-0" style={{ color: GOLD, fontFamily: "var(--font-mono)" }}>{f.flight}</span>
-                </div>
-                {[["Route", `${f.from} → ${f.to}`], ["Date", f.date], ["Departure Time", f.time], ["Terminal", f.terminal], ["Passengers", String(f.pax)]].map(([l, v]) => (
-                  <div key={l} className="flex justify-between items-center gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.08)" }}>
-                    <span className="text-[10px] shrink-0" style={{ color: "rgba(11,30,63,0.50)" }}>{l}</span>
-                    <span className="text-[10px] font-semibold text-[#0B1E3F] min-w-0 truncate" title={v}>{v}</span>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
+          <GroupFlightsTab
+            flights={detail?.flightInfos ?? []}
+            loading={loading}
+            error={error}
+            onRetry={refresh}
+            live={live}
+          />
         )}
 
-        {tab === "hotel" && <ComingSoonPanel title="Hotel bookings — coming soon" hint="Room blocks and hotel vouchers appear here once the Supplier module goes live." />}
+        {tab === "hotel" && (
+          live && groupApiId
+            ? <GroupServiceTab groupId={groupApiId} service="hotel" titleBn="হোটেল" titleEn="Hotel" />
+            : <ModuleNotConfigured title={lang === "bn" ? "হোটেল" : "Hotel"} />
+        )}
 
-        {tab === "transport" && <ComingSoonPanel title="Transport — coming soon" hint="Bus and driver assignments appear here once the Fleet module goes live." />}
+        {tab === "transport" && (
+          live && groupApiId
+            ? <GroupServiceTab groupId={groupApiId} service="transport" titleBn="ট্রান্সপোর্ট" titleEn="Transport" />
+            : <ModuleNotConfigured title={lang === "bn" ? "ট্রান্সপোর্ট" : "Transport"} />
+        )}
 
-        {tab === "catering" && <ComingSoonPanel title="Catering — coming soon" hint="Group meal plans appear here in a later release." />}
+        {tab === "catering" && (
+          live && groupApiId
+            ? <GroupServiceTab groupId={groupApiId} service="catering" titleBn="ক্যাটারিং" titleEn="Catering" />
+            : <ModuleNotConfigured title={lang === "bn" ? "ক্যাটারিং" : "Catering"} />
+        )}
 
-        {tab === "documents" && <ComingSoonPanel title="Group documents — coming soon" hint="Vouchers and manifests appear here. Company documents live under Finance & Billing." />}
+        {tab === "documents" && <GroupDocumentsTab groupId={groupApiId} live={live && !!groupApiId} />}
 
-        {tab === "timeline" && <ComingSoonPanel title="Activity timeline — coming soon" hint="A per-group audit trail appears here in a later release." />}
+        {tab === "timeline" && <GroupTimelineTab groupId={groupApiId} live={live && !!groupApiId} />}
 
       </div>
 

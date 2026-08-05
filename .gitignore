@@ -39,3 +39,11 @@ coverage/
 
 apps/**/dist/
 packages/**/dist/
+
+### v2.1.0 release hygiene (local/QA artifacts — never part of the release)
+.devenv
+_BASELINE.patch
+_BASELINE.status
+/*.cjs
+/*_out.json
+*.prehotfix

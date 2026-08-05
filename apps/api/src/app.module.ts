@@ -13,6 +13,12 @@ import { HealthModule } from "./health/health.module";
 import { StorageModule } from "./storage/storage.module";
 import { UploadsModule } from "./uploads/uploads.module";
 import { UsersModule } from "./users/users.module";
+import { EnquiriesModule } from "./enquiries/enquiries.module";
+import { RatesModule } from "./rates/rates.module";
+import { FlightsModule } from "./flights/flights.module";
+import { WorkflowModule } from "./workflow/workflow.module";
+import { ImpersonationModule } from "./impersonation/impersonation.module";
+import { IntegrationsModule } from "./integrations/integrations.module";
 import { ServicesModule } from "./services/services.module";
 import { FinanceModule } from "./finance/finance.module";
 import { OpsModule } from "./ops/ops.module";
@@ -46,9 +52,15 @@ import { PermissionsGuard } from "./common/guards/permissions.guard";
     GroupsModule,
     UploadsModule,
     UsersModule,
+    EnquiriesModule,
+    RatesModule,
     ServicesModule,
     FinanceModule,
     OpsModule,
+    FlightsModule,
+    WorkflowModule,
+    ImpersonationModule,
+    IntegrationsModule,
     FleetModule,
     NotificationsModule,
     AutomationModule,

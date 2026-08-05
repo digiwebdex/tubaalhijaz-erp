@@ -8,6 +8,7 @@ import {
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
 import type { AuthUser } from "../common/decorators/current-user.decorator";
 import { EV, buildEvent } from "../automation/events";
 import {
@@ -36,6 +37,7 @@ export class GroupsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly events: EventEmitter2,
+    private readonly auditSvc: AuditService,
   ) {}
 
   /** When true, HAJJ/UMRAH create/update require a non-empty hajiWhatsapp. Off by default (backward compatible). */
@@ -133,25 +135,13 @@ export class GroupsService {
   }
 
   private async audit(
-    user: AuthUser,
+    _user: AuthUser,
     action: "CREATE" | "UPDATE",
     entityId: string,
     before: object | null,
     after: object,
   ) {
-    await this.prisma.auditLog
-      .create({
-        data: {
-          actorUserId: user.sub,
-          action,
-          module: "Groups",
-          entityType: "Group",
-          entityId,
-          before: before ?? undefined,
-          after,
-        },
-      })
-      .catch(() => undefined);
+    await this.auditSvc.log({ action, module: "Groups", entityType: "Group", entityId, before, after });
   }
 
   private isUniqueNusukViolation(e: unknown): boolean {

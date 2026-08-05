@@ -3,6 +3,7 @@ import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Queue } from "bullmq";
 import type { OcrDocument, Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
 import { StorageService } from "../storage/storage.service";
 import { PassengersService } from "../groups/passengers.service";
 import { GroupsService } from "../groups/groups.service";
@@ -41,6 +42,7 @@ export class OcrService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly auditSvc: AuditService,
     private readonly storage: StorageService,
     private readonly vision: VisionClient,
     private readonly gemini: GeminiClient,
@@ -112,26 +114,23 @@ export class OcrService {
       { ocrDocumentId: doc.id },
       { attempts: 3, backoff: { type: "exponential", delay: 2000 }, removeOnComplete: 500, removeOnFail: 1000 },
     );
-    await this.prisma.auditLog.create({
-      data: {
-        actorUserId: user.sub,
-        action: "CREATE",
-        module: "OCR",
-        entityType: "OcrDocument",
-        entityId: doc.id,
-        after: {
-          code: doc.code,
-          documentType: doc.documentType,
-          groupId,
-          intake:
-            doc.documentType === "PASSPORT"
-              ? "Passport → Mutamer (requires Group on approve)"
-              : doc.documentType === "NUSUK_GROUP_LIST"
-                ? "Nusuk Group List → Group on approve"
-                : null,
-        },
+    await this.auditSvc.log({
+      action: "CREATE",
+      module: "OCR",
+      entityType: "OcrDocument",
+      entityId: doc.id,
+      after: {
+        code: doc.code,
+        documentType: doc.documentType,
+        groupId,
+        intake:
+          doc.documentType === "PASSPORT"
+            ? "Passport → Mutamer (requires Group on approve)"
+            : doc.documentType === "NUSUK_GROUP_LIST"
+              ? "Nusuk Group List → Group on approve"
+              : null,
       },
-    }).catch(() => undefined);
+    });
     this.log.log(`queued OCR ${doc.code} (${doc.documentType})`);
     return {
       id: doc.id,

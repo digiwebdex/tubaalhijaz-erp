@@ -137,6 +137,10 @@ enum FlightStatus {
   CHECK_IN
   BOARDING
   DEPARTED
+  IN_TRANSIT
+  ARRIVED
+  CANCELLED
+  RESCHEDULED
 }
 
 // Master-plan end-to-end workflow for every bookable service:
@@ -490,6 +494,7 @@ model WorkflowStage {
   labelBn String
   module  String // owning module, e.g. "Agent Portal", "Visa Desk"
   slaText String?
+  slaHours Int?
   route   String?
 
   groups Group[]
@@ -524,34 +529,35 @@ model RolePermission {
 }
 
 model User {
-  id           String     @id @default(cuid())
-  code         String?    @unique // USR-001
-  email        String     @unique
-  passwordHash String
-  name         String
-  nameBn       String?
-  phone        String?
-  preferredLang String    @default("bn") // notification language (bn default)
-  status       UserStatus @default(ACTIVE)
-  lastLoginAt  DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id            String     @id @default(cuid())
+  code          String?    @unique // USR-001
+  email         String     @unique
+  passwordHash  String
+  name          String
+  nameBn        String?
+  phone         String?
+  preferredLang String     @default("bn") // notification language (bn default)
+  status        UserStatus @default(ACTIVE)
+  lastLoginAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   roleId    String
   role      Role     @relation(fields: [roleId], references: [id])
   companyId String? // null = TUBA platform staff
   company   Company? @relation(fields: [companyId], references: [id])
 
-  driver          Driver?
-  refreshTokens   RefreshToken[]
-  uploadedFiles   UploadedFile[]    @relation("FileUploader")
-  auditLogs       AuditLog[]        @relation("AuditActor")
-  uploadedOcrDocs OcrDocument[]     @relation("OcrUploader")
-  reviewedOcrDocs OcrDocument[]     @relation("OcrReviewer")
-  notifications   NotificationLog[] @relation("NotificationRecipient")
-  reviewedSlips   PaymentSlip[]     @relation("SlipReviewer")
-  ledgerEntries   LedgerEntry[]     @relation("LedgerCreator")
-  uploadedGroups  Group[]           @relation("GroupUploader")
+  driver              Driver?
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  uploadedFiles       UploadedFile[]       @relation("FileUploader")
+  auditLogs           AuditLog[]           @relation("AuditActor")
+  uploadedOcrDocs     OcrDocument[]        @relation("OcrUploader")
+  reviewedOcrDocs     OcrDocument[]        @relation("OcrReviewer")
+  notifications       NotificationLog[]    @relation("NotificationRecipient")
+  reviewedSlips       PaymentSlip[]        @relation("SlipReviewer")
+  ledgerEntries       LedgerEntry[]        @relation("LedgerCreator")
+  uploadedGroups      Group[]              @relation("GroupUploader")
 
   @@index([companyId])
   @@index([roleId])
@@ -576,13 +582,13 @@ model UploadedFile {
 
   // Document Vault (Phase 13): versioned by (companyId, kind). A new upload of the
   // same document type supersedes the prior one (isLatest=false) — never overwrites.
-  version      Int        @default(1)
-  isLatest     Boolean    @default(true)
+  version      Int           @default(1)
+  isLatest     Boolean       @default(true)
   expiryDate   DateTime? // document validity (trade licence, ID, cert…) for expiry tracking
-  scanStatus   String     @default("CLEAN") // CLEAN | (future) INFECTED — content scan result
-  supersedesId String?    @unique // the version this one replaces
-  supersedes   UploadedFile?  @relation("FileVersions", fields: [supersedesId], references: [id])
-  supersededBy UploadedFile?  @relation("FileVersions")
+  scanStatus   String        @default("CLEAN") // CLEAN | (future) INFECTED — content scan result
+  supersedesId String?       @unique // the version this one replaces
+  supersedes   UploadedFile? @relation("FileVersions", fields: [supersedesId], references: [id])
+  supersededBy UploadedFile? @relation("FileVersions")
 
   vouchers    Voucher[]
   invoices    Invoice[]
@@ -607,6 +613,19 @@ model RefreshToken {
   createdAt    DateTime  @default(now())
 
   @@index([userId, expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  ip        String?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 // ─── Tenancy: companies + profiles ───────────────────────────────────────────
@@ -667,9 +686,9 @@ model Company {
   uploadedFiles               UploadedFile[]
 
   /// Groups that named this Company as their Umrah Co (T002-01).
-  groupsAsUmrahCompany        Group[]       @relation("GroupUmrahCompany")
+  groupsAsUmrahCompany       Group[]       @relation("GroupUmrahCompany")
   /// VisaRequest batches that named this Company as Umrah Co (T002-01).
-  visaRequestsAsUmrahCompany  VisaRequest[] @relation("VisaRequestUmrahCompany")
+  visaRequestsAsUmrahCompany VisaRequest[] @relation("VisaRequestUmrahCompany")
 
   @@index([type, verificationStatus])
 }
@@ -804,49 +823,63 @@ model Enquiry {
 // ─── Core operations: groups, passengers, flights ────────────────────────────
 
 model Group {
-  id            String        @id @default(cuid())
-  code          String        @unique // GRP-1446-2891 (internal; unchanged)
-  tenantId      String
-  tenant        Company       @relation(fields: [tenantId], references: [id])
-  seasonId      String
-  season        Season        @relation(fields: [seasonId], references: [id])
-  name          String
-  nameBn        String?
-  destination   Destination
-  visaType      VisaType
-  packageType   PackageType   @default(STANDARD)
-  maxCapacity   Int           @default(40)
-  paxCount      Int           @default(0) // denormalized for boards
-  departDate    DateTime?
-  returnDate    DateTime?
-  notes         String?
+  id               String        @id @default(cuid())
+  code             String        @unique // GRP-1446-2891 (internal; unchanged)
+  tenantId         String
+  tenant           Company       @relation(fields: [tenantId], references: [id])
+  seasonId         String
+  season           Season        @relation(fields: [seasonId], references: [id])
+  name             String
+  nameBn           String?
+  destination      Destination
+  visaType         VisaType
+  packageType      PackageType   @default(STANDARD)
+  maxCapacity      Int           @default(40)
+  paxCount         Int           @default(0) // denormalized for boards
+  departDate       DateTime?
+  returnDate       DateTime?
+  notes            String?
   /// Nusuk Group Number spine (business identity). Nullable for legacy rows; unique when set.
-  nusukGroupNumber String?    @unique
+  nusukGroupNumber String?       @unique
   /// Mandatory for HAJJ/UMRAH when REQUIRE_HAJI_WHATSAPP=true.
   hajiWhatsapp     String?
   consulate        String?
   /// Saudi Umrah Company that processes visas for this group (T002-01). Optional FK → Company.
   umrahCompanyId   String?
-  umrahCompany     Company?   @relation("GroupUmrahCompany", fields: [umrahCompanyId], references: [id])
-  servicesValue    Decimal?   @db.Decimal(14, 2)
+  umrahCompany     Company?      @relation("GroupUmrahCompany", fields: [umrahCompanyId], references: [id])
+  servicesValue    Decimal?      @db.Decimal(14, 2)
   uploadedByUserId String?
-  uploadedByUser   User?      @relation("GroupUploader", fields: [uploadedByUserId], references: [id])
+  uploadedByUser   User?         @relation("GroupUploader", fields: [uploadedByUserId], references: [id])
   uploadedByLabel  String?
   /// Readiness gates (T001-02) — independent of WorkflowStage. Default false.
-  gateVisa      Boolean       @default(false)
-  gatePackage   Boolean       @default(false)
-  gatePayment   Boolean       @default(false)
-  gateBill      Boolean       @default(false)
-  status        GroupStatus   @default(PENDING)
-  opsStatus     OpsStatus     @default(UPCOMING)
-  currentStage  Int           @default(1)
-  workflowStage WorkflowStage @relation(fields: [currentStage], references: [id])
-  stageNote     String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  gateVisa         Boolean       @default(false)
+  gatePackage      Boolean       @default(false)
+  gatePayment      Boolean       @default(false)
+  gateBill         Boolean       @default(false)
+  status           GroupStatus   @default(PENDING)
+  approvalStatus   ApprovalStatus @default(DRAFT)
+  locked           Boolean        @default(false)
+  submittedAt      DateTime?
+  approvedAt       DateTime?
+  approvedByUserId String?
+  lockedAt         DateTime?
+  returnReason     String?
+  lockType         LockType?
+  stageEnteredAt   DateTime?
+  opsStatus        OpsStatus     @default(UPCOMING)
+  currentStage     Int           @default(1)
+  workflowStage    WorkflowStage @relation(fields: [currentStage], references: [id])
+  stageNote        String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   passengers         Passenger[]
   flightInfos        FlightInfo[]
+  flightAssignments  FlightAssignment[]
+  changeRequests     ChangeRequest[]
+  timelineEntries    GroupTimelineEntry[]
+  approvals          GroupApproval[]
+  versions           GroupVersion[]
   tickets            Ticket[]
   visaRequests       VisaRequest[]
   hotelBookings      HotelBooking[]
@@ -908,17 +941,17 @@ model Passenger {
   seat           String?
 
   /// T001-04 Mutamer Excel foundation (nullable; legacy rows omit).
-  age              Int?
-  mainEaCode       String?
-  mainEaName       String?
-  subEaCode        String?
-  subEaName        String?
-  biometricStatus  String?
-  visaNumber       String?
-  mofaNumber       String?
-  mutamerType      String?
+  age             Int?
+  mainEaCode      String?
+  mainEaName      String?
+  subEaCode       String?
+  subEaName       String?
+  biometricStatus String?
+  visaNumber      String?
+  mofaNumber      String?
+  mutamerType     String?
   /// Business sheet label (e.g. "Visa Not Issued"); ERP enum remains visaStatus.
-  visaStatusLabel  String?
+  visaStatusLabel String?
 
   /// T002-03 — canonical Mutamer Visa Pipeline state (desk transitions).
   visaPipelineStatus VisaPipelineStatus @default(NEW)
@@ -927,11 +960,11 @@ model Passenger {
 
   /// T002-05 — slim embassy / passport custody (no PassportMovement table unless SOP mandates).
   /// File / consulate reference captured at EMBASSY stage (complements VisaRequest.embassy / Group.consulate).
-  embassyRef           String?
+  embassyRef         String?
   /// When mutamer file/passport was submitted to embassy/consulate handling.
-  embassySubmittedAt   DateTime?
+  embassySubmittedAt DateTime?
   /// When passport returned to Agent/Tuba custody (PASSPORT_RETURNED).
-  passportReturnedAt   DateTime?
+  passportReturnedAt DateTime?
 
   visaStatus      VisaStatus    @default(PENDING)
   hotelStatus     ConfirmStatus @default(PENDING)
@@ -974,10 +1007,17 @@ model FlightInfo {
   gate          String?
   paxCount      Int             @default(0)
   status        FlightStatus    @default(SCHEDULED)
+  aircraft       String?
+  boardingAt     DateTime?
+  departureAt    DateTime?
+  arrivalAt      DateTime?
+  capacity       Int             @default(0)
+  availableSeats Int             @default(0)
 
   tickets        Ticket[]
   dispatchOrders DispatchOrder[]
   meetAssist     MeetAssistTask[]
+  assignments    FlightAssignment[]
 
   // Live Arrival/Departure boards filter by these — keep them fast:
   @@index([direction, status, scheduledAt])
@@ -996,6 +1036,9 @@ model Ticket {
   fileUrl      String?
   fileName     String?
   status       ReviewStatus @default(PENDING)
+  pnr          String?
+  ticketNumber String?
+  seatNumber   String?
   uploadedAt   DateTime     @default(now())
 
   @@index([groupId])
@@ -1043,6 +1086,14 @@ model VisaRequest {
   notes                String?
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
+  currency             String               @default("SAR")
+  unitPrice            Decimal?             @db.Decimal(14, 2)
+  subtotal             Decimal?             @db.Decimal(14, 2)
+  vatAmount            Decimal?             @db.Decimal(14, 2)
+  totalAmount          Decimal?             @db.Decimal(14, 2)
+  rateCardId           String?
+  priceOverridden      Boolean              @default(false)
+  priceOverrideReason  String?
 
   @@index([tenantId, status])
   @@index([groupId])
@@ -1101,7 +1152,8 @@ model HotelBooking {
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 
-  brns BRN[]
+  brns     BRN[]
+  currency String @default("SAR")
 
   @@index([tenantId, status])
   @@index([supplierId, status])
@@ -1128,10 +1180,17 @@ model TransportBooking {
   returnAt       DateTime?
   totalAmount    Decimal?    @db.Decimal(14, 2)
 
-  statusReason String?
-  status       ServiceRequestStatus @default(REQUESTED)
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  statusReason        String?
+  status              ServiceRequestStatus @default(REQUESTED)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  currency            String               @default("SAR")
+  unitPrice           Decimal?             @db.Decimal(14, 2)
+  subtotal            Decimal?             @db.Decimal(14, 2)
+  vatAmount           Decimal?             @db.Decimal(14, 2)
+  rateCardId          String?
+  priceOverridden     Boolean              @default(false)
+  priceOverrideReason String?
 
   @@index([tenantId, status])
   @@index([supplierId, status])
@@ -1163,6 +1222,7 @@ model CateringBooking {
   status       ServiceRequestStatus @default(REQUESTED)
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
+  currency     String               @default("SAR")
 
   @@index([tenantId, status])
   @@index([supplierId, status])
@@ -1184,10 +1244,18 @@ model AdditionalServiceRequest {
   description   String?
   requestedFor  DateTime?
 
-  statusReason String?
-  status       ServiceRequestStatus @default(REQUESTED)
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  statusReason        String?
+  status              ServiceRequestStatus @default(REQUESTED)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  currency            String               @default("SAR")
+  unitPrice           Decimal?             @db.Decimal(14, 2)
+  subtotal            Decimal?             @db.Decimal(14, 2)
+  vatAmount           Decimal?             @db.Decimal(14, 2)
+  totalAmount         Decimal?             @db.Decimal(14, 2)
+  rateCardId          String?
+  priceOverridden     Boolean              @default(false)
+  priceOverrideReason String?
 
   @@index([tenantId, status])
   @@index([groupId])
@@ -1265,20 +1333,20 @@ model LongStay {
   status    LongStayStatus @default(UPCOMING)
 
   /// Host register (architecture §8) — not a login user.
-  hostName     String?
-  hostIqama    String?
-  hostWhatsapp String?
-  hostRelation String?
+  hostName        String?
+  hostIqama       String?
+  hostWhatsapp    String?
+  hostRelation    String?
   /// Absher tracking flag / note (staff-update model; no gov API).
-  absher       String?
+  absher          String?
   /// Kingdom entry / exit dates for ~90-day duration tracking.
-  entryDate    DateTime?
-  exitDate     DateTime?
+  entryDate       DateTime?
+  exitDate        DateTime?
   /// T002-08 Day-85 compliance — stamped by the automation sweep, never by API.
   day85NotifiedAt DateTime?
 
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status])
   @@index([groupId])
@@ -1567,29 +1635,29 @@ model Invoice {
   seasonId String?
   season   Season? @relation(fields: [seasonId], references: [id])
 
-  issueDate  DateTime      @default(now())
-  dueDate    DateTime?
-  currency   CurrencyCode  @default(SAR)
-  subtotal   Decimal       @db.Decimal(14, 2)
-  vatRate    Decimal       @default(15) @db.Decimal(5, 2)
-  vatAmount  Decimal       @db.Decimal(14, 2)
-  total      Decimal       @db.Decimal(14, 2)
-  status     InvoiceStatus @default(OUTSTANDING)
-  notes      String?
+  issueDate    DateTime      @default(now())
+  dueDate      DateTime?
+  currency     CurrencyCode  @default(SAR)
+  subtotal     Decimal       @db.Decimal(14, 2)
+  vatRate      Decimal       @default(15) @db.Decimal(5, 2)
+  vatAmount    Decimal       @db.Decimal(14, 2)
+  total        Decimal       @db.Decimal(14, 2)
+  status       InvoiceStatus @default(OUTSTANDING)
+  notes        String?
   /// T002-06 — STANDARD (default) vs MOFA Processing Account bill (Qty×Rate).
-  kind       InvoiceKind   @default(STANDARD)
+  kind         InvoiceKind   @default(STANDARD)
   /// Finance Approval Sign (MOFA bill strip) — not the mutamer MOFA Number.
   approvalSign String?
   /// CR Date when bill is finance-approved.
-  crDate     DateTime?
+  crDate       DateTime?
   // the booking that auto-generated this invoice (idempotency guard)
-  sourceType String?
-  sourceId   String?
+  sourceType   String?
+  sourceId     String?
   // generated PDF object
-  fileId     String?
-  file       UploadedFile? @relation(fields: [fileId], references: [id])
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  fileId       String?
+  file         UploadedFile? @relation(fields: [fileId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   items       InvoiceItem[]
   allocations ReceiptAllocation[]
@@ -1844,8 +1912,252 @@ model AuditLog {
   after       Json?
   ip          String?
   createdAt   DateTime    @default(now())
+  actingAsUserId String?
+  reason         String?
+  userAgent      String?
+  correlationId  String?
+  workflowId     String?
 
   @@index([entityType, entityId])
   @@index([actorUserId, createdAt])
   @@index([createdAt])
+}
+
+// Billing rate cards (B-10) - configurable, effective-dated price masters.
+enum RateUnit {
+  PER_VEHICLE
+  PER_SEAT
+  PER_PERSON
+  PER_SERVICE
+  PER_TRIP
+}
+
+enum TripType {
+  ONE_WAY
+  ROUND_TRIP
+}
+
+enum VisaProcessingType {
+  NORMAL
+  EXPRESS
+  VIP
+}
+
+model TransportRate {
+  id            String      @id @default(cuid())
+  vehicleType   VehicleType
+  route         String?
+  tripType      TripType    @default(ONE_WAY)
+  unit          RateUnit    @default(PER_VEHICLE)
+  currency      String      @default("SAR")
+  price         Decimal     @db.Decimal(14, 2)
+  effectiveFrom DateTime    @default(now())
+  effectiveTo   DateTime?
+  active        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([vehicleType, active, effectiveFrom])
+}
+
+model VisaRate {
+  id             String             @id @default(cuid())
+  visaType       VisaType           @default(UMRAH)
+  visaCategory   MohCategory?
+  country        String             @default("SA")
+  processingType VisaProcessingType @default(NORMAL)
+  currency       String             @default("SAR")
+  price          Decimal            @db.Decimal(14, 2)
+  effectiveFrom  DateTime           @default(now())
+  effectiveTo    DateTime?
+  active         Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([country, active, effectiveFrom])
+  @@index([visaType, visaCategory, active])
+}
+
+model AdditionalServiceRate {
+  id            String                @id @default(cuid())
+  serviceType   AdditionalServiceType
+  unit          RateUnit              @default(PER_SERVICE)
+  currency      String                @default("SAR")
+  price         Decimal               @db.Decimal(14, 2)
+  effectiveFrom DateTime              @default(now())
+  effectiveTo   DateTime?
+  active        Boolean               @default(true)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([serviceType, active, effectiveFrom])
+}
+
+model FlightAssignment {
+  id             String     @id @default(cuid())
+  flightInfoId   String
+  flightInfo     FlightInfo @relation(fields: [flightInfoId], references: [id], onDelete: Cascade)
+  groupId        String
+  group          Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  seatsAllocated Int        @default(0)
+  createdById    String?
+  createdAt      DateTime   @default(now())
+
+  @@unique([flightInfoId, groupId])
+  @@index([groupId])
+  @@index([flightInfoId])
+}
+
+enum ApprovalStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_APPROVAL
+  APPROVED
+  RETURNED
+  REJECTED
+  LOCKED
+  COMPLETED
+  ARCHIVED
+}
+
+enum ChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum GroupTimelineEvent {
+  CREATED
+  SUBMITTED
+  APPROVED
+  REJECTED
+  RETURNED
+  LOCKED
+  UNLOCKED
+  CHANGE_REQUESTED
+  CHANGE_APPROVED
+  CHANGE_REJECTED
+  COMPLETED
+  ARCHIVED
+  IMPERSONATION_STARTED
+  IMPERSONATION_ENDED
+}
+
+model ChangeRequest {
+  id                String              @id @default(cuid())
+  groupId           String
+  group             Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  requestedByUserId String
+  field             String?
+  description       String
+  status            ChangeRequestStatus @default(PENDING)
+  decidedByUserId   String?
+  decisionReason    String?
+  createdAt         DateTime            @default(now())
+  decidedAt         DateTime?
+
+  @@index([groupId])
+  @@index([status])
+}
+
+model GroupTimelineEntry {
+  id          String             @id @default(cuid())
+  groupId     String
+  group       Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  event       GroupTimelineEvent
+  actorUserId String?
+  actorLabel  String?
+  actingAsUserId String?
+  correlationId String?
+  note        String?
+  createdAt   DateTime           @default(now())
+
+  @@index([groupId, createdAt])
+}
+
+model ImpersonationSession {
+  id          String    @id @default(cuid())
+  adminUserId String
+  agentUserId String
+  reason      String?
+  ip          String?
+  userAgent   String?
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+  actionCount Int?
+  summary     String?
+
+  @@index([adminUserId, startedAt])
+  @@index([agentUserId])
+}
+
+enum LockType {
+  SOFT
+  HARD
+}
+
+model ApprovalRule {
+  id           String       @id @default(cuid())
+  name         String
+  minPax       Int?
+  visaType     VisaType?
+  packageType  PackageType?
+  requiredRole String       @default("OPS_STAFF")
+  level        Int          @default(1)
+  minApprovals Int          @default(1)
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+
+  @@index([active])
+}
+
+model GroupApproval {
+  id             String   @id @default(cuid())
+  groupId        String
+  group          Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  level          Int      @default(1)
+  approverUserId String
+  signatureHash  String
+  reason         String?
+  createdAt      DateTime @default(now())
+
+  @@index([groupId])
+}
+
+model GroupVersion {
+  id              String   @id @default(cuid())
+  groupId         String
+  group           Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  version         Int
+  snapshot        Json
+  changedByUserId String?
+  actingAsUserId  String?
+  reason          String?
+  createdAt       DateTime @default(now())
+
+  @@unique([groupId, version])
+  @@index([groupId, createdAt])
+}
+
+model SecurityPolicy {
+  id                      String   @id @default(cuid())
+  key                     String   @unique @default("default")
+  impersonationMaxMinutes Int      @default(30)
+  forceLogoutOnRoleChange Boolean  @default(true)
+  forceLogoutOnLock       Boolean  @default(false)
+  maxSessionMinutes       Int?
+  updatedAt               DateTime @updatedAt
+}
+
+model IntegrationConfig {
+  id               String    @id @default(cuid())
+  provider         String    @unique
+  apiUrl           String?
+  deviceId         String?
+  defaultCountry   String?
+  apiKeyEnc        String?
+  connectionStatus String?
+  lastTestAt       DateTime?
+  lastResponse     String?
+  updatedAt        DateTime  @updatedAt
 }

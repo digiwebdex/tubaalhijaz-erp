@@ -50,9 +50,7 @@ const DEPT_NAV: NavItem[] = [
   { id:"transport",   label:"Transport",    icon: Bus            as IconFC },
   { id:"catering",    label:"Catering",     icon: UtensilsCrossed as IconFC },
   { id:"finance",     label:"Finance",      icon: DollarSign     as IconFC },
-  { id:"procurement", label:"Procurement",  icon: ShoppingCart   as IconFC },
-  { id:"hr",          label:"HR",           icon: Users          as IconFC },
-  { id:"crm",         label:"CRM",          icon: MessageCircle  as IconFC },
+  // Procurement / HR / CRM have no backend — removed from production nav.
 ];
 
 // ─── Live data types, colours & helpers ───────────────────────────────────────
@@ -1480,7 +1478,7 @@ function FinanceDesk() {
 function ProcurementDesk() {
   return (
     <DeskFrame>
-      <EmptyState tone="light" title="Procurement desk — coming soon" hint="No backend for this department yet."
+      <EmptyState tone="light" title="ক্রয় ডেস্ক" hint="এই মডিউল এখনও কনফিগার করা হয়নি।"
         icon={<ShoppingCart size={32} className="opacity-20" style={{ color:"#0B1E3F" }} />} />
     </DeskFrame>
   );
@@ -1488,7 +1486,7 @@ function ProcurementDesk() {
 function HRDesk() {
   return (
     <DeskFrame>
-      <EmptyState tone="light" title="HR desk — coming soon" hint="No backend for this department yet."
+      <EmptyState tone="light" title="এইচআর ডেস্ক" hint="এই মডিউল এখনও কনফিগার করা হয়নি।"
         icon={<Users size={32} className="opacity-20" style={{ color:"#0B1E3F" }} />} />
     </DeskFrame>
   );
@@ -1496,7 +1494,7 @@ function HRDesk() {
 function CRMDesk() {
   return (
     <DeskFrame>
-      <EmptyState tone="light" title="CRM desk — coming soon" hint="No backend for this department yet."
+      <EmptyState tone="light" title="সিআরএম ডেস্ক" hint="এই মডিউল এখনও কনফিগার করা হয়নি।"
         icon={<MessageCircle size={32} className="opacity-20" style={{ color:"#0B1E3F" }} />} />
     </DeskFrame>
   );

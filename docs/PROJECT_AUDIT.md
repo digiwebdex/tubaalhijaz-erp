@@ -302,7 +302,7 @@ The platform is a **late-stage MVP / early production** system: backend domain c
 | Staff Finance UI | `FinanceERP.tsx` exists; route serves `ComingSoon` |
 | Automation / Notification admin UI | `AutomationNotifications.tsx` fully wired but route ComingSoon |
 | Agent Documents Vault | ✅ Live (S1-06) — `DocumentsVaultScreen` wired in AgentPortal |
-| Agent group detail tabs | Hotel/transport/catering/docs/timeline panels ComingSoon |
+| Agent group detail tabs | Hotel/transport/catering/vouchers/timeline wired (see UI_05); no invent APIs |
 | Flight service tab | Explicit ComingSoon in AgentPortalServices |
 | SuperAdmin | Workflow, Automation, AI, OCR, Notifications, Audit, Settings = ComingSoon |
 | Contact enquiry | Form UI only; no API |

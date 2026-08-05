@@ -36,6 +36,10 @@ export const EV = {
    * the daily sweep only; `data.stage` gates AR-LS-85 vs AR-LS-90.
    */
   LONGSTAY_DAY85: "longstay.day85",
+  /** Flight Management — operational status transition (board + rule engine). */
+  FLIGHT_STATUS_CHANGED: "flight.status.changed",
+  /** Flight Management — a flight was assigned to a group. */
+  FLIGHT_ASSIGNED: "flight.assigned",
 } as const;
 
 export type EventKey = (typeof EV)[keyof typeof EV];

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { api } from "../lib/api";
 import { MapPin, Phone, Mail, Clock, Send, ChevronDown, CheckCircle } from "lucide-react";
 import { useLang } from "../lib/LangContext";
 import { fontFor, lineHeightFor } from "../lib/i18n";
@@ -65,8 +66,22 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: "", company: "", email: "", subject: "", message: "", type: "agent" });
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const t = (form.type || "").toUpperCase();
+    const type = ["AGENT", "SUPPLIER", "PILGRIM", "OTHER"].includes(t) ? t : "OTHER";
+    try {
+      await api.post("/enquiries", {
+        type,
+        name: form.name,
+        company: form.company || undefined,
+        email: form.email,
+        subject: form.subject,
+        message: form.message,
+      });
+    } catch {
+      /* public lead capture is best-effort */
+    }
     setSubmitted(true);
   };
 

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -116,6 +117,63 @@ export class AuthService {
       where: { tokenHash: sha256(rawToken), revokedAt: null },
       data: { revokedAt: new Date() },
     });
+  }
+
+  // ── password reset ──────────────────────────────────────────────────────────
+  private resetTtlMs(): number {
+    return 30 * 60_000; // 30 minutes
+  }
+
+  /** Step 1: request a reset link. Always resolves (no account enumeration). */
+  async forgotPassword(rawEmail: string, meta: RequestMeta) {
+    const email = rawEmail.toLowerCase().trim();
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (user && user.status === "ACTIVE") {
+      await this.prisma.passwordResetToken.deleteMany({ where: { userId: user.id, usedAt: null } });
+      const rawToken = randomBytes(32).toString("hex");
+      await this.prisma.passwordResetToken.create({
+        data: {
+          tokenHash: sha256(rawToken),
+          userId: user.id,
+          expiresAt: new Date(Date.now() + this.resetTtlMs()),
+          ip: meta.ip,
+        },
+      });
+      const base = this.config.get<string>("WEB_ORIGIN", "http://127.0.0.1:5273").split(",")[0];
+      const link = `${base}/reset-password?token=${rawToken}`;
+      // Hand off to the notification pipeline (stub-safe: delivers once SMTP is configured).
+      await this.prisma.notificationLog.create({
+        data: {
+          channel: "EMAIL",
+          recipientUserId: user.id,
+          recipientAddress: user.email,
+          title: "Reset your TUBA AL HIJAZ password",
+          body: `A password reset was requested. Use this link within 30 minutes:\n${link}\nIf you did not request this, you can ignore this email.`,
+          status: "PENDING",
+          lang: user.preferredLang ?? "en",
+        },
+      });
+    }
+    return { ok: true, message: "If an account exists for that email, a reset link has been sent." };
+  }
+
+  /** Step 2: consume the token, set a new password, and revoke all sessions. */
+  async resetPassword(rawToken: string, newPassword: string, meta: RequestMeta) {
+    const row = await this.prisma.passwordResetToken.findUnique({ where: { tokenHash: sha256(rawToken) } });
+    if (!row || row.usedAt || row.expiresAt < new Date()) {
+      throw new BadRequestException("This reset link is invalid or has expired. Please request a new one.");
+    }
+    const passwordHash = await argon2.hash(newPassword);
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: row.userId }, data: { passwordHash } }),
+      this.prisma.passwordResetToken.update({ where: { id: row.id }, data: { usedAt: new Date() } }),
+      this.prisma.refreshToken.updateMany({ where: { userId: row.userId, revokedAt: null }, data: { revokedAt: new Date() } }),
+      this.prisma.passwordResetToken.deleteMany({ where: { userId: row.userId, usedAt: null } }),
+    ]);
+    await this.prisma.auditLog.create({
+      data: { actorUserId: row.userId, action: "UPDATE", module: "Auth", entityType: "User", entityId: row.userId, after: { passwordReset: true }, ip: meta.ip },
+    });
+    return { ok: true, message: "Your password has been reset. Please sign in with your new password." };
   }
 
   // ── me ─────────────────────────────────────────────────────────────────────

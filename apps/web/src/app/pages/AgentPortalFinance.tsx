@@ -890,8 +890,8 @@ function ReportsScreen() {
       </div>
       <div className="rounded-2xl p-8" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
         <EmptyState
-          title="Financial reports are coming soon"
-          hint="Exportable summaries, group P&L, VAT and commission reports arrive in a later release. Your live wallet, ledger, statements and documents are in the other tabs."
+          title="আর্থিক রিপোর্ট"
+          hint="এই মডিউল এখনও কনফিগার করা হয়নি। ওয়ালেট, লেজার ও স্টেটমেন্ট অন্য ট্যাবে লাইভ।"
         />
       </div>
     </div>

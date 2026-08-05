@@ -24,6 +24,7 @@ import { SERVICE_META, ServiceKey } from "./service-types";
 import { RejectBookingDto } from "./dto";
 import { WalletService } from "../finance/wallet.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { BookingConfirmationService } from "./booking-confirmation.service";
 
 const SUPPLIER_SERVICES: ServiceKey[] = ["hotel", "transport", "catering"];
 
@@ -57,6 +58,7 @@ export class SupplierController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly services: ServicesService,
+    private readonly bookingConfirmation: BookingConfirmationService,
     private readonly storage: StorageService,
     private readonly wallet: WalletService,
     private readonly notifications: NotificationsService,
@@ -156,44 +158,14 @@ export class SupplierController {
     // double-click that loses the race gets a 0-count update and stops here,
     // so the wallet auto-deduct fires exactly once.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const flipped = await (this.prisma as any)[SERVICE_META[key].model].updateMany({
-      where: { id, status: "ASSIGNED" },
-      data: { status: "CONFIRMED", statusReason: null },
-    });
-    if (flipped.count !== 1) {
-      throw new BadRequestException("Booking is no longer awaiting acceptance");
-    }
-    await this.prisma.auditLog.create({
-      data: {
-        actorUserId: user.sub, action: "APPROVE", module: "SupplierPortal",
-        entityType: SERVICE_META[key].model, entityId: id,
-        after: { code: row.code, from: "ASSIGNED", to: "CONFIRMED" },
-      },
-    });
-
-    // Auto-deduct the agent's wallet on confirmation (idempotent; never blocks accept)
-    let charged: { charged: boolean; amount: number } = { charged: false, amount: 0 };
-    if (row.totalAmount && Number(row.totalAmount) > 0) {
-      charged = await this.wallet
-        .autoDeductForBooking(row.tenantId, Number(row.totalAmount), {
-          refType: SERVICE_META[key].model,
-          refId: id,
-          description: `${SERVICE_META[key].label} — ${row.code}`,
-          groupId: row.groupId,
-          createdById: user.sub,
-        })
-        .catch((e) => {
-          console.error("[supplier] wallet auto-deduct failed:", e);
-          return { charged: false, amount: 0 };
-        });
-    }
+    const conf = await this.bookingConfirmation.confirm(key, id, user);
 
     // Acceptance triggers the Voucher Generator (BRN + PDF + link back to group)
     const voucher = await this.services.ensureVoucher(key, id, user);
     return {
       status: "VOUCHER_ISSUED",
       voucher: { id: voucher.id, code: voucher.code, fileId: voucher.fileId },
-      walletCharged: charged.charged ? charged.amount : 0,
+      walletCharged: conf.charged,
     };
   }
 

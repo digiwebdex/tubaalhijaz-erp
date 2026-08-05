@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
 import type { AuthUser } from "../common/decorators/current-user.decorator";
 import type { CreatePassengerDto, UpdatePassengerDto } from "./passengers.dto";
 import {
@@ -33,6 +34,7 @@ export class PassengersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly events: EventEmitter2,
+    private readonly auditSvc: AuditService,
   ) {}
 
   /**
@@ -130,19 +132,7 @@ export class PassengersService {
     after: object,
   ) {
     if (!user?.sub) return;
-    await this.prisma.auditLog
-      .create({
-        data: {
-          actorUserId: user.sub,
-          action,
-          module: "Passengers",
-          entityType: "Passenger",
-          entityId,
-          before: before ?? undefined,
-          after,
-        },
-      })
-      .catch(() => undefined);
+    await this.auditSvc.log({ action, module: "Passengers", entityType: "Passenger", entityId, before, after });
   }
 
   async list(groupId: string, user?: AuthUser) {

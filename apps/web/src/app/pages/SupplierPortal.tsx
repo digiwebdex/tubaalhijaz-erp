@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import {
-  LayoutDashboard, Calendar, Upload, FileText, List, Wallet,
+  LayoutDashboard, Calendar, Upload, FileText, Wallet,
   Building, Bus, UtensilsCrossed, Check, X, Clock,
   CheckCircle, AlertCircle, Info, Star, TrendingUp,
 } from "lucide-react";
@@ -140,8 +140,7 @@ const SUPPLIER_NAV: NavItem[] = [
   { id: "bookings",   label: "Booking Acceptance", labelBn: "বুকিং গ্রহণ",          icon: Calendar as IconFC,        badge: 3 },
   { id: "vouchers",   label: "Voucher Upload",     labelBn: "ভাউচার আপলোড",         icon: Upload as IconFC },
   { id: "invoices",   label: "Invoice Upload",     labelBn: "ইনভয়েস আপলোড",        icon: FileText as IconFC },
-  { id: "statement",  label: "Statement",          labelBn: "স্টেটমেন্ট",            icon: List as IconFC },
-  { id: "payments",   label: "Payments",           labelBn: "পেমেন্ট",               icon: Wallet as IconFC },
+  // Statement / payouts have no supplier ledger API yet — removed from production nav.
 ];
 
 const SCREEN_LABELS: Record<string, { en: string; bn: string }> = {
@@ -960,7 +959,7 @@ function StatementScreen(_p: { type: SupplierType; demo: boolean }) {
     <div className="p-7">
       <div className="mb-5"><h2 className="text-sm font-bold text-[#0B1E3F]">Statement — Supplier View</h2><p className="text-xs mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>Running balance of booking settlements and platform fees</p></div>
       <div className="rounded-2xl p-8" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
-        <EmptyState title="Supplier statement coming soon" hint="Your running-balance ledger of settlements and platform fees will appear here in a later release. Bookings, vouchers and invoices are live in the other tabs." />
+        <EmptyState title="সাপ্লায়ার স্টেটমেন্ট" hint="এই মডিউল এখনও কনফিগার করা হয়নি। বুকিং, ভাউচার ও চালান অন্য ট্যাবে লাইভ।" />
       </div>
     </div>
   );
@@ -971,7 +970,7 @@ function PaymentsScreen(_p: { type: SupplierType; demo: boolean }) {
     <div className="p-7">
       <div className="mb-5"><h2 className="text-sm font-bold text-[#0B1E3F]">Payments &amp; Payouts</h2><p className="text-xs mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>Disbursements and bank-settlement details</p></div>
       <div className="rounded-2xl p-8" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
-        <EmptyState title="Payouts coming soon" hint="Your disbursement history and bank-settlement details will appear here once payouts go live. We never show bank-settlement details that aren't your own." />
+        <EmptyState title="পেমেন্ট ও পেআউট" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
       </div>
     </div>
   );

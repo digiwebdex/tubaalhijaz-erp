@@ -16,6 +16,7 @@ import { AuthService, RequestMeta } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterAgentDto } from "./dto/register-agent.dto";
 import { RegisterSupplierDto } from "./dto/register-supplier.dto";
+import { ForgotPasswordDto, ResetPasswordDto } from "./dto/password-reset.dto";
 
 const REFRESH_COOKIE = "tuba_rt";
 
@@ -92,6 +93,22 @@ export class AuthController {
     await this.auth.logout((req.cookies ?? {})[REFRESH_COOKIE]);
     res.clearCookie(REFRESH_COOKIE, { path: this.refreshCookiePath() });
     return { ok: true };
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(200)
+  @Post("forgot-password")
+  forgotPassword(@Body() dto: ForgotPasswordDto, @Req() req: Request) {
+    return this.auth.forgotPassword(dto.email, this.meta(req));
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(200)
+  @Post("reset-password")
+  resetPassword(@Body() dto: ResetPasswordDto, @Req() req: Request) {
+    return this.auth.resetPassword(dto.token, dto.newPassword, this.meta(req));
   }
 
   @Get("me")

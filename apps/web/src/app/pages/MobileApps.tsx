@@ -543,7 +543,7 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
           {screen === "groups" && (
             <div className="pt-2">
               <MHeader title="My Groups" sub="Rashidi Travel · Season 1446H" color={AGT_C}
-                right={<button onClick={() => toast.info("Group creation wizard coming soon.")} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor:AGT_C }}><Plus size={16} style={{ color:"white" }} /></button>} />
+                right={<button onClick={() => toast.info("এই মডিউল এখনও কনফিগার করা হয়নি।")} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor:AGT_C }}><Plus size={16} style={{ color:"white" }} /></button>} />
               {/* Wallet quick-look */}
               <div className="mx-4 mb-4 rounded-2xl p-4" style={{ background:`linear-gradient(135deg,${AGT_C} 0%,#6366F1 100%)` }}>
                 <div className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color:"rgba(255,255,255,0.80)" }}>Wallet Balance</div>

@@ -21,6 +21,7 @@ import { Prisma, UploadKind } from "@prisma/client";
 import { Public } from "../common/decorators/public.decorator";
 import { AuthUser } from "../common/decorators/current-user.decorator";
 import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
 import { StorageService } from "../storage/storage.service";
 import { validateUpload } from "../storage/file-type";
 
@@ -73,6 +74,7 @@ export class UploadsController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly auditSvc: AuditService,
   ) {}
 
   /**
@@ -307,16 +309,13 @@ export class UploadsController {
     reason: string,
     after?: Record<string, unknown>,
   ) {
-    await this.prisma.auditLog.create({
-      data: {
-        actorUserId: user?.sub ?? null,
-        actorLabel: user ? undefined : "Anonymous (upload confirm)",
-        action: "PROCESS",
-        module: "Uploads",
-        entityType: "UploadedFile",
-        entityId,
-        after: { result: ok ? "OK" : "DENIED", reason, ...(after ?? {}) },
-      },
-    }).catch(() => undefined);
+    await this.auditSvc.log({
+      actorLabel: user ? undefined : "Anonymous (upload confirm)",
+      action: "PROCESS",
+      module: "Uploads",
+      entityType: "UploadedFile",
+      entityId,
+      after: { result: ok ? "OK" : "DENIED", reason, ...(after ?? {}) },
+    });
   }
 }
