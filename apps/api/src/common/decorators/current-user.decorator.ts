@@ -6,6 +6,9 @@ export interface AuthUser {
   role: string;
   companyId: string | null;
   companyType: "AGENT" | "SUPPLIER" | null;
+  impersonatorSub?: string;
+  impersonatorEmail?: string;
+  impersonationSessionId?: string;
 }
 
 export const CurrentUser = createParamDecorator(

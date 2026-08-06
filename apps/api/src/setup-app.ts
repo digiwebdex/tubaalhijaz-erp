@@ -3,6 +3,8 @@ import { ConfigService } from "@nestjs/config";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import cookieParser from "cookie-parser";
 import { tenantContext } from "./common/tenant-context";
+import { auditContext } from "./common/audit-context";
+import { randomUUID } from "crypto";
 
 /** T001-05 — Mutamer Excel preview/commit JSON (≤1000 rows) needs > default 100kb. */
 const JSON_BODY_LIMIT = "15mb";
@@ -22,6 +24,13 @@ export function setupApp(app: INestApplication) {
   // Per-request AsyncLocalStorage store — read by the Prisma tenant-scoping extension.
   app.use((_req: unknown, _res: unknown, next: () => void) => {
     tenantContext.run({}, () => next());
+  });
+
+  // Per-request audit context (ip/userAgent/correlationId); identity added by the JWT guard.
+  app.use((req: { headers?: Record<string, unknown>; ip?: string }, _res: unknown, next: () => void) => {
+    const fwd = req?.headers?.["x-forwarded-for"] as string | string[] | undefined;
+    const ip = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(",")[0]?.trim() || req?.ip || null;
+    auditContext.run({ correlationId: randomUUID(), ip, userAgent: (req?.headers?.["user-agent"] as string) ?? null }, () => next());
   });
 
   app.use(cookieParser());

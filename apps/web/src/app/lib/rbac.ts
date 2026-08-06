@@ -24,6 +24,8 @@ export const P = {
   MANAGE_SYSTEM_SETTINGS: "MANAGE_SYSTEM_SETTINGS",
   API_KEY_ACCESS: "API_KEY_ACCESS",
   MANAGE_FLEET: "MANAGE_FLEET",
+  MANAGE_OPS: "MANAGE_OPS",
+  AGENT_IMPERSONATION: "AGENT_IMPERSONATION",
 } as const;
 
 export type PermKey = (typeof P)[keyof typeof P];
@@ -39,6 +41,14 @@ const PATH_ANY_OF: Record<string, readonly string[]> = {
   "/automation": [P.CONFIGURE_WORKFLOWS],
   "/workflow-map": [P.VIEW_DASHBOARD],
   "/rate-cards": [P.MANAGE_SYSTEM_SETTINGS],
+  "/flight-management": [P.MANAGE_OPS],
+  "/agent-operations": [P.AGENT_IMPERSONATION],
+  "/audit-center": [P.ACCESS_AUDIT_LOGS],
+  "/approvals": [P.MANAGE_OPS],
+  "/sla-dashboard": [P.VIEW_DASHBOARD],
+  "/wasender-config": [P.MANAGE_SYSTEM_SETTINGS],
+  "/notification-center": [P.MANAGE_SYSTEM_SETTINGS],
+  "/template-manager": [P.MANAGE_SYSTEM_SETTINGS],
   "/super-admin": [
     P.MANAGE_USERS,
     P.APPROVE_COMPANIES,
@@ -93,6 +103,8 @@ export function canAccessPath(path: string, user: ApiUser | null = sessionUser()
   if (!user) return false;
   const base = path.split("?")[0].replace(/\/$/, "") || "/";
 
+  // Personal areas — any authenticated user (backend scopes data per-user/owner).
+  if (base === "/inbox" || base === "/my-workflow") return true;
   if (base === "/agent-portal") return isAgentCompany(user);
   if (base === "/supplier-portal") return isSupplierCompany(user);
 

@@ -4,6 +4,8 @@ import { AuthModule } from "../auth/auth.module";
 import { BULL_PREFIX, makeConnection } from "../automation/automation.constants";
 import { NOTIFY_QUEUE, NOTIFY_QUEUE_NAME } from "./notifications.constants";
 import { NotificationsController } from "./notifications.controller";
+import { NotificationAdminController } from "./notification-admin.controller";
+import { NotificationAdminService } from "./notification-admin.service";
 import { NotificationsService } from "./notifications.service";
 import { NotificationsWorker } from "./notifications.worker";
 import { NotificationsGateway } from "./notifications.gateway";
@@ -19,9 +21,10 @@ import { EmailChannel } from "./channels/email.channel";
  */
 @Module({
   imports: [AuthModule], // JwtService for /notifications handshake (S2-02)
-  controllers: [NotificationsController],
+  controllers: [NotificationsController, NotificationAdminController],
   providers: [
     NotificationsService,
+    NotificationAdminService,
     NotificationsWorker,
     NotificationsGateway,
     TemplateService,

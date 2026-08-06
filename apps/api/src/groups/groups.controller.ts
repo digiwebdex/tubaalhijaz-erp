@@ -10,6 +10,8 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { GroupsService } from "./groups.service";
+import { UseGuards } from "@nestjs/common";
+import { GroupLockGuard } from "../common/guards/group-lock.guard";
 import { CreateGroupDto, UpdateGroupDto } from "./groups.dto";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import type { AuthUser } from "../common/decorators/current-user.decorator";
@@ -72,11 +74,13 @@ export class GroupsController {
     return this.groups.create(dto, user);
   }
 
+  @UseGuards(GroupLockGuard)
   @Patch(":id")
   update(@Param("id") id: string, @Body() dto: UpdateGroupDto, @CurrentUser() user: AuthUser) {
     return this.groups.update(id, dto, user);
   }
 
+  @UseGuards(GroupLockGuard)
   @Delete(":id")
   remove(@Param("id") id: string) {
     return this.groups.remove(id);

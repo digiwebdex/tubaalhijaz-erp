@@ -10,6 +10,9 @@ export interface JwtPayload {
   role: string;
   companyId: string | null;
   companyType: "AGENT" | "SUPPLIER" | null;
+  impersonatorSub?: string;
+  impersonatorEmail?: string;
+  impersonationSessionId?: string;
 }
 
 @Injectable()
@@ -30,6 +33,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       role: payload.role,
       companyId: payload.companyId ?? null,
       companyType: payload.companyType ?? null,
+      impersonatorSub: payload.impersonatorSub,
+      impersonatorEmail: payload.impersonatorEmail,
+      impersonationSessionId: payload.impersonationSessionId,
     };
   }
 }

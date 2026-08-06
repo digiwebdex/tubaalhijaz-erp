@@ -137,6 +137,10 @@ enum FlightStatus {
   CHECK_IN
   BOARDING
   DEPARTED
+  IN_TRANSIT
+  ARRIVED
+  CANCELLED
+  RESCHEDULED
 }
 
 // Master-plan end-to-end workflow for every bookable service:
@@ -490,6 +494,7 @@ model WorkflowStage {
   labelBn String
   module  String // owning module, e.g. "Agent Portal", "Visa Desk"
   slaText String?
+  slaHours Int?
   route   String?
 
   groups Group[]
@@ -852,6 +857,15 @@ model Group {
   gatePayment      Boolean       @default(false)
   gateBill         Boolean       @default(false)
   status           GroupStatus   @default(PENDING)
+  approvalStatus   ApprovalStatus @default(DRAFT)
+  locked           Boolean        @default(false)
+  submittedAt      DateTime?
+  approvedAt       DateTime?
+  approvedByUserId String?
+  lockedAt         DateTime?
+  returnReason     String?
+  lockType         LockType?
+  stageEnteredAt   DateTime?
   opsStatus        OpsStatus     @default(UPCOMING)
   currentStage     Int           @default(1)
   workflowStage    WorkflowStage @relation(fields: [currentStage], references: [id])
@@ -861,6 +875,11 @@ model Group {
 
   passengers         Passenger[]
   flightInfos        FlightInfo[]
+  flightAssignments  FlightAssignment[]
+  changeRequests     ChangeRequest[]
+  timelineEntries    GroupTimelineEntry[]
+  approvals          GroupApproval[]
+  versions           GroupVersion[]
   tickets            Ticket[]
   visaRequests       VisaRequest[]
   hotelBookings      HotelBooking[]
@@ -988,10 +1007,17 @@ model FlightInfo {
   gate          String?
   paxCount      Int             @default(0)
   status        FlightStatus    @default(SCHEDULED)
+  aircraft       String?
+  boardingAt     DateTime?
+  departureAt    DateTime?
+  arrivalAt      DateTime?
+  capacity       Int             @default(0)
+  availableSeats Int             @default(0)
 
   tickets        Ticket[]
   dispatchOrders DispatchOrder[]
   meetAssist     MeetAssistTask[]
+  assignments    FlightAssignment[]
 
   // Live Arrival/Departure boards filter by these — keep them fast:
   @@index([direction, status, scheduledAt])
@@ -1010,6 +1036,9 @@ model Ticket {
   fileUrl      String?
   fileName     String?
   status       ReviewStatus @default(PENDING)
+  pnr          String?
+  ticketNumber String?
+  seatNumber   String?
   uploadedAt   DateTime     @default(now())
 
   @@index([groupId])
@@ -1883,6 +1912,11 @@ model AuditLog {
   after       Json?
   ip          String?
   createdAt   DateTime    @default(now())
+  actingAsUserId String?
+  reason         String?
+  userAgent      String?
+  correlationId  String?
+  workflowId     String?
 
   @@index([entityType, entityId])
   @@index([actorUserId, createdAt])
@@ -1957,4 +1991,173 @@ model AdditionalServiceRate {
   updatedAt     DateTime              @updatedAt
 
   @@index([serviceType, active, effectiveFrom])
+}
+
+model FlightAssignment {
+  id             String     @id @default(cuid())
+  flightInfoId   String
+  flightInfo     FlightInfo @relation(fields: [flightInfoId], references: [id], onDelete: Cascade)
+  groupId        String
+  group          Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  seatsAllocated Int        @default(0)
+  createdById    String?
+  createdAt      DateTime   @default(now())
+
+  @@unique([flightInfoId, groupId])
+  @@index([groupId])
+  @@index([flightInfoId])
+}
+
+enum ApprovalStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_APPROVAL
+  APPROVED
+  RETURNED
+  REJECTED
+  LOCKED
+  COMPLETED
+  ARCHIVED
+}
+
+enum ChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum GroupTimelineEvent {
+  CREATED
+  SUBMITTED
+  APPROVED
+  REJECTED
+  RETURNED
+  LOCKED
+  UNLOCKED
+  CHANGE_REQUESTED
+  CHANGE_APPROVED
+  CHANGE_REJECTED
+  COMPLETED
+  ARCHIVED
+  IMPERSONATION_STARTED
+  IMPERSONATION_ENDED
+}
+
+model ChangeRequest {
+  id                String              @id @default(cuid())
+  groupId           String
+  group             Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  requestedByUserId String
+  field             String?
+  description       String
+  status            ChangeRequestStatus @default(PENDING)
+  decidedByUserId   String?
+  decisionReason    String?
+  createdAt         DateTime            @default(now())
+  decidedAt         DateTime?
+
+  @@index([groupId])
+  @@index([status])
+}
+
+model GroupTimelineEntry {
+  id          String             @id @default(cuid())
+  groupId     String
+  group       Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  event       GroupTimelineEvent
+  actorUserId String?
+  actorLabel  String?
+  actingAsUserId String?
+  correlationId String?
+  note        String?
+  createdAt   DateTime           @default(now())
+
+  @@index([groupId, createdAt])
+}
+
+model ImpersonationSession {
+  id          String    @id @default(cuid())
+  adminUserId String
+  agentUserId String
+  reason      String?
+  ip          String?
+  userAgent   String?
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+  actionCount Int?
+  summary     String?
+
+  @@index([adminUserId, startedAt])
+  @@index([agentUserId])
+}
+
+enum LockType {
+  SOFT
+  HARD
+}
+
+model ApprovalRule {
+  id           String       @id @default(cuid())
+  name         String
+  minPax       Int?
+  visaType     VisaType?
+  packageType  PackageType?
+  requiredRole String       @default("OPS_STAFF")
+  level        Int          @default(1)
+  minApprovals Int          @default(1)
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+
+  @@index([active])
+}
+
+model GroupApproval {
+  id             String   @id @default(cuid())
+  groupId        String
+  group          Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  level          Int      @default(1)
+  approverUserId String
+  signatureHash  String
+  reason         String?
+  createdAt      DateTime @default(now())
+
+  @@index([groupId])
+}
+
+model GroupVersion {
+  id              String   @id @default(cuid())
+  groupId         String
+  group           Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  version         Int
+  snapshot        Json
+  changedByUserId String?
+  actingAsUserId  String?
+  reason          String?
+  createdAt       DateTime @default(now())
+
+  @@unique([groupId, version])
+  @@index([groupId, createdAt])
+}
+
+model SecurityPolicy {
+  id                      String   @id @default(cuid())
+  key                     String   @unique @default("default")
+  impersonationMaxMinutes Int      @default(30)
+  forceLogoutOnRoleChange Boolean  @default(true)
+  forceLogoutOnLock       Boolean  @default(false)
+  maxSessionMinutes       Int?
+  updatedAt               DateTime @updatedAt
+}
+
+model IntegrationConfig {
+  id               String    @id @default(cuid())
+  provider         String    @unique
+  apiUrl           String?
+  deviceId         String?
+  defaultCountry   String?
+  apiKeyEnc        String?
+  connectionStatus String?
+  lastTestAt       DateTime?
+  lastResponse     String?
+  updatedAt        DateTime  @updatedAt
 }

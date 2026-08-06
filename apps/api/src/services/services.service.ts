@@ -7,6 +7,7 @@ import {
 import { Prisma, ServiceRequestStatus } from "@prisma/client";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
 import { PricingService } from "./pricing.service";
 import { BookingConfirmationService } from "./booking-confirmation.service";
 import { StorageService } from "../storage/storage.service";
@@ -38,6 +39,7 @@ const fmt = (d: Date | null | undefined) =>
 export class ServicesService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly auditSvc: AuditService,
     private readonly storage: StorageService,
     private readonly pdf: VoucherGeneratorService,
     private readonly invoices: InvoiceService,
@@ -618,9 +620,7 @@ export class ServicesService {
     };
   }
 
-  private audit(user: AuthUser, action: "CREATE" | "UPDATE", entityType: string, entityId: string, after: object) {
-    return this.prisma.auditLog.create({
-      data: { actorUserId: user.sub, action, module: "Services", entityType, entityId, after: after as never },
-    });
+  private audit(_user: AuthUser, action: "CREATE" | "UPDATE", entityType: string, entityId: string, after: object) {
+    return this.auditSvc.log({ action, module: "Services", entityType, entityId, after });
   }
 }

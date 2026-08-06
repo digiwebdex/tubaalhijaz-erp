@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { AuditAction, Prisma } from "@prisma/client";
+import { auditContext } from "../common/audit-context";
 import { PrismaService } from "../prisma/prisma.service";
 import { ListAuditLogsQueryDto } from "./audit.dto";
 
@@ -22,6 +23,37 @@ export type AuditLogListItem = {
 @Injectable()
 export class AuditService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Shared, context-aware audit write. Actor/actingAs/ip/userAgent/correlation/session
+   * come automatically from the request AuditContext — callers pass only the domain fields.
+   */
+  async log(entry: {
+    action: AuditAction | string; module: string; entityType: string; entityId?: string | null;
+    before?: object | null; after?: object | null; reason?: string | null; workflowId?: string | null; actorLabel?: string | null;
+  }) {
+    const ctx = auditContext.getStore();
+    await this.prisma.auditLog
+      .create({
+        data: {
+          actorUserId: ctx?.actualUserId ?? null,
+          actingAsUserId: ctx?.actingAsUserId ?? null,
+          actorLabel: entry.actorLabel ?? ctx?.actorLabel ?? (ctx?.actualUserId ? null : "System"),
+          action: entry.action as AuditAction,
+          module: entry.module,
+          entityType: entry.entityType,
+          entityId: entry.entityId ?? null,
+          before: (entry.before ?? undefined) as never,
+          after: (entry.after ?? undefined) as never,
+          ip: ctx?.ip ?? null,
+          userAgent: ctx?.userAgent ?? null,
+          reason: entry.reason ?? null,
+          correlationId: ctx?.correlationId ?? null,
+          workflowId: entry.workflowId ?? ctx?.workflowId ?? null,
+        },
+      })
+      .catch(() => undefined);
+  }
 
   async list(query: ListAuditLogsQueryDto) {
     const page = query.page ?? 1;

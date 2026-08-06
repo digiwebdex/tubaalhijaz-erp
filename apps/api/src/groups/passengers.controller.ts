@@ -3,6 +3,8 @@ import { CurrentUser } from "../common/decorators/current-user.decorator";
 import type { AuthUser } from "../common/decorators/current-user.decorator";
 import { RequirePermissions } from "../common/decorators/require-permissions.decorator";
 import { PassengersService } from "./passengers.service";
+import { UseGuards } from "@nestjs/common";
+import { GroupLockGuard } from "../common/guards/group-lock.guard";
 import { MutamerImportService } from "./mutamer-import.service";
 import { VisaPipelineService } from "./visa-pipeline.service";
 import {
@@ -30,12 +32,14 @@ export class GroupPassengersController {
     return this.passengers.list(groupId, user);
   }
 
+  @UseGuards(GroupLockGuard)
   @Post()
   create(@Param("groupId") groupId: string, @Body() dto: CreatePassengerDto, @CurrentUser() user: AuthUser) {
     return this.passengers.create(groupId, [dto], user);
   }
 
   /** Legacy bulk JSON path (kept for backward compatibility). */
+  @UseGuards(GroupLockGuard)
   @Post("bulk")
   bulk(@Param("groupId") groupId: string, @Body() dto: BulkPassengersDto, @CurrentUser() user: AuthUser) {
     return this.passengers.create(groupId, dto.passengers, user);
@@ -52,6 +56,7 @@ export class GroupPassengersController {
   }
 
   /** T001-05 — confirm import (transactional, all-or-nothing). */
+  @UseGuards(GroupLockGuard)
   @Post("import/commit")
   importCommit(
     @Param("groupId") groupId: string,
@@ -84,6 +89,7 @@ export class PassengersController {
     return this.visaPipeline.transition(id, dto, user);
   }
 
+  @UseGuards(GroupLockGuard)
   @Patch(":id")
   update(
     @Param("id") id: string,
@@ -93,6 +99,7 @@ export class PassengersController {
     return this.passengers.update(id, dto, user);
   }
 
+  @UseGuards(GroupLockGuard)
   @Delete(":id")
   remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
     return this.passengers.remove(id, user);

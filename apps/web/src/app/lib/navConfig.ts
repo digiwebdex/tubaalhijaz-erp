@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, Building2, UserRound, FileCheck, CalendarDays,
   Wallet, BarChart3, ScanLine, Zap, ClipboardCheck,
   Bell, Truck, Navigation, Building, Bus, UtensilsCrossed, Shield,
-  FileText, LayoutGrid, type LucideIcon,
+  FileText, LayoutGrid, Plane, UserCog, ScrollText, ShieldCheck, Gauge, MessageCircle, BellRing, FileCode, Inbox, Workflow, type LucideIcon,
 } from "lucide-react";
 import {
   canAccessPath,
@@ -58,6 +58,7 @@ export const STAFF_NAV_GROUPS: GlobalNavGroup[] = [
   {
     id: "home",
     items: [
+      { id: "inbox", labelBn: "ইনবক্স", labelEn: "Inbox", icon: asIcon(Inbox), path: "/inbox" },
       {
         id: "dashboard",
         labelBn: "ড্যাশবোর্ড",
@@ -96,6 +97,7 @@ export const STAFF_NAV_GROUPS: GlobalNavGroup[] = [
   {
     id: "ops-core",
     items: [
+      { id: "my-workflow", labelBn: "আমার ওয়ার্কফ্লো", labelEn: "My Workflow", icon: asIcon(Workflow), path: "/my-workflow" },
       {
         id: "groups",
         labelBn: "গ্রুপ",
@@ -115,6 +117,14 @@ export const STAFF_NAV_GROUPS: GlobalNavGroup[] = [
         matchPath: "/ops-control",
         matchTab: "groups",
         anyOf: [P.VIEW_DASHBOARD],
+      },
+      {
+        id: "flight-management",
+        labelBn: "ফ্লাইট ব্যবস্থাপনা",
+        labelEn: "Flight Management",
+        icon: asIcon(Plane),
+        path: "/flight-management",
+        anyOf: [P.MANAGE_OPS],
       },
     ],
   },
@@ -236,6 +246,20 @@ export const STAFF_NAV_GROUPS: GlobalNavGroup[] = [
       },
       // System Settings / AI / Workflow engines have no production backend UI yet —
       // SA ?tab=settings|ai-engine|workflows still renders an honest Bangla empty state.
+    ],
+  },
+  {
+    id: "administration",
+    labelBn: "প্রশাসন",
+    labelEn: "Administration",
+    items: [
+      { id: "agent-operations", labelBn: "এজেন্ট অপারেশনস", labelEn: "Agent Operations", icon: asIcon(UserCog), path: "/agent-operations", anyOf: [P.AGENT_IMPERSONATION] },
+      { id: "audit-center", labelBn: "অডিট কেন্দ্র", labelEn: "Audit Center", icon: asIcon(ScrollText), path: "/audit-center", anyOf: [P.ACCESS_AUDIT_LOGS] },
+      { id: "approvals", labelBn: "অনুমোদন", labelEn: "Approvals", icon: asIcon(ShieldCheck), path: "/approvals", anyOf: [P.MANAGE_OPS] },
+      { id: "sla-dashboard", labelBn: "এসএলএ", labelEn: "SLA Dashboard", icon: asIcon(Gauge), path: "/sla-dashboard", anyOf: [P.VIEW_DASHBOARD] },
+      { id: "wasender-config", labelBn: "ওয়াসেন্ডার", labelEn: "WaSender", icon: asIcon(MessageCircle), path: "/wasender-config", anyOf: [P.MANAGE_SYSTEM_SETTINGS] },
+      { id: "notification-center", labelBn: "নোটিফিকেশন সেন্টার", labelEn: "Notification Center", icon: asIcon(BellRing), path: "/notification-center", anyOf: [P.MANAGE_SYSTEM_SETTINGS] },
+      { id: "template-manager", labelBn: "টেমপ্লেট", labelEn: "Template Manager", icon: asIcon(FileCode), path: "/template-manager", anyOf: [P.MANAGE_SYSTEM_SETTINGS] },
     ],
   },
 ];
