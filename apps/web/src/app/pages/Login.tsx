@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { api, ApiError } from "../lib/api";
@@ -41,9 +41,32 @@ const TABS = [
 
 const PORTAL_LABELS: Record<string, string> = { agent: "Agent Portal", supplier: "Supplier Portal", admin: "Admin" };
 
+const PORTAL_STORAGE_KEY = "tuba.lastPortal";
+const isPortal = (v: string | null): boolean => !!v && TABS.some((t) => t.id === v);
+
+/**
+ * Which portal tab opens preselected, most-explicit intent first:
+ *   1. ?portal=... — an entry point that states its persona (e.g. the public "Agent Login" link)
+ *   2. the portal of the last SUCCESSFUL sign-in on this browser, so staff arriving from an
+ *      expired session or the ERP logout link are not forced to re-pick "Admin" every time
+ *   3. "agent" — unchanged first-visit default for public/marketing traffic
+ */
+function initialPortal(search: URLSearchParams): string {
+  const q = search.get("portal");
+  if (isPortal(q)) return q as string;
+  try {
+    const saved = localStorage.getItem(PORTAL_STORAGE_KEY);
+    if (isPortal(saved)) return saved as string;
+  } catch {
+    /* storage unavailable (private mode) — fall through to the default */
+  }
+  return "agent";
+}
+
 export default function Login() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState("agent");
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState(() => initialPortal(searchParams));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -59,6 +82,8 @@ export default function Login() {
     try {
       const user = await api.login(email, password, tab as "agent" | "supplier" | "admin");
       const dest = homePathForUser(user);
+      // Remember the persona only after the credentials actually worked.
+      try { localStorage.setItem(PORTAL_STORAGE_KEY, tab); } catch { /* storage unavailable — non-fatal */ }
       toast.success(`Welcome to ${PORTAL_LABELS[tab] ?? "TUBA Portal"}`, { description: user.company?.name ?? user.name, duration: 3000 });
       navigate(dest);
     } catch (err) {

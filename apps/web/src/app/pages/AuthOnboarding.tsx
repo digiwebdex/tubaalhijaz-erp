@@ -1487,7 +1487,7 @@ export default function AuthOnboarding() {
           </Link>
           <div className="flex items-center gap-3 text-xs">
             <Link to="/" className="hidden sm:inline" style={{ color: "rgba(255,255,255,0.66)" }}>Website</Link>
-            <Link to="/login" className="px-3 py-1.5 rounded-lg font-semibold" style={{ backgroundColor: GOLD, color: NAVY }}>Agent Login</Link>
+            <Link to="/login?portal=agent" className="px-3 py-1.5 rounded-lg font-semibold" style={{ backgroundColor: GOLD, color: NAVY }}>Agent Login</Link>
           </div>
         </div>
       </header>
