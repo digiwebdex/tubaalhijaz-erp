@@ -1,15 +1,19 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Prisma } from "@prisma/client";
 import * as argon2 from "argon2";
+import { Queue } from "bullmq";
 import { createHash, randomBytes } from "crypto";
 import { PrismaService } from "../prisma/prisma.service";
+import { NOTIFY_QUEUE } from "../notifications/notifications.constants";
 import { JwtPayload } from "./jwt.strategy";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterAgentDto } from "./dto/register-agent.dto";
@@ -28,7 +32,10 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    @Inject(NOTIFY_QUEUE) private readonly notifyQueue: Queue,
   ) {}
+
+  private readonly logger = new Logger(AuthService.name);
 
   private refreshTtlMs(): number {
     return Number(this.config.get("JWT_REFRESH_EXPIRES_DAYS", "14")) * 86_400_000;
@@ -142,7 +149,7 @@ export class AuthService {
       const base = this.config.get<string>("WEB_ORIGIN", "http://127.0.0.1:5273").split(",")[0];
       const link = `${base}/reset-password?token=${rawToken}`;
       // Hand off to the notification pipeline (stub-safe: delivers once SMTP is configured).
-      await this.prisma.notificationLog.create({
+      const log = await this.prisma.notificationLog.create({
         data: {
           channel: "EMAIL",
           recipientUserId: user.id,
@@ -153,6 +160,20 @@ export class AuthService {
           lang: user.preferredLang ?? "en",
         },
       });
+      // Hand the row to the existing BullMQ notify queue — the same "send" job the
+      // notification worker (and NotificationAdminService.retry) already processes.
+      // Without this the row stays PENDING forever and the reset mail never leaves.
+      try {
+        await this.notifyQueue.add(
+          "send",
+          { logId: log.id },
+          { attempts: 4, backoff: { type: "exponential", delay: 3000 }, removeOnComplete: 500, removeOnFail: 1000 },
+        );
+      } catch (err) {
+        // Never leak account existence or fail the request on a queue outage — the row
+        // stays PENDING and remains requeueable from Notification Admin.
+        this.logger.error(`password-reset mail could not be queued (log ${log.id}): ${String(err)}`);
+      }
     }
     return { ok: true, message: "If an account exists for that email, a reset link has been sent." };
   }

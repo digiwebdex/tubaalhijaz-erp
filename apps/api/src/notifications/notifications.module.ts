@@ -1,4 +1,4 @@
-import { Inject, Module, type OnModuleDestroy } from "@nestjs/common";
+import { forwardRef, Inject, Module, type OnModuleDestroy } from "@nestjs/common";
 import { Queue } from "bullmq";
 import { AuthModule } from "../auth/auth.module";
 import { BULL_PREFIX, makeConnection } from "../automation/automation.constants";
@@ -20,7 +20,9 @@ import { EmailChannel } from "./channels/email.channel";
  * SEND_NOTIFICATION / ESCALATE actions deliver for real.
  */
 @Module({
-  imports: [AuthModule], // JwtService for /notifications handshake (S2-02)
+  // forwardRef: AuthModule needs NOTIFY_QUEUE to enqueue password-reset mail, and this
+  // module needs AuthModule's JwtService for the /notifications handshake (S2-02).
+  imports: [forwardRef(() => AuthModule)],
   controllers: [NotificationsController, NotificationAdminController],
   providers: [
     NotificationsService,
@@ -35,7 +37,7 @@ import { EmailChannel } from "./channels/email.channel";
       useFactory: () => new Queue(NOTIFY_QUEUE_NAME, { connection: makeConnection(), prefix: BULL_PREFIX }),
     },
   ],
-  exports: [NotificationsService, EmailChannel],
+  exports: [NotificationsService, EmailChannel, NOTIFY_QUEUE],
 })
 export class NotificationsModule implements OnModuleDestroy {
   constructor(@Inject(NOTIFY_QUEUE) private readonly queue: Queue) {}
