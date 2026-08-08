@@ -48,14 +48,19 @@ export class FlightsService {
         { code: { contains: s, mode: "insensitive" } },
       ] }];
     }
-    return this.prisma.flightInfo.findMany({
+    // SECURITY (audit HIGH-2): read through the existing tenant-scoped client.
+    // Platform staff (companyId null) pass through unchanged; agents are filtered to
+    // their own tenantId; suppliers fail CLOSED. No second scoping system introduced.
+    return this.prisma.scoped.flightInfo.findMany({
       where, orderBy: { scheduledAt: "asc" },
       include: { _count: { select: { assignments: true, tickets: true } } },
     });
   }
 
   async get(id: string) {
-    const f = await this.prisma.flightInfo.findUnique({
+    // SECURITY (audit HIGH-2): scoped findUnique yields null for a foreign tenant,
+    // which the existing NotFoundException below converts to 404 (app convention).
+    const f = await this.prisma.scoped.flightInfo.findUnique({
       where: { id },
       include: {
         group: { select: { id: true, code: true, name: true } },
@@ -185,6 +190,9 @@ export class FlightsService {
   }
 
   async assignments(id: string) {
+    // SECURITY (audit HIGH-2): FlightAssignment is not tenant-scoped itself, so gate on
+    // scoped access to the parent flight (throws 404 for a foreign tenant).
+    await this.get(id);
     return this.prisma.flightAssignment.findMany({ where: { flightInfoId: id }, include: { group: { select: { id: true, code: true, name: true, paxCount: true } } } });
   }
 
