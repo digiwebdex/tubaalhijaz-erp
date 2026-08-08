@@ -490,14 +490,14 @@ model Season {
 
 /// Catalog of the canonical 19-stage group lifecycle (WorkflowMap page).
 model WorkflowStage {
-  id      Int     @id // 1..19
-  phase   Int // 1..3
-  labelEn String
-  labelBn String
-  module  String // owning module, e.g. "Agent Portal", "Visa Desk"
-  slaText String?
+  id       Int     @id // 1..19
+  phase    Int // 1..3
+  labelEn  String
+  labelBn  String
+  module   String // owning module, e.g. "Agent Portal", "Visa Desk"
+  slaText  String?
   slaHours Int?
-  route   String?
+  route    String?
 
   groups Group[]
 }
@@ -550,7 +550,7 @@ model User {
   company   Company? @relation(fields: [companyId], references: [id])
 
   driver              Driver?
-  meetAssistTasks     MeetAssistTask[] @relation("MeetAssistAssignee")
+  meetAssistTasks     MeetAssistTask[]     @relation("MeetAssistAssignee")
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
   uploadedFiles       UploadedFile[]       @relation("FileUploader")
@@ -646,15 +646,15 @@ model Company {
   phone              String?
   preferredLang      String             @default("bn") // notification language for this tenant
   // Company Enhancements (Settings -> Company)
-  businessHours   Json?
-  holidays        Json?
-  invoicePrefix   String?
-  voucherPrefix   String?
-  bookingPrefix   String?
-  groupPrefix     String?
-  passengerPrefix String?
-  logoUrl         String?
-  brandColors     Json?
+  businessHours      Json?
+  holidays           Json?
+  invoicePrefix      String?
+  voucherPrefix      String?
+  bookingPrefix      String?
+  groupPrefix        String?
+  passengerPrefix    String?
+  logoUrl            String?
+  brandColors        Json?
   verificationStatus VerificationStatus @default(PENDING)
   rejectionReason    String?
   joinedAt           DateTime           @default(now())
@@ -836,40 +836,40 @@ model Enquiry {
 // ─── Core operations: groups, passengers, flights ────────────────────────────
 
 model Group {
-  id               String        @id @default(cuid())
-  code             String        @unique // GRP-1446-2891 (internal; unchanged)
+  id               String         @id @default(cuid())
+  code             String         @unique // GRP-1446-2891 (internal; unchanged)
   tenantId         String
-  tenant           Company       @relation(fields: [tenantId], references: [id])
+  tenant           Company        @relation(fields: [tenantId], references: [id])
   seasonId         String
-  season           Season        @relation(fields: [seasonId], references: [id])
+  season           Season         @relation(fields: [seasonId], references: [id])
   name             String
   nameBn           String?
   destination      Destination
   visaType         VisaType
-  packageType      PackageType   @default(STANDARD)
-  maxCapacity      Int           @default(40)
-  paxCount         Int           @default(0) // denormalized for boards
+  packageType      PackageType    @default(STANDARD)
+  maxCapacity      Int            @default(40)
+  paxCount         Int            @default(0) // denormalized for boards
   departDate       DateTime?
   returnDate       DateTime?
   notes            String?
   /// Nusuk Group Number spine (business identity). Nullable for legacy rows; unique when set.
-  nusukGroupNumber String?       @unique
+  nusukGroupNumber String?        @unique
   /// Mandatory for HAJJ/UMRAH when REQUIRE_HAJI_WHATSAPP=true.
   hajiWhatsapp     String?
   consulate        String?
   /// Saudi Umrah Company that processes visas for this group (T002-01). Optional FK → Company.
   umrahCompanyId   String?
-  umrahCompany     Company?      @relation("GroupUmrahCompany", fields: [umrahCompanyId], references: [id])
-  servicesValue    Decimal?      @db.Decimal(14, 2)
+  umrahCompany     Company?       @relation("GroupUmrahCompany", fields: [umrahCompanyId], references: [id])
+  servicesValue    Decimal?       @db.Decimal(14, 2)
   uploadedByUserId String?
-  uploadedByUser   User?         @relation("GroupUploader", fields: [uploadedByUserId], references: [id])
+  uploadedByUser   User?          @relation("GroupUploader", fields: [uploadedByUserId], references: [id])
   uploadedByLabel  String?
   /// Readiness gates (T001-02) — independent of WorkflowStage. Default false.
-  gateVisa         Boolean       @default(false)
-  gatePackage      Boolean       @default(false)
-  gatePayment      Boolean       @default(false)
-  gateBill         Boolean       @default(false)
-  status           GroupStatus   @default(PENDING)
+  gateVisa         Boolean        @default(false)
+  gatePackage      Boolean        @default(false)
+  gatePayment      Boolean        @default(false)
+  gateBill         Boolean        @default(false)
+  status           GroupStatus    @default(PENDING)
   approvalStatus   ApprovalStatus @default(DRAFT)
   locked           Boolean        @default(false)
   submittedAt      DateTime?
@@ -879,12 +879,12 @@ model Group {
   returnReason     String?
   lockType         LockType?
   stageEnteredAt   DateTime?
-  opsStatus        OpsStatus     @default(UPCOMING)
-  currentStage     Int           @default(1)
-  workflowStage    WorkflowStage @relation(fields: [currentStage], references: [id])
+  opsStatus        OpsStatus      @default(UPCOMING)
+  currentStage     Int            @default(1)
+  workflowStage    WorkflowStage  @relation(fields: [currentStage], references: [id])
   stageNote        String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   passengers         Passenger[]
   flightInfos        FlightInfo[]
@@ -1004,22 +1004,22 @@ model Passenger {
 
 /// One row per flight leg (arrival or departure) — powers the live boards.
 model FlightInfo {
-  id            String          @id @default(cuid())
-  code          String          @unique // ARR-001 / DEP-001
-  tenantId      String
-  tenant        Company         @relation(fields: [tenantId], references: [id])
-  groupId       String
-  group         Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  direction     FlightDirection
-  airline       String
-  flightNo      String // "SV 642"
-  originAirport String // IATA
-  destAirport   String
-  scheduledAt   DateTime
-  terminal      String?
-  gate          String?
-  paxCount      Int             @default(0)
-  status        FlightStatus    @default(SCHEDULED)
+  id             String          @id @default(cuid())
+  code           String          @unique // ARR-001 / DEP-001
+  tenantId       String
+  tenant         Company         @relation(fields: [tenantId], references: [id])
+  groupId        String
+  group          Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  direction      FlightDirection
+  airline        String
+  flightNo       String // "SV 642"
+  originAirport  String // IATA
+  destAirport    String
+  scheduledAt    DateTime
+  terminal       String?
+  gate           String?
+  paxCount       Int             @default(0)
+  status         FlightStatus    @default(SCHEDULED)
   aircraft       String?
   boardingAt     DateTime?
   departureAt    DateTime?
@@ -1483,18 +1483,18 @@ model Driver {
 }
 
 model DispatchOrder {
-  id           String      @id @default(cuid())
-  code         String      @unique // DSP-0441
-  tenantId     String?
-  tenant       Company?    @relation(fields: [tenantId], references: [id])
-  groupId      String
-  group        Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  flightInfoId String?
-  flightInfo   FlightInfo? @relation(fields: [flightInfoId], references: [id])
-  vehicleId    String?
-  vehicle      Vehicle?    @relation(fields: [vehicleId], references: [id])
-  driverId     String?
-  driver       Driver?     @relation(fields: [driverId], references: [id])
+  id                  String             @id @default(cuid())
+  code                String             @unique // DSP-0441
+  tenantId            String?
+  tenant              Company?           @relation(fields: [tenantId], references: [id])
+  groupId             String
+  group               Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  flightInfoId        String?
+  flightInfo          FlightInfo?        @relation(fields: [flightInfoId], references: [id])
+  vehicleId           String?
+  vehicle             Vehicle?           @relation(fields: [vehicleId], references: [id])
+  driverId            String?
+  driver              Driver?            @relation(fields: [driverId], references: [id])
   /// Phase 10D — links ground dispatch to the physical OperationalFlight (10B). Nullable: legacy/group dispatches keep working.
   operationalFlightId String?
   operationalFlight   OperationalFlight? @relation(fields: [operationalFlightId], references: [id])
@@ -1931,18 +1931,18 @@ model NotificationLog {
 // ─── Audit ───────────────────────────────────────────────────────────────────
 
 model AuditLog {
-  id          String      @id @default(cuid())
-  actorUserId String?
-  actor       User?       @relation("AuditActor", fields: [actorUserId], references: [id])
-  actorLabel  String? // "System (Cron)" when no user
-  action      AuditAction
-  module      String // Users | Companies | Finance | OCR | ...
-  entityType  String
-  entityId    String?
-  before      Json?
-  after       Json?
-  ip          String?
-  createdAt   DateTime    @default(now())
+  id             String      @id @default(cuid())
+  actorUserId    String?
+  actor          User?       @relation("AuditActor", fields: [actorUserId], references: [id])
+  actorLabel     String? // "System (Cron)" when no user
+  action         AuditAction
+  module         String // Users | Companies | Finance | OCR | ...
+  entityType     String
+  entityId       String?
+  before         Json?
+  after          Json?
+  ip             String?
+  createdAt      DateTime    @default(now())
   actingAsUserId String?
   reason         String?
   userAgent      String?
@@ -2092,16 +2092,16 @@ model ChangeRequest {
 }
 
 model GroupTimelineEntry {
-  id          String             @id @default(cuid())
-  groupId     String
-  group       Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  event       GroupTimelineEvent
-  actorUserId String?
-  actorLabel  String?
+  id             String             @id @default(cuid())
+  groupId        String
+  group          Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  event          GroupTimelineEvent
+  actorUserId    String?
+  actorLabel     String?
   actingAsUserId String?
-  correlationId String?
-  note        String?
-  createdAt   DateTime           @default(now())
+  correlationId  String?
+  note           String?
+  createdAt      DateTime           @default(now())
 
   @@index([groupId, createdAt])
 }
@@ -2266,7 +2266,7 @@ model Terminal {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  defaultForFlights FlightMaster[]
+  defaultForFlights  FlightMaster[]
   operationalFlights OperationalFlight[]
 
   @@unique([airportId, name])
@@ -2285,8 +2285,8 @@ model FlightMaster {
   defaultTerminalId String?
   defaultTerminal   Terminal? @relation(fields: [defaultTerminalId], references: [id])
   active            Boolean   @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   operationalFlights OperationalFlight[]
 
@@ -2298,23 +2298,23 @@ model FlightMaster {
 /// Physical flight instance for a date (Module 10 Phase 10B).
 /// Distinct grain from FlightInfo (which is one AGENT GROUP's segment) — FlightInfo is untouched.
 model OperationalFlight {
-  id             String          @id @default(cuid())
-  flightMasterId String
-  flightMaster   FlightMaster    @relation(fields: [flightMasterId], references: [id])
-  flightDate     DateTime        @db.Date
-  direction      FlightDirection
-  scheduledTime  DateTime
-  estimatedTime  DateTime?
-  actualTime     DateTime?
-  terminalId     String?
-  terminal       Terminal?       @relation(fields: [terminalId], references: [id])
-  gate           String?
-  status         FlightStatus    @default(SCHEDULED)
+  id              String          @id @default(cuid())
+  flightMasterId  String
+  flightMaster    FlightMaster    @relation(fields: [flightMasterId], references: [id])
+  flightDate      DateTime        @db.Date
+  direction       FlightDirection
+  scheduledTime   DateTime
+  estimatedTime   DateTime?
+  actualTime      DateTime?
+  terminalId      String?
+  terminal        Terminal?       @relation(fields: [terminalId], references: [id])
+  gate            String?
+  status          FlightStatus    @default(SCHEDULED)
   statusChangedAt DateTime?
-  remarks        String?
-  isTestData     Boolean         @default(false)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  remarks         String?
+  isTestData      Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   dispatchOrders DispatchOrder[]
 
@@ -2324,4 +2324,3 @@ model OperationalFlight {
   @@index([flightMasterId])
   @@index([terminalId])
 }
-
