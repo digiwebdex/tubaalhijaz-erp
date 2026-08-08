@@ -17,17 +17,12 @@ import { useNotifyEvents } from "../lib/notifySocket";
 import { EmptyState } from "./States";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
-import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 import { useViewport } from "./ui/use-mobile";
-import logoImg from "@/assets/logo-light.png";
+import { ERP } from "./erp";
 import {
   Search, Bell, Globe2, ChevronDown, ChevronRight, ChevronLeft,
   User, LogOut, Settings, AlertTriangle, Menu, X, Wrench,
 } from "lucide-react";
-
-const NAVY = "#0B1E3F";
-const GOLD = "#C9A24B";
-const CANVAS = "#F5F7FA";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IconFC = (props: { size?: number; style?: CSSProperties; className?: string }) => any;
@@ -104,6 +99,17 @@ function secondaryLabel(item: NavItem, lang: "bn" | "en"): string {
   return item.label;
 }
 
+// Small brand glyph (TUBA tower) — matches the DS gold-on-navy mark.
+function BrandGlyph({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden>
+      <path d="M13 15H35V19H27V34H21V19H13V15Z" fill={ERP.accent} />
+      <circle cx="37" cy="11" r="4" fill="none" stroke={ERP.accent} strokeWidth="1.5" opacity="0.75" />
+      <circle cx="38.5" cy="9.8" r="3.2" fill={ERP.canvas} />
+    </svg>
+  );
+}
+
 function NavLinkButton({
   item,
   active,
@@ -123,18 +129,18 @@ function NavLinkButton({
   const className =
     "w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg transition-all relative active:scale-[0.98] min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
   const style: CSSProperties = {
-    backgroundColor: active ? `${GOLD}18` : "transparent",
-    border: `1px solid ${active ? `${GOLD}40` : "transparent"}`,
-    outlineColor: GOLD,
+    backgroundColor: active ? ERP.goldDim : "transparent",
+    border: `1px solid ${active ? ERP.goldBrd : "transparent"}`,
+    outlineColor: ERP.accent,
   };
 
   const inner = (
     <>
-      <Icon size={18} style={{ color: active ? NAVY : "rgba(11,30,63,0.55)", flexShrink: 0 }} />
+      <Icon size={18} style={{ color: active ? ERP.accent : ERP.muted, flexShrink: 0 }} />
       {!collapsed && (
         <span
           className="text-[13px] font-semibold flex-1 truncate text-left"
-          style={{ color: active ? NAVY : "rgba(11,30,63,0.72)", fontFamily: fontFor(lang) }}
+          style={{ color: active ? ERP.accent : ERP.fgDim, fontFamily: fontFor(lang) }}
         >
           {label}
         </span>
@@ -150,7 +156,7 @@ function NavLinkButton({
         onClick={() => { onPortal(item.portalTab!); onNavigate?.(); }}
         className={className}
         style={style}
-        onMouseEnter={(e) => { if (!active) e.currentTarget.style.backgroundColor = "rgba(11,30,63,0.04)"; }}
+        onMouseEnter={(e) => { if (!active) e.currentTarget.style.backgroundColor = ERP.goldDim; }}
         onMouseLeave={(e) => { if (!active) e.currentTarget.style.backgroundColor = "transparent"; }}
       >
         {inner}
@@ -165,7 +171,7 @@ function NavLinkButton({
       onClick={() => onNavigate?.()}
       className={className}
       style={style}
-      onMouseEnter={(e) => { if (!active) e.currentTarget.style.backgroundColor = "rgba(11,30,63,0.04)"; }}
+      onMouseEnter={(e) => { if (!active) e.currentTarget.style.backgroundColor = ERP.goldDim; }}
       onMouseLeave={(e) => { if (!active) e.currentTarget.style.backgroundColor = "transparent"; }}
     >
       {inner}
@@ -210,13 +216,13 @@ function SidebarNav({
           {!collapsed && group.labelBn && (
             <div
               className="text-[10px] font-bold uppercase tracking-wider px-2.5 mb-1.5"
-              style={{ color: "rgba(11,30,63,0.38)", fontFamily: fontFor(lang) }}
+              style={{ color: ERP.muted, fontFamily: fontFor(lang) }}
             >
               {lang === "bn" ? group.labelBn : (group.labelEn ?? group.labelBn)}
             </div>
           )}
           {!collapsed && !group.labelBn && group.id !== "home" && (
-            <div className="mx-2.5 mb-1.5 border-t" style={{ borderColor: "rgba(11,30,63,0.08)" }} />
+            <div className="mx-2.5 mb-1.5 border-t" style={{ borderColor: ERP.border }} />
           )}
           <div className="space-y-0.5">
             {group.items.map((item) => (
@@ -253,7 +259,7 @@ function SidebarNav({
           {!collapsed && (
             <div
               className="text-[10px] font-bold uppercase tracking-wider px-2.5 mb-1.5"
-              style={{ color: "rgba(11,30,63,0.38)", fontFamily: fontFor(lang) }}
+              style={{ color: ERP.muted, fontFamily: fontFor(lang) }}
             >
               {lang === "bn" ? "সেটিংস" : "Settings"}
             </div>
@@ -305,12 +311,12 @@ function AdvancedToolsBlock({
         title={collapsed ? (lang === "bn" ? "অ্যাডভান্সড টুলস" : "Advanced Tools") : undefined}
         className="w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg min-h-[44px] transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{
-          backgroundColor: advActive || showAdvanced ? "rgba(11,30,63,0.04)" : "transparent",
-          color: "rgba(11,30,63,0.72)",
-          outlineColor: GOLD,
+          backgroundColor: advActive || showAdvanced ? ERP.goldDim : "transparent",
+          color: ERP.fgDim,
+          outlineColor: ERP.accent,
         }}
       >
-        <Wrench size={18} style={{ color: "rgba(11,30,63,0.55)", flexShrink: 0 }} />
+        <Wrench size={18} style={{ color: ERP.muted, flexShrink: 0 }} />
         {!collapsed && (
           <>
             <span className="text-[13px] font-semibold flex-1 text-left" style={{ fontFamily: fontFor(lang) }}>
@@ -319,13 +325,13 @@ function AdvancedToolsBlock({
             <ChevronDown
               size={14}
               className={`transition-transform ${showAdvanced ? "rotate-180" : ""}`}
-              style={{ color: "rgba(11,30,63,0.45)" }}
+              style={{ color: ERP.muted }}
             />
           </>
         )}
       </button>
       {(showAdvanced || collapsed) && (
-        <div className={`space-y-0.5 ${collapsed ? "" : "ml-2 pl-2 border-l"}`} style={{ borderColor: "rgba(11,30,63,0.08)" }}>
+        <div className={`space-y-0.5 ${collapsed ? "" : "ml-2 pl-2 border-l"}`} style={{ borderColor: ERP.border }}>
           {advanced.map((item) => (
             <NavLinkButton
               key={item.id}
@@ -453,27 +459,27 @@ export function ERPShell({
   const onPortal = (portalTab: string) => onItemClick(portalTab);
   const closeMobile = () => setMobileOpen(false);
 
+  const iconBtn: CSSProperties = { backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, outlineColor: ERP.accent };
+
   const sidebarInner = (
     <>
       <div
         className="flex items-center gap-2.5 px-3 h-14 shrink-0"
-        style={{ borderBottom: "1px solid rgba(11,30,63,0.11)" }}
+        style={{ borderBottom: `1px solid ${ERP.border}` }}
       >
-        {sidebarCollapsed ? (
-          <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-            style={{ backgroundColor: `${moduleColor}18`, border: `1px solid ${moduleColor}30` }}
-          >
-            <ModIcon size={16} style={{ color: moduleColor }} />
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 overflow-hidden min-w-0 flex-1">
-            <ImageWithFallback src={logoImg} alt="TUBA ALHIJAZ" className="h-7 w-auto object-contain shrink-0" />
-            <div className="w-px h-5 shrink-0" style={{ backgroundColor: "#EEF1F6" }} />
-            <div className="overflow-hidden min-w-0">
-              <div className="text-[11px] font-bold truncate leading-tight" style={{ color: NAVY, fontFamily: fontFor(lang) }}>
-                {modTitle}
-              </div>
+        <div
+          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+          style={{ backgroundColor: ERP.goldDim, border: `1px solid ${ERP.goldBrd}` }}
+        >
+          {sidebarCollapsed ? <ModIcon size={16} style={{ color: moduleColor }} /> : <BrandGlyph size={18} />}
+        </div>
+        {!sidebarCollapsed && (
+          <div className="overflow-hidden min-w-0 flex-1">
+            <div className="text-[11px] font-bold truncate leading-tight" style={{ color: ERP.navy, fontFamily: ERP.font.heading, letterSpacing: "0.04em" }}>
+              TUBA AL-HIJAZ
+            </div>
+            <div className="text-[9px] truncate leading-tight" style={{ color: ERP.accent, fontFamily: ERP.font.data, letterSpacing: "0.06em" }}>
+              {modTitle}
             </div>
           </div>
         )}
@@ -483,9 +489,9 @@ export function ERPShell({
             onClick={closeMobile}
             className="ml-auto w-11 h-11 rounded-lg flex items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             aria-label={lang === "bn" ? "মেনু বন্ধ" : "Close menu"}
-            style={{ outlineColor: GOLD }}
+            style={{ outlineColor: ERP.accent }}
           >
-            <X size={18} style={{ color: "rgba(11,30,63,0.55)" }} />
+            <X size={18} style={{ color: ERP.muted }} />
           </button>
         )}
       </div>
@@ -503,16 +509,34 @@ export function ERPShell({
         setShowAdvanced={setShowAdvanced}
       />
 
+      {/* Sidebar footer — signed-in user */}
       {!isMobile && (
-        <div className="px-2 py-2.5" style={{ borderTop: "1px solid rgba(11,30,63,0.11)" }}>
+        <div className="flex items-center gap-2.5 px-3 py-2.5 shrink-0" style={{ borderTop: `1px solid ${ERP.border}` }}>
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+            style={{ backgroundColor: ERP.goldDim, border: `1px solid ${ERP.goldBrd}`, color: ERP.accent }}
+          >
+            {initials}
+          </div>
+          {!sidebarCollapsed && (
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-semibold truncate" style={{ color: ERP.navy, fontFamily: fontFor(lang) }}>{displayName}</div>
+              <div className="text-[9px] truncate" style={{ color: ERP.accent, fontFamily: ERP.font.data }}>{displayRole}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!isMobile && (
+        <div className="px-2 py-2.5" style={{ borderTop: `1px solid ${ERP.border}` }}>
           <button
             type="button"
             onClick={() => setCollapsed(!collapsed)}
             className="w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg transition-all min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{ color: "rgba(11,30,63,0.50)", outlineColor: GOLD }}
+            style={{ color: ERP.muted, outlineColor: ERP.accent }}
             title={collapsed ? (lang === "bn" ? "প্রসারিত" : "Expand") : (lang === "bn" ? "সংকুচিত" : "Collapse")}
             aria-expanded={!collapsed}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(11,30,63,0.04)"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = ERP.goldDim; }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
           >
             {collapsed ? (
@@ -534,7 +558,7 @@ export function ERPShell({
   return (
     <div
       className="flex h-screen overflow-hidden"
-      style={{ fontFamily: fontFor(lang), backgroundColor: CANVAS, color: NAVY }}
+      style={{ fontFamily: fontFor(lang), backgroundColor: ERP.canvas, color: ERP.navy }}
     >
       {/* Desktop + tablet permanent sidebar */}
       {!isMobile && (
@@ -542,8 +566,8 @@ export function ERPShell({
           className="flex flex-col shrink-0 transition-all duration-200 overflow-hidden"
           style={{
             width: collapsed ? 64 : 240,
-            backgroundColor: "#FFFFFF",
-            borderRight: "1px solid rgba(11,30,63,0.11)",
+            backgroundColor: ERP.surfaceSoft,
+            borderRight: `1px solid ${ERP.border}`,
           }}
           aria-label={lang === "bn" ? "প্রাথমিক নেভিগেশন" : "Primary navigation"}
         >
@@ -557,13 +581,13 @@ export function ERPShell({
           <button
             type="button"
             className="absolute inset-0"
-            style={{ backgroundColor: "rgba(11,30,63,0.45)" }}
+            style={{ backgroundColor: ERP.scrim }}
             aria-label={lang === "bn" ? "ওভারলে বন্ধ" : "Close overlay"}
             onClick={closeMobile}
           />
           <aside
-            className="relative flex flex-col h-full z-10 shadow-xl"
-            style={{ width: "min(280px, 100vw)", maxWidth: "100vw", backgroundColor: "#FFFFFF" }}
+            className="relative flex flex-col h-full z-10"
+            style={{ width: "min(280px, 100vw)", maxWidth: "100vw", backgroundColor: ERP.surfaceSoft, borderRight: `1px solid ${ERP.border}`, boxShadow: ERP.shadow.xl }}
           >
             {sidebarInner}
           </aside>
@@ -574,36 +598,36 @@ export function ERPShell({
         {/* Header */}
         <header
           className="flex items-center gap-2 sm:gap-3 px-3 sm:px-5 h-14 shrink-0"
-          style={{ backgroundColor: "#FFFFFF", borderBottom: "1px solid rgba(11,30,63,0.11)" }}
+          style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}
         >
           {isMobile && (
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
               className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ backgroundColor: CANVAS, outlineColor: GOLD }}
+              style={iconBtn}
               aria-label={lang === "bn" ? "মেনু খুলুন" : "Open menu"}
             >
-              <Menu size={18} style={{ color: NAVY }} />
+              <Menu size={18} style={{ color: ERP.navy }} />
             </button>
           )}
 
           {/* Breadcrumb: Home → Module → Current */}
           <div className="flex items-center gap-1.5 flex-1 min-w-0 text-xs">
-            <Link to="/" style={{ color: "rgba(11,30,63,0.50)", fontFamily: fontFor(lang) }}>
+            <Link to="/" style={{ color: ERP.muted, fontFamily: fontFor(lang) }}>
               {homeLabel}
             </Link>
-            <ChevronRight size={12} style={{ color: "rgba(11,30,63,0.35)", flexShrink: 0 }} />
-            <span className="font-semibold shrink-0" style={{ color: NAVY, fontFamily: fontFor(lang) }}>
+            <ChevronRight size={12} style={{ color: ERP.muted, flexShrink: 0 }} />
+            <span className="font-semibold shrink-0" style={{ color: moduleColor, fontFamily: fontFor(lang) }}>
               {modTitle}
             </span>
             {breadcrumb.map((c, i) => (
               <span key={`${c}-${i}`} className="flex items-center gap-1.5 min-w-0">
-                <ChevronRight size={12} style={{ color: "rgba(11,30,63,0.35)", flexShrink: 0 }} />
+                <ChevronRight size={12} style={{ color: ERP.muted, flexShrink: 0 }} />
                 <span
                   className="truncate"
                   style={{
-                    color: i === breadcrumb.length - 1 ? NAVY : "rgba(11,30,63,0.60)",
+                    color: i === breadcrumb.length - 1 ? ERP.navy : ERP.fgDim,
                     fontWeight: i === breadcrumb.length - 1 ? 600 : 400,
                     fontFamily: fontFor(lang),
                   }}
@@ -612,6 +636,12 @@ export function ERPShell({
                 </span>
               </span>
             ))}
+          </div>
+
+          {/* LIVE indicator */}
+          <div className="hidden md:flex items-center gap-1.5 shrink-0 mr-1">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: ERP.success, boxShadow: `0 0 6px ${ERP.success}` }} />
+            <span className="text-[9px] font-bold" style={{ color: ERP.success, fontFamily: ERP.font.data, letterSpacing: "0.08em" }}>LIVE</span>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
@@ -624,9 +654,9 @@ export function ERPShell({
                 placeholder={lang === "bn" ? "অনুসন্ধান…" : "Search…"}
                 className="w-40 sm:w-52 px-3 py-2 rounded-lg text-xs focus:outline-none"
                 style={{
-                  backgroundColor: CANVAS,
-                  border: `1px solid ${GOLD}66`,
-                  color: NAVY,
+                  backgroundColor: ERP.surfaceSoft,
+                  border: `1px solid ${ERP.goldBrd}`,
+                  color: ERP.navy,
                   fontFamily: fontFor(lang),
                 }}
               />
@@ -635,10 +665,10 @@ export function ERPShell({
                 type="button"
                 onClick={() => setSearchOpen(true)}
                 className="w-11 h-11 rounded-lg flex items-center justify-center transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ backgroundColor: CANVAS, outlineColor: GOLD }}
+                style={iconBtn}
                 aria-label={lang === "bn" ? "অনুসন্ধান" : "Search"}
               >
-                <Search size={16} style={{ color: "rgba(11,30,63,0.58)" }} />
+                <Search size={16} style={{ color: ERP.muted }} />
               </button>
             )}
 
@@ -647,14 +677,14 @@ export function ERPShell({
                 type="button"
                 onClick={() => { const next = !showBell; setShowBell(next); if (next) loadBell(); }}
                 className="w-11 h-11 rounded-lg flex items-center justify-center relative transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ backgroundColor: showBell ? `${GOLD}18` : CANVAS, outlineColor: GOLD }}
+                style={{ backgroundColor: showBell ? ERP.goldDim : ERP.surfaceSoft, border: `1px solid ${showBell ? ERP.goldBrd : ERP.border}`, outlineColor: ERP.accent }}
                 aria-label={lang === "bn" ? "বিজ্ঞপ্তি" : "Notifications"}
               >
-                <Bell size={16} style={{ color: showBell ? GOLD : "rgba(11,30,63,0.58)" }} />
+                <Bell size={16} style={{ color: showBell ? ERP.accent : ERP.muted }} />
                 {badgeCount > 0 && (
                   <span
                     className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 rounded-full text-[9px] font-bold flex items-center justify-center"
-                    style={{ backgroundColor: GOLD, color: NAVY }}
+                    style={{ backgroundColor: ERP.accent, color: ERP.canvas }}
                   >
                     {badgeCount > 9 ? "9+" : badgeCount}
                   </span>
@@ -663,21 +693,21 @@ export function ERPShell({
 
               {showBell && (
                 <div
-                  className="absolute right-0 top-12 w-[min(20rem,calc(100vw-1rem))] rounded-xl overflow-hidden shadow-lg z-50"
-                  style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.12)" }}
+                  className="absolute right-0 top-12 w-[min(20rem,calc(100vw-1rem))] rounded-xl overflow-hidden z-50"
+                  style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}`, boxShadow: ERP.shadow.lg }}
                 >
                   <div
                     className="flex items-center justify-between px-4 py-3"
-                    style={{ borderBottom: "1px solid rgba(11,30,63,0.11)" }}
+                    style={{ borderBottom: `1px solid ${ERP.border}` }}
                   >
-                    <span className="text-xs font-bold" style={{ fontFamily: fontFor(lang) }}>
+                    <span className="text-xs font-bold" style={{ color: ERP.navy, fontFamily: fontFor(lang) }}>
                       {lang === "bn" ? "বিজ্ঞপ্তি" : "Notifications"}
                     </span>
                     <button
                       type="button"
                       onClick={markAllRead}
                       className="text-[10px] font-bold transition-opacity hover:opacity-70"
-                      style={{ color: GOLD, fontFamily: fontFor(lang) }}
+                      style={{ color: ERP.accent, fontFamily: fontFor(lang) }}
                     >
                       {lang === "bn" ? "সব পঠিত" : "Mark all read"}
                     </button>
@@ -693,29 +723,29 @@ export function ERPShell({
                       onClick={() => markOneRead(n.id)}
                       className="flex items-start gap-3 px-4 py-3 cursor-pointer"
                       style={{
-                        borderBottom: i < bellItems.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined,
-                        borderLeft: `3px solid ${n.urgent ? "#EF4444" : "transparent"}`,
-                        backgroundColor: n.urgent ? "rgba(239,68,68,0.04)" : "transparent",
+                        borderBottom: i < bellItems.length - 1 ? `1px solid ${ERP.border}` : undefined,
+                        borderLeft: `3px solid ${n.urgent ? ERP.destructive : "transparent"}`,
+                        backgroundColor: n.urgent ? ERP.destructiveDim : "transparent",
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(11,30,63,0.03)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = n.urgent ? "rgba(239,68,68,0.04)" : "transparent"; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = ERP.surfaceSoft; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = n.urgent ? ERP.destructiveDim : "transparent"; }}
                     >
                       {n.urgent
-                        ? <AlertTriangle size={12} className="mt-0.5 shrink-0" style={{ color: "#EF4444" }} />
-                        : <div className="w-1.5 h-1.5 rounded-full mt-2 shrink-0" style={{ backgroundColor: GOLD }} />}
+                        ? <AlertTriangle size={12} className="mt-0.5 shrink-0" style={{ color: ERP.destructive }} />
+                        : <div className="w-1.5 h-1.5 rounded-full mt-2 shrink-0" style={{ backgroundColor: ERP.accent }} />}
                       <div className="flex-1 min-w-0">
-                        <div className="text-[11px] font-semibold" style={{ color: n.urgent ? "#DC2626" : NAVY }}>{n.title}</div>
-                        <div className="text-[10px] mt-0.5 truncate" style={{ color: "rgba(11,30,63,0.55)" }}>{n.sub}</div>
+                        <div className="text-[11px] font-semibold" style={{ color: n.urgent ? ERP.destructive : ERP.navy }}>{n.title}</div>
+                        <div className="text-[10px] mt-0.5 truncate" style={{ color: ERP.fgDim }}>{n.sub}</div>
                       </div>
-                      <span className="text-[10px] shrink-0 mt-0.5" style={{ color: "rgba(11,30,63,0.45)", fontFamily: "var(--font-mono)" }}>{n.time}</span>
+                      <span className="text-[10px] shrink-0 mt-0.5" style={{ color: ERP.muted, fontFamily: ERP.font.data }}>{n.time}</span>
                     </div>
                   ))}
                   {showAutomationLink && (
-                    <div className="px-4 py-2.5 text-center" style={{ borderTop: "1px solid rgba(11,30,63,0.11)" }}>
+                    <div className="px-4 py-2.5 text-center" style={{ borderTop: `1px solid ${ERP.border}` }}>
                       <Link
                         to="/automation?tab=notifications"
                         className="text-[10px] font-bold transition-opacity hover:opacity-75"
-                        style={{ color: GOLD, fontFamily: fontFor(lang) }}
+                        style={{ color: ERP.accent, fontFamily: fontFor(lang) }}
                         onClick={() => setShowBell(false)}
                       >
                         {lang === "bn" ? "বিজ্ঞপ্তি কেন্দ্র →" : "Notification Center →"}
@@ -730,16 +760,11 @@ export function ERPShell({
               type="button"
               onClick={toggleLang}
               className="h-11 min-h-[44px] px-3 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{
-                backgroundColor: CANVAS,
-                color: "rgba(11,30,63,0.76)",
-                border: "1px solid rgba(11,30,63,0.10)",
-                outlineColor: GOLD,
-              }}
+              style={{ backgroundColor: ERP.surfaceSoft, color: ERP.fgDim, border: `1px solid ${ERP.border}`, outlineColor: ERP.accent }}
               aria-label={lang === "bn" ? "ভাষা পরিবর্তন" : "Change language"}
             >
               <Globe2 size={14} />
-              <span style={{ fontFamily: lang === "bn" ? "var(--font-bengali)" : "var(--font-sans)" }}>
+              <span style={{ fontFamily: lang === "bn" ? "var(--font-bengali)" : ERP.font.heading }}>
                 {lang === "bn" ? "বাং" : "EN"}
               </span>
             </button>
@@ -749,33 +774,33 @@ export function ERPShell({
                 type="button"
                 onClick={() => setShowProfile(!showProfile)}
                 className="flex items-center gap-2 h-11 min-h-[44px] pl-1 pr-2.5 rounded-lg transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ backgroundColor: CANVAS, border: "1px solid rgba(11,30,63,0.10)", outlineColor: GOLD }}
+                style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, outlineColor: ERP.accent }}
                 aria-expanded={showProfile}
                 aria-label={lang === "bn" ? "প্রোফাইল মেনু" : "Profile menu"}
               >
                 <div
                   className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold"
-                  style={{ backgroundColor: `${moduleColor}28`, color: moduleColor }}
+                  style={{ backgroundColor: ERP.goldDim, border: `1px solid ${ERP.goldBrd}`, color: moduleColor }}
                 >
                   {initials}
                 </div>
-                <span className="text-xs font-semibold hidden sm:block" style={{ color: NAVY }}>
+                <span className="text-xs font-semibold hidden sm:block" style={{ color: ERP.navy }}>
                   {displayName.split(" ")[0]}
                 </span>
                 <ChevronDown
                   size={12}
-                  style={{ color: "rgba(11,30,63,0.50)" }}
+                  style={{ color: ERP.muted }}
                   className={`transition-transform ${showProfile ? "rotate-180" : ""}`}
                 />
               </button>
 
               {showProfile && (
                 <div
-                  className="absolute right-0 top-12 w-52 rounded-xl overflow-hidden shadow-lg z-50"
-                  style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.12)" }}
+                  className="absolute right-0 top-12 w-52 rounded-xl overflow-hidden z-50"
+                  style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}`, boxShadow: ERP.shadow.lg }}
                 >
-                  <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-                    <div className="text-xs font-bold" style={{ color: NAVY }}>{displayName}</div>
+                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                    <div className="text-xs font-bold" style={{ color: ERP.navy }}>{displayName}</div>
                     <div className="text-[10px] mt-0.5" style={{ color: moduleColor }}>{displayRole}</div>
                   </div>
                   {([
@@ -786,19 +811,21 @@ export function ERPShell({
                       key={label}
                       type="button"
                       className="w-full flex items-center gap-3 px-4 py-2.5 transition-all"
-                      style={{ color: "rgba(11,30,63,0.66)" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(11,30,63,0.04)"; }}
+                      style={{ color: ERP.fgDim }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = ERP.surfaceSoft; }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
                     >
                       <Icon size={14} />
                       <span className="text-xs" style={{ fontFamily: fontFor(lang) }}>{label}</span>
                     </button>
                   ))}
-                  <div style={{ borderTop: "1px solid rgba(11,30,63,0.11)" }}>
+                  <div style={{ borderTop: `1px solid ${ERP.border}` }}>
                     <Link
                       to="/login"
-                      className="flex items-center gap-3 px-4 py-2.5 transition-all hover:bg-red-500/10"
-                      style={{ color: "#DC2626" }}
+                      className="flex items-center gap-3 px-4 py-2.5 transition-all"
+                      style={{ color: ERP.destructive }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = ERP.destructiveDim; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
                       onClick={() => {
                         void api.logout().catch(() => undefined);
                         toast.info(lang === "bn" ? "সাইন আউট হয়েছে" : "Signed out of TUBA portal", { duration: 2500 });
@@ -821,8 +848,8 @@ export function ERPShell({
           <div
             className="flex items-center gap-1 px-3 sm:px-5 py-2 overflow-x-auto shrink-0"
             style={{
-              backgroundColor: "#FFFFFF",
-              borderBottom: "1px solid rgba(11,30,63,0.08)",
+              backgroundColor: ERP.surfaceSoft,
+              borderBottom: `1px solid ${ERP.border}`,
               WebkitOverflowScrolling: "touch",
             }}
             role="tablist"
@@ -841,21 +868,21 @@ export function ERPShell({
                   onClick={() => onItemClick(item.id)}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap min-h-[44px] transition-all active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{
-                    backgroundColor: isA ? `${moduleColor}16` : "transparent",
-                    color: isA ? moduleColor : "rgba(11,30,63,0.62)",
-                    border: `1px solid ${isA ? `${moduleColor}30` : "transparent"}`,
+                    backgroundColor: isA ? ERP.goldDim : "transparent",
+                    color: isA ? moduleColor : ERP.fgDim,
+                    border: `1px solid ${isA ? ERP.goldBrd : "transparent"}`,
                     fontFamily: fontFor(lang),
-                    outlineColor: GOLD,
+                    outlineColor: ERP.accent,
                   }}
                 >
-                  <Icon size={14} style={{ color: isA ? moduleColor : "rgba(11,30,63,0.50)" }} />
+                  <Icon size={14} style={{ color: isA ? moduleColor : ERP.muted }} />
                   {label}
                   {item.badge !== undefined && (
                     <span
                       className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                       style={{
-                        backgroundColor: typeof item.badge === "number" && item.badge > 0 ? `${moduleColor}28` : "rgba(11,30,63,0.08)",
-                        color: typeof item.badge === "number" && item.badge > 0 ? moduleColor : "rgba(11,30,63,0.45)",
+                        backgroundColor: typeof item.badge === "number" && item.badge > 0 ? ERP.goldDim : ERP.surfaceSoft,
+                        color: typeof item.badge === "number" && item.badge > 0 ? ERP.accent : ERP.muted,
                       }}
                     >
                       {item.badge}
@@ -870,7 +897,7 @@ export function ERPShell({
         <main
           id="erp-main"
           className="flex-1 overflow-y-auto overflow-x-hidden min-w-0"
-          style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(11,30,63,0.38) transparent" }}
+          style={{ backgroundColor: ERP.canvas, scrollbarWidth: "thin", scrollbarColor: `${ERP.border} transparent` }}
           tabIndex={-1}
         >
           {children}

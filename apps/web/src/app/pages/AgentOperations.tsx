@@ -3,11 +3,12 @@ import { UserCog, Play, RefreshCw, ShieldAlert } from "lucide-react";
 import { ERPShell, type NavItem, type IconFC } from "../components/ERPShell";
 import { EmptyState, LoadingSkeleton, ErrorState } from "../components/States";
 import { ErpPageTemplate, ErpButton, ErpSearchBar, ErpDataTable, ErpDrawer, ErpDrawerFooterActions, ErpForm, ErpField, ErpSelect, ErpTextarea, ErpStatusChip, erpToast, type ErpColumn, type ErpStatusKind } from "../components/erp";
+import { ERP, CAT, erpAlpha, ErpThemeProvider } from "../components/erp";
 import { api, ApiError, isLoggedIn } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 
-const ADMIN = "#7C3AED";
+const ADMIN = CAT.purple;
 const REASONS = ["Customer Support", "Emergency", "Data Correction", "Training", "Management Request", "Other"];
 
 interface Agent { id: string; code?: string | null; name: string; email: string; phone?: string | null; status: string; company?: { id: string; name: string } | null }
@@ -72,11 +73,11 @@ export default function AgentOperations() {
   ];
 
   return (
-    <ERPShell moduleId="admin" moduleName="Agent Operations" moduleColor={ADMIN} moduleIcon={UserCog as IconFC}
+    <ErpThemeProvider theme="ds"><ERPShell moduleId="admin" moduleName="Agent Operations" moduleColor={ADMIN} moduleIcon={UserCog as IconFC}
       navItems={NAV} activeItem="agent-ops" onItemClick={() => undefined} breadcrumb={[lang === "bn" ? "প্রশাসন" : "Administration", lang === "bn" ? "এজেন্ট অপারেশনস" : "Agent Operations"]}
       userName="Administration" userRole="TUBA AL HIJAZ">
       <div className="flex-1 overflow-y-auto p-4 md:p-5" style={{ fontFamily: fontFor(lang) }}>
-        <div className="mb-3 flex items-start gap-2 text-[11px] rounded-lg p-2.5" style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.18)", color: "#4C1D95" }}>
+        <div className="mb-3 flex items-start gap-2 text-[11px] rounded-lg p-2.5" style={{ background: "erpAlpha(CAT.purple, 6)", border: "1px solid erpAlpha(CAT.purple, 18)", color: CAT.purple }}>
           <ShieldAlert size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
           <span>{lang === "bn" ? "নিরাপদ ইমপারসোনেশন — আপনি প্রকৃত ব্যবহারকারী থাকবেন (অ্যাডমিন)। প্রতিটি কাজ অডিটে রেকর্ড হয়। ৩০ মিনিট পর সেশন শেষ হয়।" : "Secure impersonation — you remain the actual user (Admin). Every action is audited. Sessions auto-expire after 30 minutes."}</span>
         </div>
@@ -103,12 +104,12 @@ export default function AgentOperations() {
                 <ErpTextarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} placeholder={lang === "bn" ? "কারণ ব্যাখ্যা করুন…" : "Explain the reason…"} />
               </ErpField>
             )}
-            <p className="text-[11px]" style={{ color: "rgba(11,30,63,0.55)" }}>
+            <p className="text-[11px]" style={{ color: ERP.muted }}>
               {lang === "bn" ? "শুরু করলে আপনি এজেন্ট হিসেবে কাজ করবেন; একটি স্থায়ী ব্যানার দেখাবে এবং সব কাজ অডিটে রেকর্ড হবে (আসল অ্যাডমিন = আপনি)।" : "Starting will switch your working context to this agent. A persistent banner will show, and every action is recorded in the audit trail as Actual Admin = you."}
             </p>
           </ErpForm>
         </ErpDrawer>
       )}
-    </ERPShell>
+    </ERPShell></ErpThemeProvider>
   );
 }

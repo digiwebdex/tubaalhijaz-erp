@@ -7,6 +7,9 @@ import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
+import { FeatureFlagsModule } from "./feature-flags/feature-flags.module";
+import { SystemConfigModule } from "./system-config/system-config.module";
+import { SeasonsModule } from "./seasons/seasons.module";
 import { CompaniesModule } from "./companies/companies.module";
 import { GroupsModule } from "./groups/groups.module";
 import { HealthModule } from "./health/health.module";
@@ -49,6 +52,9 @@ import { PermissionsGuard } from "./common/guards/permissions.guard";
     StorageModule,
     AuthModule,
     CompaniesModule,
+    SeasonsModule,
+    SystemConfigModule,
+    FeatureFlagsModule,
     GroupsModule,
     UploadsModule,
     UsersModule,

@@ -68,7 +68,7 @@ export function ErpDrawer({
       <button
         type="button"
         className="absolute inset-0"
-        style={{ backgroundColor: "rgba(11,30,63,0.45)" }}
+        style={{ backgroundColor: ERP.scrim }}
         aria-label={lang === "bn" ? "বন্ধ করুন" : "Close overlay"}
         onClick={onClose}
       />

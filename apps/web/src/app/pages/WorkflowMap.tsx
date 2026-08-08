@@ -12,12 +12,13 @@ import {
   ErpPageTemplate, ErpSearchBar, ErpDataTable, ErpPagination,
   ErpStatusChip, erpToast, type ErpColumn,
 } from "../components/erp";
+import { ERP, CAT, erpAlpha, ErpThemeProvider } from "../components/erp";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 
 // ─── Module color ─────────────────────────────────────────────────────────────
 
-const GOLD = "#C9A24B";
+const GOLD = ERP.accent;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,42 +37,42 @@ interface GroupPipeline {
 // ─── Status style map ─────────────────────────────────────────────────────────
 
 const SS: Record<StageStatus, [string, string]> = {
-  COMPLETED:   ["#16A34A",              "DONE"    ],
-  IN_PROGRESS: ["#06B6D4",              "ACTIVE"  ],
-  PENDING:     ["rgba(11,30,63,0.38)","PENDING" ],
-  BLOCKED:     ["#EF4444",              "BLOCKED" ],
+  COMPLETED:   [ERP.success,              "DONE"    ],
+  IN_PROGRESS: [ERP.info,              "ACTIVE"  ],
+  PENDING:     [ERP.mutedSoft,"PENDING" ],
+  BLOCKED:     [ERP.destructive,              "BLOCKED" ],
 };
 
 // ─── Stage definitions (19 stages) ───────────────────────────────────────────
 
 const STAGES: Stage[] = [
-  { id:1,  label:"Agent Registration",  short:"Agent Reg",   module:"Agent Portal",   color:"#9333EA", icon:UserPlus,       phase:1, route:"/agent-portal"    },
-  { id:2,  label:"Verification",        short:"Verify",      module:"Super Admin",    color:"#64748B", icon:ShieldCheck,    phase:1, route:"/super-admin"     },
-  { id:3,  label:"Agent Approval",      short:"Approval",    module:"Super Admin",    color:"#64748B", icon:BadgeCheck,     phase:1, route:"/super-admin"     },
-  { id:4,  label:"Group Creation",      short:"Group",       module:"Agent Portal",   color:"#9333EA", icon:FolderPlus,     phase:1, route:"/agent-portal"    },
-  { id:5,  label:"Pax OCR / Excel",     short:"Pax Import",  module:"OCR Center",     color:"#0EA5E9", icon:Scan,           phase:1, route:"/ocr-center"      },
-  { id:6,  label:"Flight & Ticket",     short:"Flight",      module:"Ops Control",    color:"#DC4E2A", icon:Plane,          phase:1, route:"/ops-control"     },
-  { id:7,  label:"Visa Processing",     short:"Visa",        module:"Visa Desk",      color:"#0D9488", icon:Fingerprint,    phase:2, route:"/ops-departments" },
-  { id:8,  label:"Hotel Booking",       short:"Hotel",       module:"Hotel Desk",     color:"#2563EB", icon:BedDouble,      phase:2, route:"/ops-departments" },
-  { id:9,  label:"Transport Dispatch",  short:"Transport",   module:"Transport",      color:"#EA580C", icon:Truck,          phase:2, route:"/ops-departments" },
-  { id:10, label:"Catering",            short:"Catering",    module:"Catering",       color:"#D97706", icon:UtensilsCrossed,phase:2, route:"/ops-departments" },
-  { id:11, label:"Invoice",             short:"Invoice",     module:"Finance ERP",    color:"#16A34A", icon:FileText,       phase:2, route:"/finance-erp"     },
-  { id:12, label:"Payment",             short:"Payment",     module:"Finance ERP",    color:"#16A34A", icon:CreditCard,     phase:2, route:"/finance-erp"     },
-  { id:13, label:"Voucher",             short:"Voucher",     module:"Agent Portal",   color:"#9333EA", icon:Ticket,         phase:2, route:"/agent-portal"    },
-  { id:14, label:"WhatsApp & Email",    short:"Comms",       module:"Automation",     color:"#8B5CF6", icon:Bell,           phase:3, route:"/automation"      },
-  { id:15, label:"Arrival",             short:"Arrival",     module:"Ops Control",    color:"#06B6D4", icon:PlaneLanding,   phase:3, route:"/ops-control"     },
-  { id:16, label:"Stay",                short:"Stay",        module:"Hotel Desk",     color:"#2563EB", icon:Home,           phase:3, route:"/ops-departments" },
-  { id:17, label:"Departure",           short:"Departure",   module:"Ops Control",    color:"#06B6D4", icon:PlaneTakeoff,   phase:3, route:"/ops-control"     },
-  { id:18, label:"Final Statement",     short:"Statement",   module:"Finance ERP",    color:"#16A34A", icon:BarChart2,      phase:3, route:"/finance-erp"     },
-  { id:19, label:"Archive",             short:"Archive",     module:"Super Admin",    color:"#64748B", icon:Archive,        phase:3, route:"/super-admin"     },
+  { id:1,  label:"Agent Registration",  short:"Agent Reg",   module:"Agent Portal",   color:CAT.purple, icon:UserPlus,       phase:1, route:"/agent-portal"    },
+  { id:2,  label:"Verification",        short:"Verify",      module:"Super Admin",    color:CAT.slate, icon:ShieldCheck,    phase:1, route:"/super-admin"     },
+  { id:3,  label:"Agent Approval",      short:"Approval",    module:"Super Admin",    color:CAT.slate, icon:BadgeCheck,     phase:1, route:"/super-admin"     },
+  { id:4,  label:"Group Creation",      short:"Group",       module:"Agent Portal",   color:CAT.purple, icon:FolderPlus,     phase:1, route:"/agent-portal"    },
+  { id:5,  label:"Pax OCR / Excel",     short:"Pax Import",  module:"OCR Center",     color:CAT.sky, icon:Scan,           phase:1, route:"/ocr-center"      },
+  { id:6,  label:"Flight & Ticket",     short:"Flight",      module:"Ops Control",    color:CAT.orange, icon:Plane,          phase:1, route:"/ops-control"     },
+  { id:7,  label:"Visa Processing",     short:"Visa",        module:"Visa Desk",      color:CAT.teal, icon:Fingerprint,    phase:2, route:"/ops-departments" },
+  { id:8,  label:"Hotel Booking",       short:"Hotel",       module:"Hotel Desk",     color:ERP.info, icon:BedDouble,      phase:2, route:"/ops-departments" },
+  { id:9,  label:"Transport Dispatch",  short:"Transport",   module:"Transport",      color:CAT.orange, icon:Truck,          phase:2, route:"/ops-departments" },
+  { id:10, label:"Catering",            short:"Catering",    module:"Catering",       color:ERP.warning, icon:UtensilsCrossed,phase:2, route:"/ops-departments" },
+  { id:11, label:"Invoice",             short:"Invoice",     module:"Finance ERP",    color:ERP.success, icon:FileText,       phase:2, route:"/finance-erp"     },
+  { id:12, label:"Payment",             short:"Payment",     module:"Finance ERP",    color:ERP.success, icon:CreditCard,     phase:2, route:"/finance-erp"     },
+  { id:13, label:"Voucher",             short:"Voucher",     module:"Agent Portal",   color:CAT.purple, icon:Ticket,         phase:2, route:"/agent-portal"    },
+  { id:14, label:"WhatsApp & Email",    short:"Comms",       module:"Automation",     color:CAT.purple, icon:Bell,           phase:3, route:"/automation"      },
+  { id:15, label:"Arrival",             short:"Arrival",     module:"Ops Control",    color:ERP.info, icon:PlaneLanding,   phase:3, route:"/ops-control"     },
+  { id:16, label:"Stay",                short:"Stay",        module:"Hotel Desk",     color:ERP.info, icon:Home,           phase:3, route:"/ops-departments" },
+  { id:17, label:"Departure",           short:"Departure",   module:"Ops Control",    color:ERP.info, icon:PlaneTakeoff,   phase:3, route:"/ops-control"     },
+  { id:18, label:"Final Statement",     short:"Statement",   module:"Finance ERP",    color:ERP.success, icon:BarChart2,      phase:3, route:"/finance-erp"     },
+  { id:19, label:"Archive",             short:"Archive",     module:"Super Admin",    color:CAT.slate, icon:Archive,        phase:3, route:"/super-admin"     },
 ];
 
 // ─── Phase metadata ───────────────────────────────────────────────────────────
 
 const PHASES = [
-  { id:1 as const, label:"Pre-Travel & Onboarding",    color:"#9333EA", stages:[1,2,3,4,5,6]          },
-  { id:2 as const, label:"Service Booking & Finance",  color:"#16A34A", stages:[7,8,9,10,11,12,13]    },
-  { id:3 as const, label:"On-Ground Operations",       color:"#06B6D4", stages:[14,15,16,17,18,19]     },
+  { id:1 as const, label:"Pre-Travel & Onboarding",    color:CAT.purple, stages:[1,2,3,4,5,6]          },
+  { id:2 as const, label:"Service Booking & Finance",  color:ERP.success, stages:[7,8,9,10,11,12,13]    },
+  { id:3 as const, label:"On-Ground Operations",       color:ERP.info, stages:[14,15,16,17,18,19]     },
 ];
 
 // ─── Stage detail content ─────────────────────────────────────────────────────
@@ -142,45 +143,45 @@ function StageNode({ stage, status, selected, onClick, groupCount }: {
       className="relative flex flex-col items-center gap-1 rounded-2xl pt-3 pb-3 px-2 transition-all duration-150"
       style={{
         width: 92, minHeight: 128, flexShrink: 0,
-        backgroundColor: selected ? `${stage.color}14` : active ? `${stage.color}08` : done ? "rgba(11,30,63,0.38)" : "rgba(11,30,63,0.38)",
-        border: `1px solid ${selected ? stage.color : active ? `${stage.color}55` : done ? "rgba(11,30,63,0.38)" : "rgba(11,30,63,0.38)"}`,
-        boxShadow: selected ? `0 0 0 2px ${stage.color}35, 0 0 20px ${stage.color}12` : active ? `0 0 12px ${stage.color}15` : "none",
+        backgroundColor: selected ? `${erpAlpha(stage.color, 8)}` : active ? `${erpAlpha(stage.color, 3)}` : done ? ERP.mutedSoft : ERP.mutedSoft,
+        border: `1px solid ${selected ? stage.color : active ? `${erpAlpha(stage.color, 33)}` : done ? ERP.mutedSoft : ERP.mutedSoft}`,
+        boxShadow: selected ? `0 0 0 2px ${erpAlpha(stage.color, 21)}, 0 0 20px ${erpAlpha(stage.color, 7)}` : active ? `0 0 12px ${erpAlpha(stage.color, 8)}` : "none",
       }}
     >
       {/* Stage number */}
-      <span className="absolute top-1.5 left-2 text-[7px] font-black tabular-nums" style={{ color:"rgba(11,30,63,0.38)", fontFamily:"var(--font-mono)" }}>
+      <span className="absolute top-1.5 left-2 text-[7px] font-black tabular-nums" style={{ color:ERP.mutedSoft, fontFamily:"var(--font-mono)" }}>
         {String(stage.id).padStart(2,"0")}
       </span>
 
       {/* Group count badge */}
       {groupCount > 0 && (
         <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-[8px] font-black flex items-center justify-center z-10"
-          style={{ backgroundColor: stage.color, color:"#fff", boxShadow:`0 0 0 2px #0C0C18` }}>
+          style={{ backgroundColor: stage.color, color:"#fff", boxShadow:`0 0 0 2px ERP.canvas` }}>
           {groupCount}
         </div>
       )}
 
       {/* Icon container */}
       <div className="w-10 h-10 rounded-xl flex items-center justify-center mt-2 shrink-0"
-        style={{ backgroundColor: done||active||selected ? `${stage.color}20` : "rgba(11,30,63,0.38)" }}>
-        <Icon size={18} style={{ color: done||active||selected ? stage.color : "rgba(11,30,63,0.38)" }} />
+        style={{ backgroundColor: done||active||selected ? `${erpAlpha(stage.color, 13)}` : ERP.mutedSoft }}>
+        <Icon size={18} style={{ color: done||active||selected ? stage.color : ERP.mutedSoft }} />
       </div>
 
       {/* Label */}
       <div className="text-center text-[8.5px] font-bold leading-tight mt-1 px-1"
-        style={{ color: done||active||selected ? "rgba(11,30,63,0.94)" : "rgba(11,30,63,0.50)" }}>
+        style={{ color: done||active||selected ? ERP.navy : ERP.muted }}>
         {stage.label}
       </div>
 
       {/* Module */}
       <div className="text-[7px] text-center leading-tight"
-        style={{ color: done||active||selected ? `${stage.color}BB` : "rgba(11,30,63,0.38)" }}>
+        style={{ color: done||active||selected ? `${erpAlpha(stage.color, 73)}` : ERP.mutedSoft }}>
         {stage.module}
       </div>
 
       {/* Status pill */}
       <div className="text-[6.5px] font-black px-1.5 py-[2px] rounded-full mt-auto"
-        style={{ backgroundColor:`${sc}14`, color:sc }}>
+        style={{ backgroundColor:`${erpAlpha(sc, 8)}`, color:sc }}>
         {SS[status][1]}
       </div>
     </button>
@@ -191,9 +192,9 @@ function StageNode({ stage, status, selected, onClick, groupCount }: {
 
 function FlowArrow({ color, lit }: { color: string; lit: boolean }) {
   return (
-    <div className="flex items-center shrink-0" style={{ marginTop: 43, width: 22 }}>
-      <div className="flex-1 h-px" style={{ backgroundColor: lit ? `${color}50` : "rgba(11,30,63,0.38)" }} />
-      <ChevronRight size={10} style={{ color: lit ? `${color}70` : "rgba(11,30,63,0.38)", flexShrink:0 }} />
+    <div className="flex items-center shrink-0" style={{ marginTop: ERP.space[11], width: 22 }}>
+      <div className="flex-1 h-px" style={{ backgroundColor: lit ? `${erpAlpha(color, 31)}` : ERP.mutedSoft }} />
+      <ChevronRight size={10} style={{ color: lit ? `${erpAlpha(color, 44)}` : ERP.mutedSoft, flexShrink:0 }} />
     </div>
   );
 }
@@ -203,12 +204,12 @@ function FlowArrow({ color, lit }: { color: string; lit: boolean }) {
 function PhaseConnector() {
   return (
     <div className="flex justify-center items-center gap-3 py-1">
-      <div className="flex-1 h-px" style={{ backgroundColor:"#FBFCFD" }} />
+      <div className="flex-1 h-px" style={{ backgroundColor:ERP.surfaceSoft }} />
       <div className="flex flex-col items-center gap-px">
-        <div className="h-3 w-px" style={{ backgroundColor:"#F5F7FA" }} />
-        <ChevronDown size={10} style={{ color:"rgba(11,30,63,0.38)" }} />
+        <div className="h-3 w-px" style={{ backgroundColor:ERP.surfaceSoft }} />
+        <ChevronDown size={10} style={{ color:ERP.mutedSoft }} />
       </div>
-      <div className="flex-1 h-px" style={{ backgroundColor:"#FBFCFD" }} />
+      <div className="flex-1 h-px" style={{ backgroundColor:ERP.surfaceSoft }} />
     </div>
   );
 }
@@ -224,39 +225,39 @@ function StageDetailPane({ stageId, group }: { stageId: number; group: GroupPipe
   const here   = GROUPS.filter(g => g.currentStage === stageId);
   const Icon   = stage.icon;
   return (
-    <div className="rounded-2xl p-5 mt-4 shrink-0" style={{ backgroundColor:`${stage.color}07`, border:`1px solid ${stage.color}22` }}>
+    <div className="rounded-2xl p-5 mt-4 shrink-0" style={{ backgroundColor:`${erpAlpha(stage.color, 3)}`, border:`1px solid ${erpAlpha(stage.color, 13)}` }}>
       <div className="flex items-start gap-6">
         {/* Stage overview */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor:`${stage.color}20` }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor:`${erpAlpha(stage.color, 13)}` }}>
               <Icon size={20} style={{ color:stage.color }} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-black text-[#0B1E3F]">{stage.id}. {stage.label}</span>
-                <span className="text-[7px] font-black px-2 py-[2px] rounded-full shrink-0" style={{ backgroundColor:`${sc}14`, color:sc }}>{SS[status][1]}</span>
+                <span className="text-sm font-black text-[color:var(--erp-text-strong)]">{stage.id}. {stage.label}</span>
+                <span className="text-[7px] font-black px-2 py-[2px] rounded-full shrink-0" style={{ backgroundColor:`${erpAlpha(sc, 8)}`, color:sc }}>{SS[status][1]}</span>
               </div>
-              <div className="text-[9px] mt-0.5" style={{ color:`${stage.color}BB` }}>
+              <div className="text-[9px] mt-0.5" style={{ color:`${erpAlpha(stage.color, 73)}` }}>
                 Module: <span className="font-bold">{stage.module}</span>
               </div>
             </div>
           </div>
-          <p className="text-[10.5px] leading-relaxed mb-3" style={{ color:"rgba(11,30,63,0.66)" }}>{info.desc}</p>
-          <div className="flex items-center gap-1.5 text-[9px]" style={{ color:"rgba(11,30,63,0.50)" }}>
+          <p className="text-[10.5px] leading-relaxed mb-3" style={{ color:ERP.muted }}>{info.desc}</p>
+          <div className="flex items-center gap-1.5 text-[9px]" style={{ color:ERP.muted }}>
             <Clock size={9} />
-            <span>SLA: <span className="font-bold" style={{ color:"rgba(11,30,63,0.66)" }}>{info.sla}</span></span>
+            <span>SLA: <span className="font-bold" style={{ color:ERP.muted }}>{info.sla}</span></span>
           </div>
         </div>
 
         {/* Tasks */}
         <div className="w-60 shrink-0">
-          <div className="text-[8px] font-black uppercase tracking-widest mb-2.5" style={{ color:"rgba(11,30,63,0.50)" }}>Sub-Tasks</div>
+          <div className="text-[8px] font-black uppercase tracking-widest mb-2.5" style={{ color:ERP.muted }}>Sub-Tasks</div>
           <div className="space-y-1.5">
             {info.tasks.map((t, i) => (
               <div key={i} className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full mt-1 shrink-0" style={{ backgroundColor:stage.color }} />
-                <span className="text-[9.5px]" style={{ color:status==="PENDING"?"rgba(11,30,63,0.58)":"rgba(11,30,63,0.76)" }}>{t}</span>
+                <span className="text-[9.5px]" style={{ color:status==="PENDING"?ERP.muted:ERP.navy }}>{t}</span>
               </div>
             ))}
           </div>
@@ -264,23 +265,23 @@ function StageDetailPane({ stageId, group }: { stageId: number; group: GroupPipe
 
         {/* Groups at this stage + portal button */}
         <div className="w-52 shrink-0">
-          <div className="text-[8px] font-black uppercase tracking-widest mb-2.5" style={{ color:"rgba(11,30,63,0.50)" }}>
+          <div className="text-[8px] font-black uppercase tracking-widest mb-2.5" style={{ color:ERP.muted }}>
             Groups here now {here.length > 0 && <span style={{ color:stage.color }}>({here.length})</span>}
           </div>
           {here.length > 0 ? (
             <div className="space-y-1.5">
               {here.map(g => (
-                <div key={g.id} className="rounded-xl p-2.5" style={{ backgroundColor:"#FBFCFD", border:`1px solid ${stage.color}20` }}>
+                <div key={g.id} className="rounded-xl p-2.5" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${erpAlpha(stage.color, 13)}` }}>
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-[9px] font-black" style={{ color:stage.color }}>{g.id}</span>
-                    <span className="text-[8px]" style={{ color:"rgba(11,30,63,0.66)" }}>{g.flag} {g.pax} pax · {g.agent}</span>
+                    <span className="text-[8px]" style={{ color:ERP.muted }}>{g.flag} {g.pax} pax · {g.agent}</span>
                   </div>
-                  <div className="text-[8px] leading-tight" style={{ color:"rgba(11,30,63,0.50)" }}>{g.note}</div>
+                  <div className="text-[8px] leading-tight" style={{ color:ERP.muted }}>{g.note}</div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-[9px] mb-3" style={{ color:"rgba(11,30,63,0.38)" }}>No groups currently at this stage.</div>
+            <div className="text-[9px] mb-3" style={{ color:ERP.mutedSoft }}>No groups currently at this stage.</div>
           )}
           <button
             onClick={() => {
@@ -288,7 +289,7 @@ function StageDetailPane({ stageId, group }: { stageId: number; group: GroupPipe
               navigate(stage.route);
             }}
             className="mt-3 flex items-center gap-1.5 text-[9px] font-black px-3 py-1.5 rounded-xl transition-all hover:opacity-80 active:scale-95"
-            style={{ backgroundColor:`${stage.color}18`, color:stage.color }}>
+            style={{ backgroundColor:`${erpAlpha(stage.color, 9)}`, color:stage.color }}>
             <ExternalLink size={10} />
             Open {stage.module}
           </button>
@@ -306,29 +307,29 @@ function PipelineScreen() {
   const activeGroup = GROUPS.find(g => g.id === selectedGroup) ?? null;
 
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-0" style={{ scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }}>
+    <div className="p-6 h-full overflow-y-auto space-y-0" style={{ scrollbarWidth:"thin", scrollbarColor:"${ERP.mutedSoft} transparent" }}>
 
       {/* Group selector */}
       <div className="flex items-center gap-2 mb-5 flex-wrap">
-        <span className="text-[9px] font-black uppercase tracking-widest mr-1" style={{ color:"rgba(11,30,63,0.50)" }}>View:</span>
+        <span className="text-[9px] font-black uppercase tracking-widest mr-1" style={{ color:ERP.muted }}>View:</span>
         {[{ id:"all", label:"All Groups", pax:null, flag:null },...GROUPS.map(g=>({ id:g.id, label:g.id, pax:g.pax, flag:g.flag }))].map(g => (
           <button
             key={g.id}
             onClick={() => { setSelectedGroup(g.id); setSelectedStage(null); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-bold transition-all"
             style={{
-              backgroundColor: selectedGroup===g.id ? `${GOLD}20` : "rgba(11,30,63,0.38)",
-              border: `1px solid ${selectedGroup===g.id ? GOLD : "rgba(11,30,63,0.38)"}`,
-              color: selectedGroup===g.id ? GOLD : "rgba(11,30,63,0.66)",
+              backgroundColor: selectedGroup===g.id ? `${erpAlpha(GOLD, 13)}` : ERP.mutedSoft,
+              border: `1px solid ${selectedGroup===g.id ? GOLD : ERP.mutedSoft}`,
+              color: selectedGroup===g.id ? GOLD : ERP.muted,
             }}
           >
             {g.flag && <span>{g.flag}</span>}
             {g.label}
-            {g.pax && <span style={{ color:"rgba(11,30,63,0.50)" }}>{g.pax}p</span>}
+            {g.pax && <span style={{ color:ERP.muted }}>{g.pax}p</span>}
           </button>
         ))}
         {activeGroup && (
-          <span className="ml-2 text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>
+          <span className="ml-2 text-[9px]" style={{ color:ERP.muted }}>
             Currently at: <span className="font-bold" style={{ color:STAGES.find(s=>s.id===activeGroup.currentStage)?.color }}>{STAGES.find(s=>s.id===activeGroup.currentStage)?.label}</span>
             {" — "}{activeGroup.note}
           </span>
@@ -340,16 +341,16 @@ function PipelineScreen() {
         const phaseStages = STAGES.filter(s => s.phase === phase.id);
         return (
           <div key={phase.id}>
-            <div className="rounded-2xl px-4 pt-4 pb-5" style={{ backgroundColor:"#FFFFFF", border:`1px solid ${phase.color}18` }}>
+            <div className="rounded-2xl px-4 pt-4 pb-5" style={{ backgroundColor:ERP.surface, border:`1px solid ${erpAlpha(phase.color, 9)}` }}>
               {/* Phase header */}
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-px" style={{ width:16, backgroundColor:`${phase.color}40` }} />
+                <div className="h-px" style={{ width:16, backgroundColor:`${erpAlpha(phase.color, 25)}` }} />
                 <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full shrink-0"
-                  style={{ backgroundColor:`${phase.color}14`, color:phase.color }}>
+                  style={{ backgroundColor:`${erpAlpha(phase.color, 8)}`, color:phase.color }}>
                   Phase {phase.id}: {phase.label}
                 </span>
-                <div className="flex-1 h-px" style={{ backgroundColor:`${phase.color}18` }} />
-                <span className="text-[8px]" style={{ color:"rgba(11,30,63,0.38)" }}>
+                <div className="flex-1 h-px" style={{ backgroundColor:`${erpAlpha(phase.color, 9)}` }} />
+                <span className="text-[8px]" style={{ color:ERP.mutedSoft }}>
                   {phaseStages.map(s=>s.id).join(" → ")}
                 </span>
               </div>
@@ -391,18 +392,18 @@ function PipelineScreen() {
       )}
 
       {/* Module legend */}
-      <div className="rounded-2xl p-4 mt-4" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.08)" }}>
-        <div className="text-[8px] font-black uppercase tracking-widest mb-3" style={{ color:"rgba(11,30,63,0.50)" }}>Module Ownership Legend</div>
+      <div className="rounded-2xl p-4 mt-4" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
+        <div className="text-[8px] font-black uppercase tracking-widest mb-3" style={{ color:ERP.muted }}>Module Ownership Legend</div>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           {([
-            ["#9333EA","Agent Portal"], ["#64748B","Super Admin"],  ["#0EA5E9","OCR Center"],
-            ["#DC4E2A","Ops Control"],  ["#0D9488","Visa Desk"],    ["#2563EB","Hotel Desk"],
-            ["#EA580C","Transport"],   ["#D97706","Catering"],      ["#16A34A","Finance ERP"],
-            ["#8B5CF6","Automation"],  ["#06B6D4","Ops Control (Arrival/Departure)"],
+            [CAT.purple,"Agent Portal"], [CAT.slate,"Super Admin"],  [CAT.sky,"OCR Center"],
+            [CAT.orange,"Ops Control"],  [CAT.teal,"Visa Desk"],    [ERP.info,"Hotel Desk"],
+            [CAT.orange,"Transport"],   [ERP.warning,"Catering"],      [ERP.success,"Finance ERP"],
+            [CAT.purple,"Automation"],  [ERP.info,"Ops Control (Arrival/Departure)"],
           ] as [string,string][]).map(([c,n]) => (
             <div key={n} className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor:c }} />
-              <span className="text-[8.5px]" style={{ color:"rgba(11,30,63,0.58)" }}>{n}</span>
+              <span className="text-[8.5px]" style={{ color:ERP.muted }}>{n}</span>
             </div>
           ))}
         </div>
@@ -416,9 +417,9 @@ function PipelineScreen() {
 function GroupTrackerScreen() {
   const [selected, setSelected] = useState<string|null>(null);
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-3" style={{ scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }}>
-      <div className="text-xs font-black text-[#0B1E3F] mb-1">Active Groups — Pipeline Progress</div>
-      <div className="text-[9px] mb-5" style={{ color:"rgba(11,30,63,0.58)" }}>
+    <div className="p-6 h-full overflow-y-auto space-y-3" style={{ scrollbarWidth:"thin", scrollbarColor:"${ERP.mutedSoft} transparent" }}>
+      <div className="text-xs font-black text-[color:var(--erp-text-strong)] mb-1">Active Groups — Pipeline Progress</div>
+      <div className="text-[9px] mb-5" style={{ color:ERP.muted }}>
         Each bar shows progress through all 19 stages. Colour = module that owns each stage. Click any group for detail.
       </div>
       {GROUPS.map(g => {
@@ -430,17 +431,17 @@ function GroupTrackerScreen() {
             <button
               onClick={() => setSelected(isOpen ? null : g.id)}
               className="w-full text-left rounded-2xl p-5 transition-all"
-              style={{ backgroundColor:"#FBFCFD", border:`1px solid ${isOpen?cStage.color:"rgba(11,30,63,0.38)"}` }}
+              style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${isOpen?cStage.color:ERP.mutedSoft}` }}
             >
               <div className="flex items-start gap-4 mb-4">
                 <div className="text-lg font-black" style={{ color:GOLD, fontFamily:"var(--font-mono)" }}>{g.id}</div>
                 <div className="flex-1">
-                  <div className="text-xs font-semibold text-[#0B1E3F]">{g.agent} · {g.flag} · {g.pax} pax</div>
-                  <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>{g.note}</div>
+                  <div className="text-xs font-semibold text-[color:var(--erp-text-strong)]">{g.agent} · {g.flag} · {g.pax} pax</div>
+                  <div className="text-[9px] mt-0.5" style={{ color:ERP.muted }}>{g.note}</div>
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-xs font-black" style={{ color:cStage.color }}>{cStage.label}</div>
-                  <div className="text-[9px]" style={{ color:"rgba(11,30,63,0.50)" }}>Stage {g.currentStage} / {STAGES.length}</div>
+                  <div className="text-[9px]" style={{ color:ERP.muted }}>Stage {g.currentStage} / {STAGES.length}</div>
                 </div>
               </div>
 
@@ -451,11 +452,11 @@ function GroupTrackerScreen() {
                   return (
                     <div key={s.id} title={`${s.id}. ${s.label}`}
                       className="flex-1 h-2.5 first:rounded-l-full last:rounded-r-full"
-                      style={{ backgroundColor: st==="COMPLETED" ? s.color : st==="IN_PROGRESS" ? s.color : "#EEF1F6", opacity: st==="IN_PROGRESS" ? 1 : st==="COMPLETED" ? 0.8 : 1 }} />
+                      style={{ backgroundColor: st==="COMPLETED" ? s.color : st==="IN_PROGRESS" ? s.color : ERP.surfaceSoft, opacity: st==="IN_PROGRESS" ? 1 : st==="COMPLETED" ? 0.8 : 1 }} />
                   );
                 })}
               </div>
-              <div className="flex justify-between mt-1.5 text-[8px]" style={{ color:"rgba(11,30,63,0.50)" }}>
+              <div className="flex justify-between mt-1.5 text-[8px]" style={{ color:ERP.muted }}>
                 <span>Agent Reg</span>
                 <span className="font-bold" style={{ color:GOLD }}>{pct}% complete</span>
                 <span>Archive</span>
@@ -464,19 +465,19 @@ function GroupTrackerScreen() {
 
             {/* Expanded stage list */}
             {isOpen && (
-              <div className="mt-2 rounded-2xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
+              <div className="mt-2 rounded-2xl overflow-hidden" style={{ border:`1px solid ${ERP.border}` }}>
                 {STAGES.map((s, i) => {
                   const st = stageStatus(s.id, g);
                   const [sc, sl] = SS[st];
                   const SIcon = s.icon;
                   return (
                     <div key={s.id} className="flex items-center gap-3 px-4 py-2.5"
-                      style={{ backgroundColor: st==="IN_PROGRESS" ? `${s.color}08` : "rgba(11,30,63,0.38)", borderBottom: i<STAGES.length-1 ? "1px solid rgba(11,30,63,0.08)" : "none", borderLeft:`3px solid ${st==="IN_PROGRESS"?s.color:st==="COMPLETED"?`${s.color}40`:"transparent"}` }}>
-                      <span className="text-[8px] w-4 text-right font-black" style={{ color:"rgba(11,30,63,0.38)", fontFamily:"var(--font-mono)" }}>{s.id}</span>
-                      <SIcon size={12} style={{ color: st==="PENDING"?"rgba(11,30,63,0.38)":s.color }} />
-                      <span className="flex-1 text-[10px]" style={{ color: st==="PENDING"?"rgba(11,30,63,0.50)":"rgba(11,30,63,0.86)" }}>{s.label}</span>
-                      <span className="text-[8px]" style={{ color:"rgba(11,30,63,0.50)" }}>{s.module}</span>
-                      <span className="text-[7px] font-black px-1.5 py-[2px] rounded-full" style={{ backgroundColor:`${sc}12`, color:sc }}>{sl}</span>
+                      style={{ backgroundColor: st==="IN_PROGRESS" ? `${erpAlpha(s.color, 3)}` : ERP.mutedSoft, borderBottom: i<STAGES.length-1 ? `1px solid ${ERP.border}` : "none", borderLeft:`3px solid ${st==="IN_PROGRESS"?s.color:st==="COMPLETED"?`${erpAlpha(s.color, 25)}`:"transparent"}` }}>
+                      <span className="text-[8px] w-4 text-right font-black" style={{ color:ERP.mutedSoft, fontFamily:"var(--font-mono)" }}>{s.id}</span>
+                      <SIcon size={12} style={{ color: st==="PENDING"?ERP.mutedSoft:s.color }} />
+                      <span className="flex-1 text-[10px]" style={{ color: st==="PENDING"?ERP.muted:ERP.navy }}>{s.label}</span>
+                      <span className="text-[8px]" style={{ color:ERP.muted }}>{s.module}</span>
+                      <span className="text-[7px] font-black px-1.5 py-[2px] rounded-full" style={{ backgroundColor:`${erpAlpha(sc, 7)}`, color:sc }}>{sl}</span>
                     </div>
                   );
                 })}
@@ -513,12 +514,12 @@ function DirectoryScreen() {
         const activeCount = GROUPS.filter(g => g.currentStage === s.id).length;
         return (
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${s.color}15` }}>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${erpAlpha(s.color, 8)}` }}>
               <SIcon size={16} style={{ color: s.color }} />
             </div>
             <div>
-              <div className="text-xs font-black text-[#0B1E3F]">{s.id}. {s.label}</div>
-              <div className="text-[10px]" style={{ color: `${s.color}BB` }}>{s.module}</div>
+              <div className="text-xs font-black text-[color:var(--erp-text-strong)]">{s.id}. {s.label}</div>
+              <div className="text-[10px]" style={{ color: `${erpAlpha(s.color, 73)}` }}>{s.module}</div>
               {activeCount > 0 && (
                 <ErpStatusChip status="info" label={`${activeCount} active`} lang={lang} />
               )}
@@ -538,7 +539,7 @@ function DirectoryScreen() {
     {
       id: "desc",
       header: lang === "bn" ? "বিবরণ" : "Description",
-      cell: (s) => <span className="text-[11px]" style={{ color: "rgba(11,30,63,0.66)" }}>{STAGE_INFO[s.id - 1]?.desc ?? ""}</span>,
+      cell: (s) => <span className="text-[11px]" style={{ color: ERP.muted }}>{STAGE_INFO[s.id - 1]?.desc ?? ""}</span>,
     },
     {
       id: "sla",
@@ -578,7 +579,7 @@ function DirectoryScreen() {
 export default function WorkflowMap() {
   const [screen, setScreen] = useState<WFScreen>("pipeline");
   return (
-    <ERPShell
+    <ErpThemeProvider theme="ds"><ERPShell
       moduleId="workflow"
       moduleName="Workflow Map"
       moduleColor={GOLD}
@@ -596,6 +597,6 @@ export default function WorkflowMap() {
         {screen === "tracker"   && <GroupTrackerScreen />}
         {screen === "directory" && <DirectoryScreen />}
       </div>
-    </ERPShell>
+    </ERPShell></ErpThemeProvider>
   );
 }

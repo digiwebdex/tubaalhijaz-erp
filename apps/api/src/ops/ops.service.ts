@@ -235,7 +235,7 @@ export class OpsService {
     return row;
   }
 
-  private static DISPATCH_TX: Record<DispatchStatus, DispatchStatus[]> = {
+  static readonly DISPATCH_TX: Record<DispatchStatus, DispatchStatus[]> = {
     ASSIGNED: ["EN_ROUTE", "DELAYED", "CANCELLED"],
     EN_ROUTE: ["COMPLETED", "DELAYED", "CANCELLED"],
     DELAYED: ["EN_ROUTE", "COMPLETED", "CANCELLED"],

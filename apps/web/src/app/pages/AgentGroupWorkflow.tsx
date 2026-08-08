@@ -3,11 +3,12 @@ import { Workflow as WfIcon, RefreshCw, Send, Lock, Unlock, Eye, MessageSquarePl
 import { ERPShell, type NavItem, type IconFC } from "../components/ERPShell";
 import { LoadingSkeleton, ErrorState, EmptyState } from "../components/States";
 import { ErpPageTemplate, ErpButton, ErpSearchBar, ErpDataTable, ErpSelect, ErpDrawer, ErpDrawerFooterActions, ErpForm, ErpField, ErpInput, ErpTextarea, ErpStatusChip, erpToast, type ErpColumn, type ErpStatusKind } from "../components/erp";
+import { ERP, CAT, erpAlpha, ErpThemeProvider } from "../components/erp";
 import { api, ApiError, isLoggedIn } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 
-const MW = "#1D4ED8";
+const MW = ERP.info;
 interface Group { id: string; code: string; name: string; approvalStatus: string; locked: boolean; lockType: string | null; paxCount: number; returnReason?: string | null }
 interface Wf { approvalStatus: string; locked: boolean; lockType: string | null; submittedAt: string | null; approvedAt: string | null; lockedAt: string | null; returnReason: string | null }
 interface CR { id: string; description: string; field: string | null; status: string; createdAt: string }
@@ -51,7 +52,7 @@ export default function AgentGroupWorkflow() {
     { id: "name", header: lang === "bn" ? "গ্রুপ" : "Group", cell: (g) => <span className="text-xs font-semibold">{g.name}</span> },
     { id: "pax", header: "Pax", align: "center", cell: (g) => <span className="font-mono">{g.paxCount}</span> },
     { id: "st", header: lang === "bn" ? "স্ট্যাটাস" : "Status", cell: (g) => <ErpStatusChip status={stKind(g.approvalStatus)} label={g.approvalStatus} lang={lang} /> },
-    { id: "lock", header: lang === "bn" ? "লক" : "Lock", align: "center", cell: (g) => g.locked ? <span className="inline-flex items-center gap-1 text-[10px] font-bold" style={{ color: g.lockType === "HARD" ? "#B91C1C" : "#B45309" }}><Lock size={11} />{g.lockType || "SOFT"}</span> : <Unlock size={12} style={{ color: "rgba(11,30,63,0.3)" }} /> },
+    { id: "lock", header: lang === "bn" ? "লক" : "Lock", align: "center", cell: (g) => g.locked ? <span className="inline-flex items-center gap-1 text-[10px] font-bold" style={{ color: g.lockType === "HARD" ? ERP.destructive : ERP.warning }}><Lock size={11} />{g.lockType || "SOFT"}</span> : <Unlock size={12} style={{ color: ERP.mutedSoft }} /> },
     { id: "act", header: "", align: "right", cell: (g) => (
       <div className="flex gap-1 justify-end" onClick={(e) => e.stopPropagation()}>
         {["DRAFT", "RETURNED"].includes(g.approvalStatus) && !g.locked &&
@@ -64,10 +65,10 @@ export default function AgentGroupWorkflow() {
   ];
 
   return (
-    <ERPShell moduleId="admin" moduleName="My Workflow" moduleColor={MW} moduleIcon={WfIcon as IconFC}
+    <ErpThemeProvider theme="ds"><ERPShell moduleId="admin" moduleName="My Workflow" moduleColor={MW} moduleIcon={WfIcon as IconFC}
       navItems={NAV} activeItem="mw" onItemClick={() => undefined} breadcrumb={[lang === "bn" ? "ওয়ার্কফ্লো" : "Workflow", lang === "bn" ? "আমার গ্রুপ" : "My Groups"]} userName="Workspace" userRole="TUBA AL HIJAZ">
       <div className="flex-1 overflow-y-auto p-4 md:p-5" style={{ fontFamily: fontFor(lang) }}>
-        <div className="mb-3 flex items-start gap-2 text-[11px] rounded-lg p-2.5" style={{ background: `${MW}0A`, border: `1px solid ${MW}22`, color: "#1E3A8A" }}>
+        <div className="mb-3 flex items-start gap-2 text-[11px] rounded-lg p-2.5" style={{ background: `${erpAlpha(MW, 4)}`, border: `1px solid ${erpAlpha(MW, 13)}`, color: ERP.info }}>
           <ShieldAlert size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
           <span>{lang === "bn" ? "লক করা গ্রুপ সরাসরি সম্পাদনা করা যায় না — পরিবর্তনের জন্য একটি অনুরোধ পাঠান, যা স্টাফ পর্যালোচনা করবে।" : "Locked groups can't be edited directly — raise a change request for staff to review. Draft/returned groups can be submitted for approval."}</span>
         </div>
@@ -88,7 +89,7 @@ export default function AgentGroupWorkflow() {
       {crFor && (
         <ErpDrawer open onClose={() => setCrFor(null)} lang={lang} title={lang === "bn" ? "পরিবর্তন অনুরোধ" : "Request a Change"} subtitle={`${crFor.code} · ${crFor.name}`}
           footer={<ErpDrawerFooterActions lang={lang} onCancel={() => setCrFor(null)} onSave={raiseCr} saving={busy} saveLabel={lang === "bn" ? "অনুরোধ পাঠান" : "Submit request"} />}>
-          <div className="mb-2 flex items-center gap-1.5 text-[11px]" style={{ color: crFor.lockType === "HARD" ? "#B91C1C" : "#B45309" }}><Lock size={12} />{crFor.lockType || "SOFT"} {lang === "bn" ? "লক" : "lock"}</div>
+          <div className="mb-2 flex items-center gap-1.5 text-[11px]" style={{ color: crFor.lockType === "HARD" ? ERP.destructive : ERP.warning }}><Lock size={12} />{crFor.lockType || "SOFT"} {lang === "bn" ? "লক" : "lock"}</div>
           <ErpForm columns={1}>
             <ErpField label={lang === "bn" ? "ক্ষেত্র (ঐচ্ছিক)" : "Field (optional)"} hint={lang === "bn" ? "যেমন: passenger.passport, flight.date" : "e.g. passenger.passport, flight.date"}><ErpInput value={crField} onChange={(e) => setCrField(e.target.value)} /></ErpField>
             <ErpField label={lang === "bn" ? "বিবরণ (আবশ্যক)" : "Description (required)"}><ErpTextarea value={crDesc} onChange={(e) => setCrDesc(e.target.value)} rows={4} placeholder={lang === "bn" ? "কী পরিবর্তন দরকার তা ব্যাখ্যা করুন…" : "Explain what needs to change…"} /></ErpField>
@@ -96,7 +97,7 @@ export default function AgentGroupWorkflow() {
         </ErpDrawer>
       )}
       {detail && <WfDetail group={detail} onClose={() => setDetail(null)} lang={lang} />}
-    </ERPShell>
+    </ERPShell></ErpThemeProvider>
   );
 }
 
@@ -117,10 +118,10 @@ function WfDetail({ group, onClose, lang }: { group: Group; onClose: () => void;
         <section>
           <div className="flex items-center gap-2 mb-1.5">
             <ErpStatusChip status={stKind(group.approvalStatus)} label={group.approvalStatus} lang={lang} />
-            {wf?.locked && <span className="inline-flex items-center gap-1 text-[10px] font-bold" style={{ color: wf.lockType === "HARD" ? "#B91C1C" : "#B45309" }}><Lock size={11} />{wf.lockType || "SOFT"}</span>}
+            {wf?.locked && <span className="inline-flex items-center gap-1 text-[10px] font-bold" style={{ color: wf.lockType === "HARD" ? ERP.destructive : ERP.warning }}><Lock size={11} />{wf.lockType || "SOFT"}</span>}
           </div>
-          {wf?.returnReason && <div className="rounded p-2" style={{ background: "rgba(180,83,9,0.08)", color: "#92400E" }}><b>{lang === "bn" ? "ফেরতের কারণ" : "Return reason"}:</b> {wf.returnReason}</div>}
-          <div className="grid grid-cols-2 gap-1 mt-1" style={{ color: "rgba(11,30,63,0.6)" }}>
+          {wf?.returnReason && <div className="rounded p-2" style={{ background: "erpAlpha(ERP.warning, 8)", color: ERP.warning }}><b>{lang === "bn" ? "ফেরতের কারণ" : "Return reason"}:</b> {wf.returnReason}</div>}
+          <div className="grid grid-cols-2 gap-1 mt-1" style={{ color: ERP.muted }}>
             {wf?.submittedAt && <div>{lang === "bn" ? "জমা" : "Submitted"}: {new Date(wf.submittedAt).toLocaleString()}</div>}
             {wf?.approvedAt && <div>{lang === "bn" ? "অনুমোদিত" : "Approved"}: {new Date(wf.approvedAt).toLocaleString()}</div>}
             {wf?.lockedAt && <div>{lang === "bn" ? "লক" : "Locked"}: {new Date(wf.lockedAt).toLocaleString()}</div>}
@@ -128,17 +129,17 @@ function WfDetail({ group, onClose, lang }: { group: Group; onClose: () => void;
         </section>
         <section>
           <h4 className="font-bold uppercase tracking-widest mb-1.5" style={{ color: MW }}>{lang === "bn" ? "পরিবর্তন অনুরোধ" : "Change Requests"}</h4>
-          {crs === null ? <LoadingSkeleton /> : crs.length === 0 ? <p style={{ color: "rgba(11,30,63,0.5)" }}>{lang === "bn" ? "কোনো অনুরোধ নেই" : "None"}</p>
-            : crs.map((c) => <div key={c.id} className="border rounded px-2 py-1.5 mb-1 flex items-center justify-between" style={{ borderColor: "rgba(11,30,63,0.12)" }}><span>{c.field ? <b className="font-mono">{c.field}: </b> : null}{c.description}</span><ErpStatusChip status={stKind(c.status)} label={c.status} lang={lang} /></div>)}
+          {crs === null ? <LoadingSkeleton /> : crs.length === 0 ? <p style={{ color: ERP.muted }}>{lang === "bn" ? "কোনো অনুরোধ নেই" : "None"}</p>
+            : crs.map((c) => <div key={c.id} className="border rounded px-2 py-1.5 mb-1 flex items-center justify-between" style={{ borderColor: ERP.border }}><span>{c.field ? <b className="font-mono">{c.field}: </b> : null}{c.description}</span><ErpStatusChip status={stKind(c.status)} label={c.status} lang={lang} /></div>)}
         </section>
         <section>
           <h4 className="font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1" style={{ color: MW }}><Layers size={12} />{lang === "bn" ? "সংস্করণ" : "Versions"}</h4>
-          {versions.length === 0 ? <p style={{ color: "rgba(11,30,63,0.5)" }}>{lang === "bn" ? "কোনো সংস্করণ নেই" : "No versions yet"}</p>
-            : versions.map((v) => <div key={v.id} className="border rounded px-2 py-1 mb-1" style={{ borderColor: "rgba(11,30,63,0.12)" }}>v{v.version} · {new Date(v.createdAt).toLocaleString()}{v.reason ? ` · ${v.reason}` : ""}</div>)}
+          {versions.length === 0 ? <p style={{ color: ERP.muted }}>{lang === "bn" ? "কোনো সংস্করণ নেই" : "No versions yet"}</p>
+            : versions.map((v) => <div key={v.id} className="border rounded px-2 py-1 mb-1" style={{ borderColor: ERP.border }}>v{v.version} · {new Date(v.createdAt).toLocaleString()}{v.reason ? ` · ${v.reason}` : ""}</div>)}
         </section>
         <section>
           <h4 className="font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1" style={{ color: MW }}><Clock size={12} />{lang === "bn" ? "টাইমলাইন" : "Timeline"}</h4>
-          {tl.map((t) => <div key={t.id} className="flex gap-2 mb-1"><span className="font-mono" style={{ color: MW }}>{t.event}</span><span style={{ color: "rgba(11,30,63,0.6)" }}>{t.actorLabel} · {new Date(t.createdAt).toLocaleString()}{t.note ? ` · ${t.note}` : ""}</span></div>)}
+          {tl.map((t) => <div key={t.id} className="flex gap-2 mb-1"><span className="font-mono" style={{ color: MW }}>{t.event}</span><span style={{ color: ERP.muted }}>{t.actorLabel} · {new Date(t.createdAt).toLocaleString()}{t.note ? ` · ${t.note}` : ""}</span></div>)}
         </section>
       </div>
     </ErpDrawer>

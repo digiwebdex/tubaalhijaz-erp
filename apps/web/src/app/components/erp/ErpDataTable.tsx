@@ -1,5 +1,5 @@
 import { memo, useMemo, type CSSProperties, type ReactElement, type ReactNode } from "react";
-import { ERP } from "./tokens";
+import { ERP, erpAlpha } from "./tokens";
 import { EmptyState, LoadingSkeleton } from "../States";
 
 export type ErpSortDir = "asc" | "desc";
@@ -39,6 +39,8 @@ export interface ErpDataTableProps<T> {
   stickyHeader?: boolean;
   /** Stick first data column while table scrolls horizontally (UI-11). */
   stickyFirstColumn?: boolean;
+  /** Remove the outer border/radius/surface — for embedding inside an ErpCard. */
+  flush?: boolean;
   className?: string;
 }
 
@@ -69,6 +71,7 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
   rowActions,
   stickyHeader = true,
   stickyFirstColumn = true,
+  flush = false,
   className,
 }: ErpDataTableProps<T>) {
   const allKeys = useMemo(() => rows.map(rowKey), [rows, rowKey]);
@@ -107,7 +110,7 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
           left: selectable ? 40 : 0,
           zIndex: stickyHeader ? 11 : 2,
           backgroundColor: ERP.surfaceSoft,
-          boxShadow: "2px 0 0 rgba(11,30,63,0.06)",
+          boxShadow: `2px 0 0 ${ERP.border}`,
         }
       : {};
 
@@ -117,15 +120,15 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
           position: "sticky",
           left: selectable ? 40 : 0,
           zIndex: 1,
-          backgroundColor: selected ? `${ERP.gold}10` : ERP.surface,
-          boxShadow: "2px 0 0 rgba(11,30,63,0.06)",
+          backgroundColor: selected ? erpAlpha(ERP.gold, 6) : ERP.surface,
+          boxShadow: `2px 0 0 ${ERP.border}`,
         }
       : {};
 
   return (
     <div
-      className={`rounded-xl overflow-hidden min-w-0 ${className ?? ""}`}
-      style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}
+      className={`overflow-hidden min-w-0 ${flush ? "" : "rounded-xl"} ${className ?? ""}`}
+      style={flush ? undefined : { backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}
     >
       <div className="overflow-x-auto" style={{ maxHeight: "min(70vh, 720px)", WebkitOverflowScrolling: "touch" }}>
         <table className="w-full border-collapse text-left" style={{ minWidth: 560 }}>
@@ -225,10 +228,10 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
                 return (
                   <tr
                     key={key}
-                    className="transition-colors hover:bg-[rgba(11,30,63,0.03)]"
+                    className="transition-colors hover:bg-[var(--erp-surface-soft)]"
                     style={{
                       borderBottom: `1px solid ${ERP.border}`,
-                      backgroundColor: selected ? `${ERP.gold}10` : undefined,
+                      backgroundColor: selected ? erpAlpha(ERP.gold, 6) : undefined,
                       cursor: onRowClick ? "pointer" : "default",
                     }}
                     onClick={() => onRowClick?.(row)}
@@ -243,7 +246,7 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
                                 position: "sticky",
                                 left: 0,
                                 zIndex: 2,
-                                backgroundColor: selected ? `${ERP.gold}10` : ERP.surface,
+                                backgroundColor: selected ? erpAlpha(ERP.gold, 6) : ERP.surface,
                               }
                             : undefined
                         }

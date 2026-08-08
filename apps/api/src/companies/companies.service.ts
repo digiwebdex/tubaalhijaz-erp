@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { CompanyType, VerificationStatus } from "@prisma/client";
+import { CompanyType, VerificationStatus, Prisma } from "@prisma/client";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuthUser } from "../common/decorators/current-user.decorator";
@@ -65,14 +65,19 @@ export class CompaniesService {
 
   async update(
     id: string,
-    data: { name?: string; nameBn?: string; city?: string; email?: string; phone?: string },
+    data: {
+      name?: string; nameBn?: string; city?: string; email?: string; phone?: string;
+      invoicePrefix?: string; voucherPrefix?: string; bookingPrefix?: string;
+      groupPrefix?: string; passengerPrefix?: string; logoUrl?: string;
+      businessHours?: unknown; holidays?: unknown; brandColors?: unknown;
+    },
     actor: AuthUser,
     ip?: string,
   ) {
     const before = await this.prisma.company.findUnique({ where: { id } });
     if (!before) throw new NotFoundException("Company not found");
     const [updated] = await this.prisma.$transaction([
-      this.prisma.company.update({ where: { id }, data }),
+      this.prisma.company.update({ where: { id }, data: data as unknown as Prisma.CompanyUpdateInput }),
       this.prisma.auditLog.create({
         data: {
           actorUserId: actor.sub,
@@ -81,7 +86,7 @@ export class CompaniesService {
           entityType: "Company",
           entityId: id,
           before: { name: before.name, city: before.city, email: before.email, phone: before.phone },
-          after: data,
+          after: data as unknown as Prisma.InputJsonValue,
           ip,
         },
       }),

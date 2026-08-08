@@ -5,19 +5,27 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState, LoadingSkeleton, ErrorState } from "../components/States";
+import {
+  ERP, CAT, erpAlpha, ErpCard, ErpButton, ErpInput, ErpSelect, ErpField,
+  ErpTabs, ErpStepper,
+} from "../components/erp";
 import { api, ApiError, getStoredUser, isLoggedIn } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 
-const GOLD = "#C9A24B";
+const GOLD = ERP.accent;
 
-// Service colours (Prompt 0 module palette)
-const C_VISA      = "#0D9488";
-const C_FLIGHT    = "#0284C7";
-const C_HOTEL     = "#2563EB";
-const C_TRANSPORT = "#EA580C";
-const C_CATERING  = "#9333EA";
-const C_EXTRA     = "#64748B";
+// Service colours — categorical accents from the shared theme (no hardcode).
+const C_VISA      = CAT.teal;
+const C_FLIGHT    = CAT.sky;
+const C_HOTEL     = CAT.blue;
+const C_TRANSPORT = CAT.orange;
+const C_CATERING  = CAT.purple;
+const C_EXTRA     = CAT.slate;
+
+// Shared input surface style for the few raw <input>/<textarea> not on ErpInput
+// (qty steppers, free-text areas) — reads only from theme tokens.
+const IS = { backgroundColor: ERP.surface, border: `1px solid ${ERP.border}`, color: ERP.navy } as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -151,28 +159,22 @@ function useServiceWiring(service: "visa" | "hotel" | "transport" | "catering" |
 
 // ─── Shared layout helpers (Figma design system — pure UI) ────────────────────
 
+// Field label + control wrapper — delegates to the shared ERP field label.
 function FF({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div>
-      <label className="text-[9px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: "rgba(11,30,63,0.50)" }}>{label}</label>
-      {children}
-    </div>
-  );
+  return <ErpField label={label}>{children}</ErpField>;
 }
 
-const IS = { backgroundColor: "#F5F7FA", border: "1px solid rgba(11,30,63,0.15)", color: "#0B1E3F" } as const;
-
+// Thin adapters onto the shared ERP form controls (string onChange API kept for
+// the screens; all styling/theming comes from ErpInput / ErpSelect).
 function FInput({ placeholder, type = "text", value, onChange }: {
   placeholder?: string; type?: string; value?: string; onChange?: (v: string) => void;
 }) {
   return (
-    <input
+    <ErpInput
       type={type}
       placeholder={placeholder}
       value={value ?? ""}
       onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-      className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none"
-      style={IS}
     />
   );
 }
@@ -181,15 +183,13 @@ function FSelect({ children, value, onChange, disabled }: {
   children: ReactNode; value?: string; onChange?: (v: string) => void; disabled?: boolean;
 }) {
   return (
-    <select
+    <ErpSelect
       value={value}
       onChange={onChange ? (e) => onChange(e.target.value) : undefined}
       disabled={disabled}
-      className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none disabled:opacity-50"
-      style={IS}
     >
       {children}
-    </select>
+    </ErpSelect>
   );
 }
 
@@ -213,22 +213,27 @@ function GroupSelect({ liveGroups, groupId, onChange }: {
   );
 }
 
+// Surface card with optional title — shared ErpCard (theme-driven).
 function FormCard({ children, title }: { children: ReactNode; title?: string }) {
   return (
-    <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-      {title && <div className="text-xs font-bold text-[#0B1E3F] pb-1" style={{ borderBottom: "1px solid rgba(11,30,63,0.11)" }}>{title}</div>}
-      {children}
-    </div>
+    <ErpCard title={title} padding="md">
+      <div className="space-y-4">{children}</div>
+    </ErpCard>
   );
 }
 
+// Full-width submit — shared ErpButton with the per-service categorical accent.
 function SubmitBtn({ color, label = "Submit Request", onClick, disabled }: {
   color: string; label?: string; onClick?: () => void; disabled?: boolean;
 }) {
   return (
-    <button onClick={onClick} disabled={disabled} className="w-full py-3 rounded-xl text-xs font-bold mt-1 transition-all disabled:opacity-50" style={{ backgroundColor: color, color: "#0B1E3F" }}>
+    <ErpButton
+      onClick={onClick}
+      disabled={disabled}
+      style={{ width: "100%", marginTop: ERP.space[1], backgroundColor: color, color: ERP.primaryFg }}
+    >
       {label}
-    </button>
+    </ErpButton>
   );
 }
 
@@ -239,35 +244,15 @@ function StatusTracker({ title = "Request Status", labels, currentStep, color, s
 }) {
   const rejected = !!reason;
   return (
-    <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-      <div className="text-xs font-bold text-[#0B1E3F]">{title}</div>
-      {submittedAt && <div className="text-[10px] mt-0.5 mb-4" style={{ color: "rgba(11,30,63,0.50)" }}>Submitted {fmtDate(submittedAt)}</div>}
+    <ErpCard padding="md">
+      <div className="text-xs font-bold" style={{ color: ERP.navy }}>{title}</div>
+      {submittedAt && <div className="text-[10px] mt-0.5 mb-4" style={{ color: ERP.muted }}>Submitted {fmtDate(submittedAt)}</div>}
       {!submittedAt && <div className="mb-4" />}
       {rejected && (
-        <div className="mb-4"><ErrorState tone="light" message={`Request ${reason}`} /></div>
+        <div className="mb-4"><ErrorState message={`Request ${reason}`} /></div>
       )}
-      <div className="relative">
-        <div className="absolute left-[9px] top-3 bottom-3 w-px" style={{ backgroundColor: "#F5F7FA" }} />
-        <div className="space-y-5">
-          {labels.map((label, i) => {
-            const done = i < currentStep;
-            const active = i === currentStep && !rejected;
-            return (
-              <div key={label} className="relative flex gap-3 items-start">
-                {done && <div className="absolute left-[9px] -top-5 h-5 w-px" style={{ backgroundColor: `${color}50` }} />}
-                <div
-                  className="z-10 w-[18px] h-[18px] rounded-full shrink-0 flex items-center justify-center"
-                  style={done ? { backgroundColor: `${color}22`, border: `1px solid ${color}60` } : active ? { backgroundColor: color } : { backgroundColor: "#F5F7FA", border: "1px solid rgba(11,30,63,0.15)" }}
-                >
-                  {done ? <Check size={9} style={{ color }} /> : active ? <span className="w-2 h-2 rounded-full bg-white" /> : <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#E4E9F0" }} />}
-                </div>
-                <div className="text-xs font-semibold pt-0.5" style={{ color: done ? color : active ? "#0B1E3F" : "rgba(11,30,63,0.50)" }}>{label}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+      <ErpStepper steps={labels} current={currentStep} accent={color} halted={rejected} />
+    </ErpCard>
   );
 }
 
@@ -277,16 +262,16 @@ function TrackerSlot({ loading, latest, states, labels, color, title }: {
 }) {
   if (loading) {
     return (
-      <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-        <LoadingSkeleton tone="light" rows={labels.length} />
-      </div>
+      <ErpCard padding="md">
+        <LoadingSkeleton rows={labels.length} />
+      </ErpCard>
     );
   }
   if (!latest) {
     return (
-      <div className="rounded-2xl p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-        <EmptyState tone="light" title="No request yet" hint="Submit a request to track its status here." />
-      </div>
+      <ErpCard padding="md">
+        <EmptyState title="No request yet" hint="Submit a request to track its status here." />
+      </ErpCard>
     );
   }
   const reason = latest.status === "REJECTED" || latest.status === "CANCELLED"
@@ -306,18 +291,18 @@ function TrackerSlot({ loading, latest, states, labels, color, title }: {
 
 // Recent requests mini-table (real rows only)
 function RecentReqs({ rows, color, state }: { rows: { ref: string; group: string; status: string; date: string }[]; color: string; state?: ReactNode }) {
-  const statusColor = (s: string) => s === "approved" || s === "confirmed" || s === "complete" || s === "completed" ? "#16A34A" : s === "requested" || s === "pending" ? "#B45309" : s === "rejected" || s === "cancelled" ? "#DC2626" : "#2563EB";
+  const statusColor = (s: string) => s === "approved" || s === "confirmed" || s === "complete" || s === "completed" ? ERP.success : s === "requested" || s === "pending" ? ERP.warning : s === "rejected" || s === "cancelled" ? ERP.destructive : ERP.info;
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-      <div className="px-4 py-3" style={{ backgroundColor: "#FBFCFD", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-        <span className="text-[10px] font-bold text-[#0B1E3F]">Recent Requests</span>
+    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${ERP.border}`, background: ERP.surface }}>
+      <div className="px-4 py-3" style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
+        <span className="text-[10px] font-bold" style={{ color: ERP.navy }}>Recent Requests</span>
       </div>
       {state ? <div className="px-4">{state}</div> : rows.map((r, i) => (
-        <div key={r.ref} className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: i < rows.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }}>
-          <span className="text-[9px] font-mono flex-1 min-w-0 truncate" style={{ color, fontFamily: "var(--font-mono)" }} title={r.ref}>{r.ref}</span>
-          <span className="text-[10px] flex-1 min-w-0 truncate" style={{ color: "rgba(11,30,63,0.66)" }} title={r.group}>{r.group}</span>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ backgroundColor: `${statusColor(r.status)}18`, color: statusColor(r.status) }}>{r.status}</span>
-          <span className="text-[9px] shrink-0" style={{ color: "rgba(11,30,63,0.50)", fontFamily: "var(--font-mono)" }}>{r.date}</span>
+        <div key={r.ref} className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: i < rows.length - 1 ? `1px solid ${ERP.border}` : undefined }}>
+          <span className="text-[9px] flex-1 min-w-0 truncate" style={{ color, fontFamily: ERP.font.data }} title={r.ref}>{r.ref}</span>
+          <span className="text-[10px] flex-1 min-w-0 truncate" style={{ color: ERP.muted }} title={r.group}>{r.group}</span>
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ backgroundColor: erpAlpha(statusColor(r.status), 9), color: statusColor(r.status) }}>{r.status}</span>
+          <span className="text-[9px] shrink-0" style={{ color: ERP.mutedSoft, fontFamily: ERP.font.data }}>{r.date}</span>
         </div>
       ))}
     </div>
@@ -330,27 +315,27 @@ function VoucherCard({ color, title, badge, lines, onDownload }: {
   lines: [string, string][]; onDownload?: () => void;
 }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${color}30` }}>
-      <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: `${color}12` }}>
+    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${erpAlpha(color, 19)}`, background: ERP.surface }}>
+      <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: erpAlpha(color, 7) }}>
         <div>
           <div className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color }}>TUBA AL HIJAZ · {title.toUpperCase()}</div>
-          <div className="text-xs font-bold text-[#0B1E3F]">{title}</div>
+          <div className="text-xs font-bold" style={{ color: ERP.navy }}>{title}</div>
         </div>
-        <span className="text-[9px] font-bold px-2 py-1 rounded-full" style={{ backgroundColor: "#4ADE8018", color: "#16A34A" }}>{badge}</span>
+        <span className="text-[9px] font-bold px-2 py-1 rounded-full" style={{ backgroundColor: erpAlpha(ERP.success, 9), color: ERP.success }}>{badge}</span>
       </div>
       <div className="px-5 py-4 space-y-2">
         {lines.map(([l, v]) => (
           <div key={l} className="flex justify-between">
-            <span className="text-[10px] shrink-0" style={{ color: "rgba(11,30,63,0.58)" }}>{l}</span>
-            <span className="text-[10px] font-semibold text-[#0B1E3F] min-w-0 truncate" title={v}>{v}</span>
+            <span className="text-[10px] shrink-0" style={{ color: ERP.muted }}>{l}</span>
+            <span className="text-[10px] font-semibold min-w-0 truncate" style={{ color: ERP.navy }} title={v}>{v}</span>
           </div>
         ))}
       </div>
       <div className="px-5 pb-4 flex gap-2">
-        <button onClick={onDownload} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold" style={{ backgroundColor: `${color}18`, color }}>
+        <button onClick={onDownload} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold" style={{ backgroundColor: erpAlpha(color, 9), color }}>
           <Download size={11} /> Download PDF
         </button>
-        <button className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#F5F7FA", color: "rgba(11,30,63,0.58)" }}>
+        <button className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: ERP.surfaceSoft, color: ERP.muted }}>
           <Printer size={14} />
         </button>
       </div>
@@ -364,13 +349,13 @@ function SvcHeader({ color, icon: Icon, title, subtitle }: {
   color: string; icon: typeof FileCheck; title: string; subtitle: string;
 }) {
   return (
-    <div className="flex items-center gap-3 mb-6 pb-5" style={{ borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15`, border: `1px solid ${color}30` }}>
+    <div className="flex items-center gap-3 mb-6 pb-5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: erpAlpha(color, 8), border: `1px solid ${erpAlpha(color, 19)}` }}>
         <Icon size={19} style={{ color }} />
       </div>
       <div>
-        <h2 className="text-sm font-bold text-[#0B1E3F]">{title}</h2>
-        <p className="text-xs mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>{subtitle}</p>
+        <h2 className="text-sm font-bold" style={{ color: ERP.navy }}>{title}</h2>
+        <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>{subtitle}</p>
       </div>
     </div>
   );
@@ -453,7 +438,7 @@ function VisaScreen() {
                     key={v.id}
                     onClick={() => setVisaType(v.id)}
                     className="py-2.5 rounded-xl text-xs font-semibold transition-all"
-                    style={{ backgroundColor: visaType === v.id ? C_VISA : "#EEF1F6", border: `1px solid ${visaType === v.id ? C_VISA : "rgba(11,30,63,0.38)"}`, color: visaType === v.id ? "white" : "rgba(11,30,63,0.66)" }}
+                    style={{ backgroundColor: visaType === v.id ? C_VISA : ERP.surfaceSoft, border: `1px solid ${visaType === v.id ? C_VISA : ERP.mutedSoft}`, color: visaType === v.id ? "white" : ERP.muted }}
                   >
                     {v.label}
                   </button>
@@ -493,7 +478,7 @@ function VisaScreen() {
 
           <FormCard title="Passport Batch">
             <div className="flex items-center justify-between">
-              <div className="text-xs text-[#0B1E3F] min-w-0 truncate">
+              <div className="text-xs text-[color:var(--erp-text-strong)] min-w-0 truncate">
                 {selectedGroup ? `${selectedGroup.paxCount} passenger${selectedGroup.paxCount === 1 ? "" : "s"} linked from ${selectedGroup.code}` : "Select a group to link its passengers"}
               </div>
               {selectedGroup && <span className="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: `${C_VISA}18`, color: C_VISA }}>{selectedGroup.paxCount} pax</span>}
@@ -506,8 +491,8 @@ function VisaScreen() {
         <div className="col-span-2 space-y-4">
           <TrackerSlot loading={loading} latest={latest} states={VISA_STATES} labels={VISA_LABELS} color={C_VISA} title="Visa Status" />
           {latest && (
-            <div className="rounded-2xl p-4 space-y-2" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-              <div className="text-[10px] font-bold text-[#0B1E3F] mb-1">Latest Request</div>
+            <div className="rounded-2xl p-4 space-y-2" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+              <div className="text-[10px] font-bold text-[color:var(--erp-text-strong)] mb-1">Latest Request</div>
               {([
                 ["Reference", latest.code],
                 ["Type", titleCase(latest.visaType)],
@@ -519,8 +504,8 @@ function VisaScreen() {
                 ["Status", titleCase(latest.status)],
               ] as [string, string][]).map(([l, v]) => (
                 <div key={l} className="flex justify-between">
-                  <span className="text-[10px]" style={{ color: "rgba(11,30,63,0.58)" }}>{l}</span>
-                  <span className="text-[10px] font-semibold text-[#0B1E3F] min-w-0 truncate ml-3" title={v}>{v}</span>
+                  <span className="text-[10px]" style={{ color: ERP.muted }}>{l}</span>
+                  <span className="text-[10px] font-semibold text-[color:var(--erp-text-strong)] min-w-0 truncate ml-3" title={v}>{v}</span>
                 </div>
               ))}
             </div>
@@ -546,8 +531,8 @@ function FlightComingSoon() {
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: `${C_FLIGHT}12`, border: `1px solid ${C_FLIGHT}25` }}>
           <Clock size={22} style={{ color: C_FLIGHT }} />
         </div>
-        <h3 className="text-sm font-bold text-[#0B1E3F] mb-1.5">ফ্লাইট</h3>
-        <p className="text-xs max-w-sm" style={{ color: "rgba(11,30,63,0.58)" }}>
+        <h3 className="text-sm font-bold text-[color:var(--erp-text-strong)] mb-1.5">ফ্লাইট</h3>
+        <p className="text-xs max-w-sm" style={{ color: ERP.muted }}>
           এই মডিউল এখনও কনফিগার করা হয়নি। ভিসা, হোটেল, পরিবহন, ক্যাটারিং ও অতিরিক্ত সেবা লাইভ।
         </p>
       </div>
@@ -651,30 +636,30 @@ function HotelScreen() {
           <FF label="Group"><GroupSelect liveGroups={liveGroups} groupId={groupId} onChange={setGroupId} /></FF>
 
           <div>
-            <div className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(11,30,63,0.50)" }}>Select Hotel</div>
+            <div className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>Select Hotel</div>
             <div className="space-y-2">
               {hotelsState ?? hotelCards.map((h) => (
                 <button
                   key={h.id}
                   onClick={() => h.avail && setSelected(h.id)}
                   className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all text-left"
-                  style={{ border: `1px solid ${selected === h.id ? C_HOTEL : "rgba(11,30,63,0.15)"}`, backgroundColor: selected === h.id ? `${C_HOTEL}0A` : "#FFFFFF", opacity: h.avail ? 1 : 0.45, cursor: h.avail ? "pointer" : "not-allowed" }}
+                  style={{ border: `1px solid ${selected === h.id ? C_HOTEL : ERP.borderStrong}`, backgroundColor: selected === h.id ? `${C_HOTEL}0A` : ERP.surface, opacity: h.avail ? 1 : 0.45, cursor: h.avail ? "pointer" : "not-allowed" }}
                 >
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${C_HOTEL}15` }}>
                     <Building size={15} style={{ color: C_HOTEL }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold text-[#0B1E3F] truncate" title={h.name}>{h.name}</div>
+                    <div className="text-xs font-semibold text-[color:var(--erp-text-strong)] truncate" title={h.name}>{h.name}</div>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[9px]" style={{ color: GOLD }}>{"★".repeat(h.stars)}</span>
-                      <span className="text-[9px]" style={{ color: "rgba(11,30,63,0.50)" }}>{h.dist} from Haram</span>
+                      <span className="text-[9px]" style={{ color: ERP.muted }}>{h.dist} from Haram</span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <div className="text-[10px] font-semibold" style={{ color: h.avail ? "rgba(11,30,63,0.86)" : "rgba(11,30,63,0.50)" }}>{h.price}</div>
-                    <div className="text-[9px]" style={{ color: h.avail ? "#16A34A" : "#DC2626" }}>{h.avail ? "Available" : "Full"}</div>
+                    <div className="text-[10px] font-semibold" style={{ color: h.avail ? ERP.navy : ERP.muted }}>{h.price}</div>
+                    <div className="text-[9px]" style={{ color: h.avail ? ERP.success : ERP.destructive }}>{h.avail ? "Available" : "Full"}</div>
                   </div>
-                  {selected === h.id && <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: C_HOTEL }}><Check size={9} style={{ color: "#0B1E3F" }} /></div>}
+                  {selected === h.id && <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: C_HOTEL }}><Check size={9} style={{ color: ERP.navy }} /></div>}
                 </button>
               ))}
             </div>
@@ -779,7 +764,7 @@ function TransportScreen() {
           <FF label="Group"><GroupSelect liveGroups={liveGroups} groupId={groupId} onChange={setGroupId} /></FF>
 
           <div>
-            <div className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(11,30,63,0.50)" }}>Vehicle Type</div>
+            <div className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>Vehicle Type</div>
             <div className="grid grid-cols-5 gap-2">
               {VEHICLES.map((v) => {
                 const VIcon = v.icon;
@@ -788,12 +773,12 @@ function TransportScreen() {
                     key={v.id}
                     onClick={() => setVehicle(v.id)}
                     className="flex flex-col items-center gap-2 py-4 px-2 rounded-xl transition-all"
-                    style={{ border: `1px solid ${vehicle === v.id ? C_TRANSPORT : "rgba(11,30,63,0.15)"}`, backgroundColor: vehicle === v.id ? `${C_TRANSPORT}0C` : "#FFFFFF" }}
+                    style={{ border: `1px solid ${vehicle === v.id ? C_TRANSPORT : ERP.borderStrong}`, backgroundColor: vehicle === v.id ? `${C_TRANSPORT}0C` : ERP.surface }}
                   >
-                    <VIcon size={20} style={{ color: vehicle === v.id ? C_TRANSPORT : "rgba(11,30,63,0.58)" }} />
+                    <VIcon size={20} style={{ color: vehicle === v.id ? C_TRANSPORT : ERP.muted }} />
                     <div className="text-center">
-                      <div className="text-[10px] font-bold text-[#0B1E3F]">{v.label}</div>
-                      <div className="text-[9px]" style={{ color: "rgba(11,30,63,0.50)" }}>{v.cap}</div>
+                      <div className="text-[10px] font-bold text-[color:var(--erp-text-strong)]">{v.label}</div>
+                      <div className="text-[9px]" style={{ color: ERP.muted }}>{v.cap}</div>
                     </div>
                   </button>
                 );
@@ -809,9 +794,9 @@ function TransportScreen() {
               <FF label="Return Date & Time (optional)"><FInput type="datetime-local" value={returnAt} onChange={setReturnAt} /></FF>
               <FF label="Number of Vehicles">
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#F5F7FA", color: "#0B1E3F" }}>−</button>
+                  <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: ERP.surfaceSoft, color: ERP.navy }}>−</button>
                   <input type="number" value={qty} readOnly className="flex-1 text-center px-3 py-2 text-xs rounded-xl focus:outline-none" style={IS} />
-                  <button onClick={() => setQty(qty + 1)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#F5F7FA", color: "#0B1E3F" }}>+</button>
+                  <button onClick={() => setQty(qty + 1)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: ERP.surfaceSoft, color: ERP.navy }}>+</button>
                 </div>
               </FF>
               <FF label="Stop Points (optional)"><FInput placeholder="e.g. Hotel → Haram → Mina" value={stopPoints} onChange={setStopPoints} /></FF>
@@ -832,8 +817,8 @@ function TransportScreen() {
 // ─── 5. Catering Screen ───────────────────────────────────────────────────────
 
 const MEAL_PLANS: { id: string; label: string; price: number; meals: string[]; color: string }[] = [
-  { id: "BREAKFAST_ONLY", label: "Breakfast Only", price: 35,  meals: ["B"],           color: "#F59E0B" },
-  { id: "HALF_BOARD",     label: "Half Board",     price: 85,  meals: ["B", "D"],      color: "#0D9488" },
+  { id: "BREAKFAST_ONLY", label: "Breakfast Only", price: 35,  meals: ["B"],           color: ERP.warning },
+  { id: "HALF_BOARD",     label: "Half Board",     price: 85,  meals: ["B", "D"],      color: C_VISA },
   { id: "FULL_BOARD",     label: "Full Board",     price: 140, meals: ["B", "L", "D"], color: C_CATERING },
   { id: "PREMIUM",        label: "Premium Board",  price: 200, meals: ["B", "L", "D", "★"], color: GOLD },
 ];
@@ -883,14 +868,14 @@ function CateringScreen() {
           <FF label="Group"><GroupSelect liveGroups={liveGroups} groupId={groupId} onChange={setGroupId} /></FF>
 
           <div>
-            <div className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(11,30,63,0.50)" }}>Meal Plan</div>
+            <div className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>Meal Plan</div>
             <div className="grid grid-cols-2 gap-3">
               {MEAL_PLANS.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => setPlan(p.id)}
                   className="flex flex-col items-start gap-2 p-4 rounded-2xl transition-all text-left"
-                  style={{ border: `1px solid ${plan === p.id ? p.color : "rgba(11,30,63,0.15)"}`, backgroundColor: plan === p.id ? `${p.color}0C` : "#FFFFFF" }}
+                  style={{ border: `1px solid ${plan === p.id ? p.color : ERP.borderStrong}`, backgroundColor: plan === p.id ? `${p.color}0C` : ERP.surface }}
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-1.5">
@@ -898,12 +883,12 @@ function CateringScreen() {
                         <span key={m} className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: `${p.color}25`, color: p.color }}>{m}</span>
                       ))}
                     </div>
-                    {plan === p.id && <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: p.color }}><Check size={9} style={{ color: "#0B1E3F" }} /></div>}
+                    {plan === p.id && <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: p.color }}><Check size={9} style={{ color: ERP.navy }} /></div>}
                   </div>
-                  <div className="text-xs font-bold text-[#0B1E3F]">{p.label}</div>
+                  <div className="text-xs font-bold text-[color:var(--erp-text-strong)]">{p.label}</div>
                   <div>
                     <span className="text-base font-bold" style={{ color: p.color, fontFamily: "var(--font-mono)" }}>SAR {p.price}</span>
-                    <span className="text-[10px] ml-1" style={{ color: "rgba(11,30,63,0.50)" }}>/ pax / day</span>
+                    <span className="text-[10px] ml-1" style={{ color: ERP.muted }}>/ pax / day</span>
                   </div>
                 </button>
               ))}
@@ -922,7 +907,7 @@ function CateringScreen() {
           </FormCard>
 
           <div className="rounded-xl px-4 py-3 flex items-center justify-between" style={{ backgroundColor: `${C_CATERING}10`, border: `1px solid ${C_CATERING}25` }}>
-            <div className="text-xs" style={{ color: "rgba(11,30,63,0.66)" }}>
+            <div className="text-xs" style={{ color: ERP.muted }}>
               {total !== null ? `SAR ${selected.price} × ${pax} pax × ${days} day${days === 1 ? "" : "s"}` : "Total calculated on submission from group travel dates"}
             </div>
             {total !== null && (
@@ -935,22 +920,22 @@ function CateringScreen() {
 
         <div className="col-span-2 space-y-4">
           <TrackerSlot loading={loading} latest={latest} states={SUPPLIER_STATES} labels={SUPPLIER_LABELS} color={C_CATERING} title="Catering Status" />
-          <div className="rounded-2xl p-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-            <div className="text-[10px] font-bold text-[#0B1E3F] mb-3">Plan Summary</div>
+          <div className="rounded-2xl p-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+            <div className="text-[10px] font-bold text-[color:var(--erp-text-strong)] mb-3">Plan Summary</div>
             <div className="grid grid-cols-3 gap-2 mb-3">
               {selected.meals.filter((m) => m !== "★").map((m, i) => {
                 const labels: Record<string, string> = { B: "Breakfast", L: "Lunch", D: "Dinner" };
-                const colors = ["#F59E0B", "#0D9488", "#C9A24B"];
+                const colors = [ERP.warning, C_VISA, GOLD];
                 return (
                   <div key={m} className="rounded-xl p-2.5 text-center" style={{ backgroundColor: `${colors[i]}10`, border: `1px solid ${colors[i]}25` }}>
                     <div className="text-xs font-bold mb-0.5" style={{ color: colors[i] }}>{m}</div>
-                    <div className="text-[9px]" style={{ color: "rgba(11,30,63,0.58)" }}>{labels[m]}</div>
-                    {pax !== null && <div className="text-[10px] font-semibold mt-1 text-[#0B1E3F]">{pax} pax</div>}
+                    <div className="text-[9px]" style={{ color: ERP.muted }}>{labels[m]}</div>
+                    {pax !== null && <div className="text-[10px] font-semibold mt-1 text-[color:var(--erp-text-strong)]">{pax} pax</div>}
                   </div>
                 );
               })}
             </div>
-            <div className="text-[9px] text-center" style={{ color: "rgba(11,30,63,0.50)" }}>
+            <div className="text-[9px] text-center" style={{ color: ERP.muted }}>
               {selected.label} · SAR {selected.price} / pax / day{days !== null && pax !== null ? ` · ${days * pax} meal-days` : ""}
             </div>
           </div>
@@ -1051,19 +1036,19 @@ function AdditionalScreen() {
             </div>
           </FormCard>
 
-          <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-            <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: "#FBFCFD", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-              <span className="text-[10px] font-bold text-[#0B1E3F]">Service History</span>
+          <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
+            <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
+              <span className="text-[10px] font-bold text-[color:var(--erp-text-strong)]">Service History</span>
             </div>
             {historyState ? <div className="px-5">{historyState}</div> : history.map((r, i, arr) => {
-              const sc = r.status === "Completed" ? "#16A34A" : r.status === "Confirmed" || r.status === "Voucher Issued" ? "#2563EB" : r.status === "Rejected" || r.status === "Cancelled" ? "#DC2626" : "#B45309";
+              const sc = r.status === "Completed" ? ERP.success : r.status === "Confirmed" || r.status === "Voucher Issued" ? ERP.info : r.status === "Rejected" || r.status === "Cancelled" ? ERP.destructive : ERP.warning;
               return (
-                <div key={r.ref} className="flex items-center gap-3 px-5 py-3" style={{ borderBottom: i < arr.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }}>
+                <div key={r.ref} className="flex items-center gap-3 px-5 py-3" style={{ borderBottom: i < arr.length - 1 ? `1px solid ${ERP.border}` : undefined }}>
                   <span className="text-[9px] font-mono shrink-0" style={{ color: C_EXTRA, fontFamily: "var(--font-mono)" }}>{r.ref}</span>
-                  <span className="text-xs flex-1 min-w-0 truncate text-[#0B1E3F]" title={r.type}>{r.type}</span>
-                  {r.pax > 0 && <span className="text-[9px] shrink-0" style={{ color: "rgba(11,30,63,0.50)" }}>{r.pax} pax</span>}
+                  <span className="text-xs flex-1 min-w-0 truncate text-[color:var(--erp-text-strong)]" title={r.type}>{r.type}</span>
+                  {r.pax > 0 && <span className="text-[9px] shrink-0" style={{ color: ERP.muted }}>{r.pax} pax</span>}
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: `${sc}15`, color: sc }}>{r.status}</span>
-                  <span className="text-[9px] shrink-0" style={{ color: "rgba(11,30,63,0.50)", fontFamily: "var(--font-mono)" }}>{r.date}</span>
+                  <span className="text-[9px] shrink-0" style={{ color: ERP.muted, fontFamily: "var(--font-mono)" }}>{r.date}</span>
                 </div>
               );
             })}
@@ -1075,8 +1060,8 @@ function AdditionalScreen() {
         <div className="col-span-2 space-y-4">
           <TrackerSlot loading={loading} latest={latest} states={EXTRA_STATES} labels={EXTRA_LABELS} color={C_EXTRA} title="Request Status" />
           {latest && (
-            <div className="rounded-2xl p-4 space-y-2" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-              <div className="text-[10px] font-bold text-[#0B1E3F] mb-1">Latest Request</div>
+            <div className="rounded-2xl p-4 space-y-2" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+              <div className="text-[10px] font-bold text-[color:var(--erp-text-strong)] mb-1">Latest Request</div>
               {([
                 ["Reference", latest.code],
                 ["Service", SERVICE_TYPE_LABEL[latest.serviceType ?? ""] ?? titleCase(latest.serviceType)],
@@ -1085,8 +1070,8 @@ function AdditionalScreen() {
                 ["Status", titleCase(latest.status)],
               ] as [string, string][]).map(([l, v]) => (
                 <div key={l} className="flex justify-between">
-                  <span className="text-[10px]" style={{ color: "rgba(11,30,63,0.58)" }}>{l}</span>
-                  <span className="text-[10px] font-semibold text-[#0B1E3F] min-w-0 truncate ml-3" title={v}>{v}</span>
+                  <span className="text-[10px]" style={{ color: ERP.muted }}>{l}</span>
+                  <span className="text-[10px] font-semibold text-[color:var(--erp-text-strong)] min-w-0 truncate ml-3" title={v}>{v}</span>
                 </div>
               ))}
             </div>
@@ -1125,33 +1110,21 @@ export function ServicesModule({ initial = "visa" }: { initial?: ServiceId }) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden" style={{ fontFamily: fontFor(lang) }}>
-      <div
-        className="flex items-center gap-0.5 px-4 sm:px-7 pt-4 shrink-0 overflow-x-auto"
-        style={{ borderBottom: "1px solid rgba(11,30,63,0.11)" }}
-        role="tablist"
-        aria-label={lang === "bn" ? "সেবা" : "Services"}
-      >
-        {SVC_TABS.map((t) => {
-          const Icon = t.icon;
-          const isActive = t.id === svc;
-          return (
-            <button
-              key={t.id}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setSvc(t.id)}
-              className="relative flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs font-semibold transition-all whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ color: isActive ? "#0B1E3F" : "rgba(11,30,63,0.58)", outlineColor: "#C9A24B" }}
-            >
-              <Icon size={12} style={{ color: isActive ? t.color : "rgba(11,30,63,0.50)" }} />
-              {lang === "bn" ? t.labelBn : t.labelEn}
-              {isActive && <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full" style={{ backgroundColor: t.color }} />}
-            </button>
-          );
-        })}
+      <div className="px-4 sm:px-7 pt-4 shrink-0">
+        <ErpTabs
+          ariaLabel={lang === "bn" ? "সেবা" : "Services"}
+          active={svc}
+          onChange={(id) => setSvc(id as ServiceId)}
+          tabs={SVC_TABS.map((t) => ({
+            id: t.id,
+            label: lang === "bn" ? t.labelBn : t.labelEn,
+            icon: t.icon,
+            accent: t.color,
+          }))}
+        />
       </div>
 
-      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(11,30,63,0.38) transparent" }}>
+      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
         {screens[svc]}
       </div>
     </div>

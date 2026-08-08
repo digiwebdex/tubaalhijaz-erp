@@ -9,6 +9,7 @@ import {
   FileCheck, CalendarDays, DollarSign, Activity, ChevronRight, Eye, Download,
 } from "lucide-react";
 import {
+  ERP, CAT, ErpStatCard, ErpTabs,
   ErpPageTemplate, ErpButton, ErpSearchBar, ErpFilterPanel, ErpDataTable,
   ErpPagination, ErpDrawer, ErpStatusChip, erpToast, type ErpColumn, type ErpStatusKind,
 } from "../components/erp";
@@ -109,9 +110,9 @@ function Section({
     <section className="mb-6">
       <div className="flex flex-wrap items-end justify-between gap-2 mb-3">
         <div>
-          <h3 className="text-sm font-bold text-[#0B1E3F]">{title}</h3>
+          <h3 className="text-sm font-bold text-[color:var(--erp-text-strong)]">{title}</h3>
           {subtitle && (
-            <p className="text-[11px] mt-0.5" style={{ color: "rgba(11,30,63,0.50)" }}>{subtitle}</p>
+            <p className="text-[11px] mt-0.5" style={{ color: ERP.muted }}>{subtitle}</p>
           )}
         </div>
         {action}
@@ -125,7 +126,7 @@ function KpiTile({
   label,
   value,
   hint,
-  tone = "#0B1E3F",
+  tone = ERP.navy,
   onClick,
 }: {
   label: string;
@@ -134,31 +135,7 @@ function KpiTile({
   tone?: string;
   onClick?: () => void;
 }) {
-  const interactive = !!onClick;
-  const Comp = interactive ? "button" : "div";
-  return (
-    <Comp
-      type={interactive ? "button" : undefined}
-      onClick={onClick}
-      className={`text-left rounded-xl px-3 py-3 w-full transition-colors ${interactive ? "hover:opacity-90" : ""}`}
-      style={{
-        backgroundColor: "#FFFFFF",
-        border: "1px solid rgba(11,30,63,0.11)",
-        cursor: interactive ? "pointer" : "default",
-      }}
-    >
-      <div className="text-lg font-bold tabular-nums text-[#0B1E3F]" style={{ fontFamily: "var(--font-mono)", color: tone }}>
-        {value}
-      </div>
-      <div className="text-[11px] font-semibold mt-0.5 text-[#0B1E3F]">{label}</div>
-      {hint && <div className="text-[10px] mt-0.5" style={{ color: "rgba(11,30,63,0.50)" }}>{hint}</div>}
-      {interactive && (
-        <div className="flex items-center gap-0.5 mt-1.5 text-[10px] font-semibold" style={{ color: tone }}>
-          <span>→</span>
-        </div>
-      )}
-    </Comp>
-  );
+  return <ErpStatCard label={label} value={value} hint={hint} accent={tone} onClick={onClick} />;
 }
 
 function ProgressRow({
@@ -178,12 +155,12 @@ function ProgressRow({
   return (
     <div className="mb-2.5">
       <div className="flex justify-between mb-1 gap-2">
-        <span className="text-[11px] truncate" style={{ color: "rgba(11,30,63,0.76)" }}>{label}</span>
+        <span className="text-[11px] truncate" style={{ color: ERP.navy }}>{label}</span>
         <span className="text-[11px] font-bold tabular-nums shrink-0" style={{ color, fontFamily: "var(--font-mono)" }}>
           {fmt ? fmt(value) : value.toLocaleString()}
         </span>
       </div>
-      <div className="h-1.5 rounded-full" style={{ backgroundColor: "#EEF1F6" }}>
+      <div className="h-1.5 rounded-full" style={{ backgroundColor: ERP.surfaceSoft }}>
         <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
     </div>
@@ -271,28 +248,28 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
                   label={lang === "bn" ? "YTD রাজস্ব" : "YTD Revenue"}
                   value={ck ? fmtSAR(ck.ytdRevenue) : "—"}
                   hint={lang === "bn" ? "রাজস্ব স্ন্যাপশট" : "Revenue snapshot"}
-                  tone="#06B6D4"
+                  tone={ERP.info}
                   onClick={() => go("/finance-erp")}
                 />
                 <KpiTile
                   label={lang === "bn" ? "নেট লাভ" : "Net Profit"}
                   value={ck ? fmtSAR(ck.netProfit) : "—"}
                   hint={ck ? `${ck.netMargin.toFixed(1)}%` : undefined}
-                  tone="#16A34A"
+                  tone={ERP.success}
                   onClick={() => go("/finance-erp")}
                 />
                 <KpiTile
                   label={lang === "bn" ? "সক্রিয় গ্রুপ" : "Active Groups"}
                   value={ck ? String(ck.activeGroups) : "—"}
                   hint={ck ? `${ck.pax} pax · ${ck.activeAgents} agents` : undefined}
-                  tone="#F59E0B"
+                  tone={ERP.warning}
                   onClick={() => go("/ops-control?tab=groups")}
                 />
                 <KpiTile
                   label={lang === "bn" ? "AR বকেয়া" : "AR Outstanding"}
                   value={ck ? fmtSAR(ck.arOutstanding) : "—"}
                   hint={ck ? `${ck.overdueInvoices} overdue` : undefined}
-                  tone="#B45309"
+                  tone={ERP.warning}
                   onClick={() => go("/finance-erp")}
                 />
               </div>
@@ -311,17 +288,17 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
                 <KpiTile label={lang === "bn" ? "সক্রিয় গ্রুপ" : "Groups"} value={ok ? String(ok.groupsActive) : "—"} onClick={() => go("/ops-control?tab=groups")} />
                 <KpiTile label={lang === "bn" ? "আগমন" : "Arrivals"} value={ok ? String(ok.arrivalsToday) : "—"} onClick={() => go("/ops-control?tab=arrivals")} />
                 <KpiTile label={lang === "bn" ? "প্রস্থান" : "Departures"} value={ok ? String(ok.departuresToday) : "—"} onClick={() => go("/ops-control?tab=departures")} />
-                <KpiTile label={lang === "bn" ? "সম্পন্ন" : "Completed"} value={ok ? String(ok.completedToday) : "—"} tone="#16A34A" onClick={() => go("/ops-control")} />
+                <KpiTile label={lang === "bn" ? "সম্পন্ন" : "Completed"} value={ok ? String(ok.completedToday) : "—"} tone={ERP.success} onClick={() => go("/ops-control")} />
                 <KpiTile
                   label={lang === "bn" ? "পেন্ডিং কাজ" : "Pending Work"}
                   value={ok ? String(ok.pendingTasks) : "—"}
-                  tone="#B45309"
+                  tone={ERP.warning}
                   onClick={() => go("/ops-departments")}
                 />
                 <KpiTile
                   label={lang === "bn" ? "ডিলে ডিসপ্যাচ" : "Delayed Dispatch"}
                   value={ok ? String(ok.delayedDispatch) : "—"}
-                  tone="#DC2626"
+                  tone={ERP.destructive}
                   onClick={() => go("/ops-control?tab=dispatch")}
                 />
               </div>
@@ -329,7 +306,7 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
 
             {/* Operations KPIs — dept depths as progress bars */}
             <Section title={lang === "bn" ? "অপারেশন কেপিআই" : "Operations KPIs"}>
-              <div className="rounded-xl p-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+              <div className="rounded-xl p-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
                 {(ops.data?.departments?.length ?? 0) === 0 ? (
                   <EmptyState tone="light" title={lang === "bn" ? "কোনো কিউ নেই" : "No queued work"} />
                 ) : (
@@ -337,7 +314,7 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
                     const depts = ops.data!.departments;
                     const max = Math.max(...depts.map((d) => d[1]), 1);
                     return depts.map(([n, val]) => (
-                      <ProgressRow key={n} label={n} value={val} max={max} color="#DC4E2A" fmt={(x) => `${x}`} />
+                      <ProgressRow key={n} label={n} value={val} max={max} color={CAT.orange} fmt={(x) => `${x}`} />
                     ));
                   })()
                 )}
@@ -354,12 +331,12 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
               }
             >
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
-                <KpiTile label={lang === "bn" ? "ইস্যু হয়নি" : "Not Issued"} value={v ? String(v.backlog.notIssued) : "—"} tone="#0D9488" onClick={() => go("/ops-departments")} />
-                <KpiTile label={lang === "bn" ? "বায়োমেট্রিক" : "Biometric"} value={v ? String(v.backlog.biometricNotIssued) : "—"} tone="#B45309" onClick={() => go("/ops-departments")} />
+                <KpiTile label={lang === "bn" ? "ইস্যু হয়নি" : "Not Issued"} value={v ? String(v.backlog.notIssued) : "—"} tone={CAT.teal} onClick={() => go("/ops-departments")} />
+                <KpiTile label={lang === "bn" ? "বায়োমেট্রিক" : "Biometric"} value={v ? String(v.backlog.biometricNotIssued) : "—"} tone={ERP.warning} onClick={() => go("/ops-departments")} />
                 <KpiTile label="MOFA %" value={v ? `${v.mofa.completePercent}%` : "—"} hint={v ? `${v.mofa.issuedWithMofa}/${v.mofa.issuedTotal}` : undefined} onClick={() => go("/ops-departments")} />
-                <KpiTile label={lang === "bn" ? "প্রত্যাখ্যাত" : "Rejected"} value={v ? String(v.backlog.rejectedOpen) : "—"} tone="#DC2626" onClick={() => go("/ops-departments")} />
+                <KpiTile label={lang === "bn" ? "প্রত্যাখ্যাত" : "Rejected"} value={v ? String(v.backlog.rejectedOpen) : "—"} tone={ERP.destructive} onClick={() => go("/ops-departments")} />
               </div>
-              <div className="rounded-xl p-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+              <div className="rounded-xl p-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
                 {!v ? (
                   <EmptyState tone="light" title={lang === "bn" ? "ভিসা ডেটা নেই" : "No visa data"} />
                 ) : (
@@ -371,7 +348,7 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
                         label={s.replace(/_/g, " ")}
                         value={v.pipeline[s] ?? 0}
                         max={pipeMax}
-                        color={s === "REJECTED" ? "#DC2626" : "#0D9488"}
+                        color={s === "REJECTED" ? ERP.destructive : CAT.teal}
                       />
                     ))
                 )}
@@ -390,10 +367,10 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                 <KpiTile label={lang === "bn" ? "মোট" : "Total"} value={v ? String(v.longStay.total) : "—"} onClick={() => go("/ops-control?tab=longstay")} />
                 <KpiTile label={lang === "bn" ? "হোস্ট সম্পূর্ণ" : "Host Complete"} value={v ? `${v.longStay.hostCompletePercent}%` : "—"} hint={v ? `${v.longStay.hostComplete}/${v.longStay.total}` : undefined} onClick={() => go("/ops-control?tab=longstay")} />
-                <KpiTile label="Day-85" value={v ? String(v.longStay.due) : "—"} tone="#DC2626" onClick={() => go("/ops-control?tab=longstay")} />
-                <KpiTile label="Day-90" value={v ? String(v.longStay.escalated) : "—"} tone="#991B1B" onClick={() => go("/ops-control?tab=longstay")} />
-                <KpiTile label={lang === "bn" ? "রেড কার্ড" : "Red Cards"} value={v ? String(v.longStay.redCards) : "—"} tone="#EF4444" onClick={() => go("/ops-control?tab=longstay")} />
-                <KpiTile label={lang === "bn" ? "সমাধান" : "Resolved"} value={v ? String(v.longStay.resolved) : "—"} tone="#16A34A" onClick={() => go("/ops-control?tab=longstay")} />
+                <KpiTile label="Day-85" value={v ? String(v.longStay.due) : "—"} tone={ERP.destructive} onClick={() => go("/ops-control?tab=longstay")} />
+                <KpiTile label="Day-90" value={v ? String(v.longStay.escalated) : "—"} tone={ERP.destructive} onClick={() => go("/ops-control?tab=longstay")} />
+                <KpiTile label={lang === "bn" ? "রেড কার্ড" : "Red Cards"} value={v ? String(v.longStay.redCards) : "—"} tone={ERP.destructive} onClick={() => go("/ops-control?tab=longstay")} />
+                <KpiTile label={lang === "bn" ? "সমাধান" : "Resolved"} value={v ? String(v.longStay.resolved) : "—"} tone={ERP.success} onClick={() => go("/ops-control?tab=longstay")} />
               </div>
             </Section>
 
@@ -408,13 +385,13 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
             >
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
                 <KpiTile label={lang === "bn" ? "নগদ" : "Cash"} value={fk ? fmtSAR(fk.cashPosition) : "—"} onClick={() => go("/finance-erp")} />
-                <KpiTile label="AR" value={fk ? fmtSAR(fk.accountsReceivable) : "—"} tone="#B45309" onClick={() => go("/finance-erp")} />
+                <KpiTile label="AR" value={fk ? fmtSAR(fk.accountsReceivable) : "—"} tone={ERP.warning} onClick={() => go("/finance-erp")} />
                 <KpiTile label="AP" value={fk ? fmtSAR(fk.accountsPayable) : "—"} onClick={() => go("/finance-erp")} />
-                <KpiTile label={lang === "bn" ? "মোট রাজস্ব" : "Revenue"} value={fk ? fmtSAR(fk.totalRevenue) : "—"} tone="#06B6D4" onClick={() => go("/finance-erp")} />
+                <KpiTile label={lang === "bn" ? "মোট রাজস্ব" : "Revenue"} value={fk ? fmtSAR(fk.totalRevenue) : "—"} tone={ERP.info} onClick={() => go("/finance-erp")} />
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                <div className="rounded-xl p-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-                  <div className="text-[11px] font-bold mb-2 text-[#0B1E3F]">
+                <div className="rounded-xl p-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+                  <div className="text-[11px] font-bold mb-2 text-[color:var(--erp-text-strong)]">
                     {lang === "bn" ? "রাজস্ব ট্রেন্ড" : "Revenue trend"}
                   </div>
                   {(ceo.data?.revenueTrend?.length ?? 0) === 0 ? (
@@ -426,14 +403,14 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
                         label={monthLabel(r.month)}
                         value={r.total}
                         max={revMax}
-                        color="#06B6D4"
+                        color={ERP.info}
                         fmt={(n) => fmtSAR(n)}
                       />
                     ))
                   )}
                 </div>
-                <div className="rounded-xl p-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-                  <div className="text-[11px] font-bold mb-2 text-[#0B1E3F]">AR Aging</div>
+                <div className="rounded-xl p-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+                  <div className="text-[11px] font-bold mb-2 text-[color:var(--erp-text-strong)]">AR Aging</div>
                   {(fin.data?.arAging?.length ?? 0) === 0 ? (
                     <EmptyState tone="light" title={lang === "bn" ? "AR নেই" : "No AR data"} />
                   ) : (
@@ -441,7 +418,7 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
                       const aging = fin.data!.arAging;
                       const max = Math.max(...aging.map((a) => a.amount), 1);
                       return aging.map((a) => (
-                        <ProgressRow key={a.bucket} label={a.bucket} value={a.amount} max={max} color="#B45309" fmt={(n) => fmtSAR(n)} />
+                        <ProgressRow key={a.bucket} label={a.bucket} value={a.amount} max={max} color={ERP.warning} fmt={(n) => fmtSAR(n)} />
                       ));
                     })()
                   )}
@@ -452,8 +429,8 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
             {/* Alerts + Top Agents + Reports teaser */}
             <Section title={lang === "bn" ? "অ্যালার্ট ও টপ এজেন্ট" : "Alerts & Top Agents"}>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-                  <div className="text-[11px] font-bold text-[#0B1E3F] mb-2">{lang === "bn" ? "অ্যালার্ট" : "Alerts"}</div>
+                <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+                  <div className="text-[11px] font-bold text-[color:var(--erp-text-strong)] mb-2">{lang === "bn" ? "অ্যালার্ট" : "Alerts"}</div>
                   {[
                     {
                       show: (ok?.delayedDispatch ?? 0) > 0,
@@ -493,10 +470,10 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
                         type="button"
                         onClick={() => go(a.path)}
                         className="w-full flex items-center justify-between gap-2 py-2 text-left"
-                        style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}
+                        style={{ borderBottom: `1px solid ${ERP.border}` }}
                       >
                         <ErpStatusChip status={a.kind} label={a.label} lang={lang} />
-                        <ChevronRight size={14} style={{ color: "rgba(11,30,63,0.35)" }} />
+                        <ChevronRight size={14} style={{ color: ERP.mutedSoft }} />
                       </button>
                     ))}
                   {[ok?.delayedDispatch, v?.longStay.redCards, v?.longStay.due, v?.backlog.rejectedOpen, ck?.overdueInvoices]
@@ -508,8 +485,8 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
                     />
                   )}
                 </div>
-                <div className="rounded-xl p-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-                  <div className="text-[11px] font-bold text-[#0B1E3F] mb-2">
+                <div className="rounded-xl p-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+                  <div className="text-[11px] font-bold text-[color:var(--erp-text-strong)] mb-2">
                     {lang === "bn" ? "টপ এজেন্ট (YTD)" : "Top Agents (YTD)"}
                   </div>
                   {(ceo.data?.topAgents?.length ?? 0) === 0 ? (
@@ -521,7 +498,7 @@ export function ExecutiveDashboard({ onOpenReports }: { onOpenReports?: () => vo
                         label={a.name}
                         value={a.total}
                         max={agentMax}
-                        color="#06B6D4"
+                        color={ERP.info}
                         fmt={(n) => fmtSAR(n)}
                       />
                     ))
@@ -662,7 +639,7 @@ export function ReportsManagementView({ onOpenExecutive }: { onOpenExecutive?: (
   const columns: ErpColumn<ReportRow>[] = [
     { id: "c1", header: lang === "bn" ? "নাম / আইটেম" : "Name / Item", cell: (r) => <span className="text-xs font-semibold">{r.col1}</span> },
     { id: "c2", header: lang === "bn" ? "মান" : "Value", cell: (r) => <span className="text-xs font-mono font-bold tabular-nums">{r.col2}</span> },
-    { id: "c3", header: lang === "bn" ? "ধরন" : "Type", cell: (r) => <span className="text-[11px]" style={{ color: "rgba(11,30,63,0.55)" }}>{r.col3}</span> },
+    { id: "c3", header: lang === "bn" ? "ধরন" : "Type", cell: (r) => <span className="text-[11px]" style={{ color: ERP.muted }}>{r.col3}</span> },
     {
       id: "st",
       header: lang === "bn" ? "স্ট্যাটাস" : "Status",
@@ -727,18 +704,12 @@ export function ReportsManagementView({ onOpenExecutive }: { onOpenExecutive?: (
         }
         toolbar={
           <div className="flex flex-col gap-3 w-full">
-            <div className="flex flex-wrap gap-1.5">
-              {kinds.map((k) => (
-                <ErpButton
-                  key={k.id}
-                  size="sm"
-                  variant={kind === k.id ? "primary" : "outline"}
-                  onClick={() => { setKind(k.id); setPage(1); }}
-                >
-                  {lang === "bn" ? k.bn : k.en}
-                </ErpButton>
-              ))}
-            </div>
+            <ErpTabs
+              active={kind}
+              onChange={(id) => { setKind(id as ReportKind); setPage(1); }}
+              ariaLabel={lang === "bn" ? "রিপোর্ট ধরন" : "Report type"}
+              tabs={kinds.map((k) => ({ id: k.id, label: lang === "bn" ? k.bn : k.en }))}
+            />
             <div className="flex flex-col sm:flex-row gap-3 w-full">
               <div className="flex-1 min-w-0">
                 <ErpSearchBar
@@ -750,7 +721,7 @@ export function ReportsManagementView({ onOpenExecutive }: { onOpenExecutive?: (
                 />
               </div>
               <ErpFilterPanel open={filtersOpen} onOpenChange={setFiltersOpen} lang={lang} activeCount={kind !== "agents" ? 1 : 0}>
-                <p className="text-xs" style={{ color: "rgba(11,30,63,0.55)" }}>
+                <p className="text-xs" style={{ color: ERP.muted }}>
                   {lang === "bn"
                     ? "রিপোর্ট ধরন উপরের কুইক ফিল্টার দিয়ে বাছুন। নতুন SQL নেই।"
                     : "Pick report type via quick filters. No new SQL."}
@@ -810,9 +781,9 @@ export function ReportsManagementView({ onOpenExecutive }: { onOpenExecutive?: (
               [lang === "bn" ? "ধরন" : "Type", sel.col3],
               [lang === "bn" ? "নোট" : "Note", sel.col4 || "—"],
             ].map(([k, v]) => (
-              <div key={String(k)} className="flex justify-between gap-3 py-2" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                <dd className="font-semibold text-[#0B1E3F]">{v}</dd>
+              <div key={String(k)} className="flex justify-between gap-3 py-2" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                <dt style={{ color: ERP.muted }}>{k}</dt>
+                <dd className="font-semibold text-[color:var(--erp-text-strong)]">{v}</dd>
               </div>
             ))}
           </dl>

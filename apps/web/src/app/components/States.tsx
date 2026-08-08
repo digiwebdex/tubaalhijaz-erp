@@ -1,43 +1,36 @@
 // ─── Canonical Empty / Loading / Error states ────────────────────────────────
 // Lifted VERBATIM from the Figma design system so wired pages reuse the designed
-// states instead of inventing new ones:
-//   • light Empty + Loading Skeleton → DesignSystem.tsx "Empty State" / "Loading Skeleton"
-//   • light Error                    → DesignSystem.tsx input error state (#DC2626/#FEF2F2/#991B1B)
-//   • dark Empty                     → OpsDepartments "No messages yet" (rgba(11,30,63,0.50))
-//   • dark Error                     → ERPShell urgent notification (#EF4444 / rgba(239,68,68,0.04) / #F87171)
-//   • dark Skeleton                  → dark surface token (rgba(11,30,63,0.38), same family as ERPShell 0.05/0.07)
-// No new visual language: these are the existing tokens, reused.
+// states instead of inventing new ones.
+//
+// THEME-AWARE (2026-08-07): colours now come from the shared ERP theme tokens
+// (components/erp/tokens.ts → --erp-* CSS vars), so these states follow whichever
+// theme scope wraps them — Legacy (default) or Design System (.erp-theme-ds). The
+// legacy palette values in styles/erp-theme.css reproduce the original look, so
+// existing light modules are unchanged. The `tone` prop is retained for call-site
+// API compatibility but no longer selects a hardcoded palette.
 
 import type { ReactNode } from "react";
 import { FileText, AlertTriangle, AlertCircle } from "lucide-react";
+import { ERP, erpAlpha } from "./erp/tokens";
 
-const NAVY = "#0B1E3F";
 export type Tone = "light" | "dark";
 
 /** Designed empty state — never a blank div. */
 export function EmptyState({
-  title, hint, icon, tone = "light", action,
+  title, hint, icon, action,
 }: { title: string; hint?: string; icon?: ReactNode; tone?: Tone; action?: ReactNode }) {
-  const dark = tone === "dark";
   return (
     <div className="py-10 text-center">
       <div className="mx-auto mb-3 flex items-center justify-center">
         {icon ?? (
-          <FileText
-            size={32}
-            className={dark ? "opacity-25" : "opacity-20"}
-            style={{ color: dark ? "rgba(11,30,63,0.66)" : NAVY }}
-          />
+          <FileText size={32} className="opacity-25" style={{ color: ERP.navy }} />
         )}
       </div>
-      <div
-        className="text-sm font-semibold"
-        style={{ color: dark ? "rgba(11,30,63,0.76)" : NAVY }}
-      >
+      <div className="text-sm font-semibold" style={{ color: ERP.navy }}>
         {title}
       </div>
       {hint && (
-        <div className="text-xs mt-1" style={{ color: dark ? "rgba(11,30,63,0.50)" : "#9CA3AF" }}>
+        <div className="text-xs mt-1" style={{ color: ERP.muted }}>
           {hint}
         </div>
       )}
@@ -50,14 +43,13 @@ export function EmptyState({
  *  UI-04: prefer skeleton over full-page spinners. `variant="table"` matches compact rows. */
 export function LoadingSkeleton({
   rows = 3,
-  tone = "light",
   variant = "list",
 }: {
   rows?: number;
   tone?: Tone;
   variant?: "list" | "table" | "cards";
 }) {
-  const bar = tone === "dark" ? "rgba(11,30,63,0.38)" : "#EDE9E3";
+  const bar = ERP.skeleton;
   if (variant === "cards") {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 py-2">
@@ -95,7 +87,7 @@ export function LoadingSkeleton({
 
 /** Designed error state — shown instead of silently falling back to demo data. */
 export function ErrorState({
-  message, onRetry, tone = "light", retryLabel, lang = "en",
+  message, onRetry, retryLabel, lang = "en",
 }: {
   message?: string;
   onRetry?: () => void;
@@ -104,21 +96,20 @@ export function ErrorState({
   retryLabel?: string;
   lang?: "bn" | "en";
 }) {
-  const dark = tone === "dark";
   const defaultMsg = lang === "bn" ? "ডেটা লোড করা যায়নি" : "Could not load this data";
   const retry = retryLabel ?? (lang === "bn" ? "আবার চেষ্টা করুন" : "Retry");
   return (
     <div
       className="px-4 py-3 rounded-xl flex items-start gap-3"
       style={{
-        backgroundColor: dark ? "rgba(239,68,68,0.04)" : "#FEF2F2",
-        border: `1px solid ${dark ? "rgba(239,68,68,0.25)" : "#DC2626"}`,
+        backgroundColor: erpAlpha(ERP.destructive, 6),
+        border: `1px solid ${erpAlpha(ERP.destructive, 40)}`,
       }}
       role="alert"
     >
-      <AlertTriangle size={14} className="mt-0.5 shrink-0" style={{ color: dark ? "#EF4444" : "#DC2626" }} />
+      <AlertTriangle size={14} className="mt-0.5 shrink-0" style={{ color: ERP.destructive }} />
       <div className="min-w-0 flex-1">
-        <div className="text-xs font-semibold" style={{ color: dark ? "#DC2626" : "#991B1B" }}>
+        <div className="text-xs font-semibold" style={{ color: ERP.destructive }}>
           {message ?? defaultMsg}
         </div>
         {onRetry && (
@@ -126,7 +117,7 @@ export function ErrorState({
             type="button"
             onClick={onRetry}
             className="text-[10px] font-bold mt-1 underline transition-opacity hover:opacity-75"
-            style={{ color: dark ? "#DC2626" : "#991B1B" }}
+            style={{ color: ERP.destructive }}
           >
             {retry}
           </button>
@@ -136,29 +127,22 @@ export function ErrorState({
   );
 }
 
-/** "This screen shows sample data" notice.
- *  Structure lifted VERBATIM from the Figma expiring-docs alert banner
- *  (AgentPortal @ 0f07548 line 664): `{COLOR}10` fill + `{COLOR}30` border + icon +
- *  bold label + muted detail. Recoloured to amber #F59E0B, the design's existing
- *  warning colour (AgentPortal notification feed, FleetERP/Dashboards warning states).
- *  No new visual language — the designed banner in the designed warning tone. */
+/** "This screen shows sample data" notice — designed warning banner. */
 export function SampleDataBanner({
-  detail, tone = "light", className = "mb-5",
+  detail, className = "mb-5",
 }: { detail?: string; tone?: Tone; className?: string }) {
-  const AMBER = "#F59E0B";
-  const dark = tone === "dark";
   return (
     <div
       className={`flex items-center gap-3 px-4 py-3 rounded-xl ${className}`}
       style={{
-        backgroundColor: dark ? `${AMBER}10` : "#FFFBEB",
-        border: `1px solid ${AMBER}30`,
+        backgroundColor: erpAlpha(ERP.warning, 8),
+        border: `1px solid ${erpAlpha(ERP.warning, 24)}`,
       }}
     >
-      <AlertCircle size={14} className="shrink-0" style={{ color: AMBER }} />
+      <AlertCircle size={14} className="shrink-0" style={{ color: ERP.warning }} />
       <div className="flex-1 min-w-0">
-        <span className="text-xs font-bold" style={{ color: AMBER }}>Sample data</span>
-        <span className="text-xs ml-2" style={{ color: dark ? "rgba(11,30,63,0.66)" : "#92400E" }}>
+        <span className="text-xs font-bold" style={{ color: ERP.warning }}>Sample data</span>
+        <span className="text-xs ml-2" style={{ color: ERP.muted }}>
           {detail ?? "This screen is not connected to live data yet."}
         </span>
       </div>

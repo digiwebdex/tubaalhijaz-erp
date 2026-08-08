@@ -22,7 +22,14 @@ const AuthOnboarding = lazy(() => import("./pages/AuthOnboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AgentPortal = lazy(() => import("./pages/AgentPortal"));
 const SuperAdmin = lazy(() => import("./pages/SuperAdmin"));
+const Settings = lazy(() => import("./pages/Settings"));
 const RateCards = lazy(() => import("./pages/RateCards"));
+const FlightMaster = lazy(() => import("./pages/FlightMaster"));
+const FlightSchedule = lazy(() => import("./pages/FlightSchedule"));
+const FlightOpsControl = lazy(() => import("./pages/FlightOpsControl"));
+const GroundOps = lazy(() => import("./pages/GroundOps"));
+const MeetAssist = lazy(() => import("./pages/MeetAssist"));
+const CommandCenter = lazy(() => import("./pages/CommandCenter"));
 const OCRCenter = lazy(() => import("./pages/OCRCenter"));
 const SupplierPortal = lazy(() => import("./pages/SupplierPortal"));
 const OpsControl = lazy(() => import("./pages/OpsControl"));
@@ -102,8 +109,15 @@ export const router = createBrowserRouter([
   { path: "/automation", element: priv(<AutomationNotifications />, "/automation") },
   { path: "/dashboards", element: priv(<Dashboards />, "/dashboards") },
   { path: "/super-admin", element: priv(<SuperAdmin />, "/super-admin") },
+  { path: "/settings", element: priv(<Settings />, "/settings") },
   { path: "/admin", element: <AdminEntry /> },
   { path: "/rate-cards", element: priv(<RateCards />, "/rate-cards") },
+  { path: "/flight-master", element: priv(<FlightMaster />, "/flight-master") },
+  { path: "/flight-schedule", element: priv(<FlightSchedule />, "/flight-schedule") },
+  { path: "/flight-ops-control", element: priv(<FlightOpsControl />, "/flight-ops-control") },
+  { path: "/ground-ops", element: priv(<GroundOps />, "/ground-ops") },
+  { path: "/meet-assist", element: priv(<MeetAssist />, "/meet-assist") },
+  { path: "/command-center", element: priv(<CommandCenter />, "/command-center") },
   { path: "/workflow-map", element: priv(<WorkflowMap />, "/workflow-map") },
   { path: "/mobile-apps", Component: ComingSoon },
   { path: "/tablet", Component: ComingSoon },

@@ -39,7 +39,7 @@ export function ErpSearchBar({
         className="w-full rounded-lg text-sm focus:outline-none"
         style={{
           height: 40,
-          paddingLeft: 36,
+          paddingLeft: ERP.space[9],
           paddingRight: hasValue && onClear ? 36 : 12,
           backgroundColor: ERP.surface,
           border: `1px solid ${ERP.border}`,

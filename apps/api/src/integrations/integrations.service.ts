@@ -1,19 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
 import { PrismaService } from "../prisma/prisma.service";
 import { NotificationsService } from "../notifications/notifications.service";
-
-const KEY = createHash("sha256").update(process.env.JWT_SECRET ?? "dev-secret").digest();
-function enc(text: string): string {
-  const iv = randomBytes(12); const c = createCipheriv("aes-256-gcm", KEY, iv);
-  const e = Buffer.concat([c.update(text, "utf8"), c.final()]);
-  return Buffer.concat([iv, c.getAuthTag(), e]).toString("base64");
-}
-function dec(b64: string): string {
-  const buf = Buffer.from(b64, "base64");
-  const d = createDecipheriv("aes-256-gcm", KEY, buf.subarray(0, 12)); d.setAuthTag(buf.subarray(12, 28));
-  return Buffer.concat([d.update(buf.subarray(28)), d.final()]).toString("utf8");
-}
+import { EmailChannel } from "../notifications/channels/email.channel";
+import { encSecret as enc, decSecret as dec } from "../common/crypto";
 
 export interface WaSaveDto { apiUrl?: string; deviceId?: string; defaultCountry?: string; apiKey?: string }
 
@@ -21,7 +10,28 @@ export interface WaSaveDto { apiUrl?: string; deviceId?: string; defaultCountry?
 @Injectable()
 export class IntegrationsService {
   private readonly log = new Logger("Integrations");
-  constructor(private readonly prisma: PrismaService, private readonly notify: NotificationsService) {}
+  constructor(private readonly prisma: PrismaService, private readonly notify: NotificationsService, private readonly email: EmailChannel) {}
+
+  // ── Email (SMTP) — extends the existing nodemailer EmailChannel with DB config ──
+  getEmail() { return this.email.status(); }
+
+  async saveEmail(dto: { host?: string; port?: number; user?: string; pass?: string; from?: string; secure?: boolean }) {
+    const data: Record<string, unknown> = {};
+    if (dto.host !== undefined) data.smtpHost = dto.host;
+    if (dto.port !== undefined) data.smtpPort = dto.port;
+    if (dto.user !== undefined) data.smtpUser = dto.user;
+    if (dto.from !== undefined) data.smtpFrom = dto.from;
+    if (dto.secure !== undefined) data.smtpSecure = dto.secure;
+    if (dto.pass) data.smtpPassEnc = enc(dto.pass);
+    await this.prisma.integrationConfig.upsert({ where: { provider: "email" }, create: { provider: "email", ...data }, update: data });
+    return this.email.status();
+  }
+
+  async testEmail(to?: string) {
+    const st = await this.email.status();
+    const recipient = to || st.user || (st.from.match(/<([^>]+)>/)?.[1] ?? st.from);
+    return this.email.sendTest(recipient);
+  }
 
   private async cfg() {
     const row = await this.prisma.integrationConfig.findUnique({ where: { provider: "wasender" } });

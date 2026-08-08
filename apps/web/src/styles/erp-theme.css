@@ -1,0 +1,129 @@
+/**
+ * ERP component-library theme palettes (2026-08-07).
+ *
+ * The shared Erp* kit reads every colour/radius from `--erp-*` custom properties
+ * (see components/erp/tokens.ts). Two palettes are defined here:
+ *
+ *   • Legacy  — the original light navy-on-white ERP look. Lives on :root, so any
+ *               subtree NOT wrapped in a DS scope inherits it (Super Admin,
+ *               Operations, Finance, Supplier … stay legacy until each is approved).
+ *   • Design System — the frozen dark-navy + gold DS. Applied only inside
+ *               `.erp-theme-ds`, set by <ErpThemeProvider theme="ds"> (Module 3:
+ *               Agent Portal only).
+ *
+ * When every module is approved, the Legacy block is deleted and DS becomes root.
+ */
+
+:root,
+.erp-theme-legacy {
+  --erp-text-strong: #0B1E3F;
+  --erp-fg-dim: rgba(11, 30, 63, 0.70);
+  --erp-primary-bg: #0B1E3F;
+  --erp-primary-fg: #FFFFFF;
+  --erp-on-danger: #FFFFFF;
+  --erp-accent: #C9A24B;
+  --erp-gold-dim: rgba(201, 162, 75, 0.10);
+  --erp-gold-brd: rgba(201, 162, 75, 0.30);
+  --erp-gold-hov: #B8912F;
+  --erp-canvas: #F5F7FA;
+  --erp-surface: #FFFFFF;
+  --erp-surface-soft: #FBFCFD;
+  --erp-border: rgba(11, 30, 63, 0.11);
+  --erp-border-strong: rgba(11, 30, 63, 0.18);
+  --erp-muted: rgba(11, 30, 63, 0.55);
+  --erp-muted-soft: rgba(11, 30, 63, 0.38);
+  --erp-skeleton: #EDE9E3;
+  --erp-scrim: rgba(11, 30, 63, 0.45);
+  --erp-destructive: #DC2626;
+  --erp-destructive-dim: rgba(220, 38, 38, 0.10);
+  --erp-success: #16A34A;
+  --erp-success-dim: rgba(22, 163, 74, 0.10);
+  --erp-warning: #D97706;
+  --erp-warning-dim: rgba(217, 119, 6, 0.10);
+  --erp-info: #2563EB;
+  --erp-info-dim: rgba(37, 99, 235, 0.10);
+  --erp-purple-dim: rgba(124, 58, 237, 0.10);
+  --erp-pending: #6B7280;
+  --erp-cancelled: #6B7280;
+  --erp-focus-ring: 0 0 0 3px rgba(201, 162, 75, 0.18);
+  --erp-radius-xs: 4px;
+  --erp-radius-xl: 20px;
+  --erp-radius-2xl: 28px;
+  --erp-shadow-xs: 0 1px 2px rgba(11, 30, 63, 0.06);
+  --erp-shadow-sm: 0 1px 4px rgba(11, 30, 63, 0.08);
+  --erp-shadow-md: 0 4px 16px rgba(11, 30, 63, 0.10);
+  --erp-shadow-lg: 0 8px 32px rgba(11, 30, 63, 0.12);
+  --erp-shadow-xl: 0 16px 48px rgba(11, 30, 63, 0.16);
+  --erp-shadow-brand: 0 0 0 1px rgba(201, 162, 75, 0.30), 0 4px 16px rgba(201, 162, 75, 0.10);
+  --erp-radius-sm: 8px;
+  --erp-radius-md: 12px;
+  --erp-radius-lg: 16px;
+  /* Categorical accents (service / module identity — not semantic status). */
+  --erp-cat-teal: #0D9488;
+  --erp-cat-sky: #0284C7;
+  --erp-cat-blue: #2563EB;
+  --erp-cat-orange: #EA580C;
+  --erp-cat-purple: #9333EA;
+  --erp-cat-slate: #64748B;
+  --erp-cat-green: #16A34A;
+  --erp-font-heading: inherit;
+  --erp-font-body: inherit;
+  --erp-font-data: var(--font-mono, ui-monospace, monospace);
+}
+
+.erp-theme-ds {
+  --erp-text-strong: #E2E8F5;
+  --erp-fg-dim: #A8B8D8;
+  --erp-primary-bg: #C8943A;
+  --erp-primary-fg: #07091A;
+  --erp-on-danger: #FFFFFF;
+  --erp-accent: #C8943A;
+  --erp-gold-dim: rgba(200, 148, 58, 0.09);
+  --erp-gold-brd: rgba(200, 148, 58, 0.28);
+  --erp-gold-hov: #D9A84A;
+  --erp-canvas: #07091A;
+  --erp-surface: #0F1326;
+  --erp-surface-soft: #141830;
+  --erp-border: #1C2444;
+  --erp-border-strong: #2A3560;
+  --erp-muted: #A8B8D8;
+  --erp-muted-soft: #5A6A8A;
+  --erp-skeleton: #1C2444;
+  --erp-scrim: rgba(7, 9, 26, 0.72);
+  --erp-destructive: #E84040;
+  --erp-destructive-dim: rgba(232, 64, 64, 0.12);
+  --erp-success: #22B573;
+  --erp-success-dim: rgba(34, 181, 115, 0.12);
+  --erp-warning: #E8991A;
+  --erp-warning-dim: rgba(232, 153, 26, 0.12);
+  --erp-info: #3B7FE8;
+  --erp-info-dim: rgba(59, 127, 232, 0.12);
+  --erp-purple-dim: rgba(155, 123, 232, 0.12);
+  --erp-pending: #5A6A8A;
+  --erp-cancelled: #5A6A8A;
+  --erp-focus-ring: 0 0 0 3px rgba(200, 148, 58, 0.30);
+  --erp-radius-xs: 3px;
+  --erp-radius-xl: 20px;
+  --erp-radius-2xl: 28px;
+  --erp-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --erp-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+  --erp-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --erp-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --erp-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
+  --erp-shadow-brand: 0 0 0 1px rgba(200, 148, 58, 0.30), 0 4px 16px rgba(200, 148, 58, 0.10);
+  --erp-radius-sm: 6px;
+  --erp-radius-md: 10px;
+  --erp-radius-lg: 14px;
+  /* Categorical accents — DS-tuned hues on the dark canvas. */
+  --erp-cat-teal: #2FB8A8;
+  --erp-cat-sky: #4AA8E0;
+  --erp-cat-blue: #3B7FE8;
+  --erp-cat-orange: #E8991A;
+  --erp-cat-purple: #9B7BE8;
+  --erp-cat-slate: #8595B8;
+  --erp-cat-green: #22B573;
+  /* DS typography — scoped so legacy modules keep their fonts. */
+  --erp-font-heading: var(--font-heading);
+  --erp-font-body: var(--font-body);
+  --erp-font-data: var(--font-data);
+}

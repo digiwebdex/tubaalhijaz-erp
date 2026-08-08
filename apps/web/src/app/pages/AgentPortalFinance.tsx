@@ -8,14 +8,19 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState, LoadingSkeleton, ErrorState } from "../components/States";
+import {
+  ERP, CAT, erpAlpha, ErpInput, ErpSelect, ErpField, ErpTabs, ErpBadge,
+  ErpDataTable, type ErpColumn,
+} from "../components/erp";
 import { api, ApiError, getStoredUser, isLoggedIn } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 import { downloadCsv } from "../lib/exportCsv";
 
-const FIN   = "#16A34A";   // Finance green (ERP module colour)
-const GOLD  = "#C9A24B";
-const NAVY  = "#0B1E3F";
+const FIN   = CAT.green;   // Finance module accent (categorical, themed)
+
+// Input surface style for the few raw <input>/<textarea> not on ErpInput.
+const IS = { backgroundColor: ERP.surface, border: `1px solid ${ERP.border}`, color: ERP.navy } as const;
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
@@ -27,8 +32,8 @@ interface LedgerEntry {
 // (prototype finance demo data removed - the agent portal is auth-guarded and live)
 
 const DOC_COLORS: Record<string, string> = {
-  invoice: "#DC2626", receipt: FIN, hotel: "#2563EB",
-  transport: "#EA580C", visa: "#0D9488", ticket: "#0284C7", other: "#64748B",
+  invoice: ERP.destructive, receipt: FIN, hotel: CAT.blue,
+  transport: CAT.orange, visa: CAT.teal, ticket: CAT.sky, other: CAT.slate,
 };
 const DOC_ICONS: Record<string, typeof FileText> = {
   invoice: FileText, receipt: CheckCircle, hotel: Building,
@@ -64,74 +69,50 @@ interface DocRow { id: string; type: string; label: string; ref: string; amount:
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
+// Field label wrapper — shared ERP field label.
 function FF({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div>
-      <label className="text-[9px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: "rgba(11,30,63,0.50)" }}>{label}</label>
-      {children}
-    </div>
-  );
+  return <ErpField label={label}>{children}</ErpField>;
 }
 
-const IS = { backgroundColor: "#F5F7FA", border: "1px solid rgba(11,30,63,0.15)", color: "#0B1E3F" } as const;
-
+// Thin adapters onto the shared ERP controls (string onChange; controlled or not).
 function FInput({ placeholder, type = "text", defaultValue, value, onChange }: { placeholder?: string; type?: string; defaultValue?: string; value?: string; onChange?: (v: string) => void }) {
   const controlled = value !== undefined;
-  return <input type={type} placeholder={placeholder} {...(controlled ? { value } : { defaultValue })} onChange={onChange ? (e) => onChange(e.target.value) : undefined} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} />;
+  return <ErpInput type={type} placeholder={placeholder} {...(controlled ? { value } : { defaultValue })} onChange={onChange ? (e) => onChange(e.target.value) : undefined} />;
 }
 
 function FSelect({ children, defaultValue, value, onChange }: { children: ReactNode; defaultValue?: string; value?: string; onChange?: (v: string) => void }) {
   const controlled = value !== undefined;
   return (
-    <select {...(controlled ? { value } : { defaultValue })} onChange={onChange ? (e) => onChange(e.target.value) : undefined} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}>
+    <ErpSelect {...(controlled ? { value } : { defaultValue })} onChange={onChange ? (e) => onChange(e.target.value) : undefined}>
       {children}
-    </select>
+    </ErpSelect>
   );
 }
 
+// Status pill — shared ErpBadge with a semantic theme colour.
 function SBadge({ status }: { status: string }) {
-  const M: Record<string, { bg: string; c: string }> = {
-    paid:        { bg: "#16A34A15", c: "#16A34A" },
-    confirmed:   { bg: "#16A34A15", c: "#16A34A" },
-    verified:    { bg: "#16A34A15", c: "#16A34A" },
-    pending:     { bg: "#D9770618", c: "#B45309" },
-    processing:  { bg: "#2563EB15", c: "#2563EB" },
-    overdue:     { bg: "#DC262615", c: "#DC2626" },
+  const M: Record<string, string> = {
+    paid: ERP.success, confirmed: ERP.success, verified: ERP.success,
+    pending: ERP.warning, processing: ERP.info, overdue: ERP.destructive,
   };
-  const s = M[status] ?? M.pending;
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold" style={{ backgroundColor: s.bg, color: s.c }}>
-      <span className="w-1 h-1 rounded-full" style={{ backgroundColor: s.c }} />
-      {status}
-    </span>
-  );
-}
-
-function THead({ cols }: { cols: string[] }) {
-  return (
-    <thead>
-      <tr style={{ backgroundColor: "#FBFCFD", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-        {cols.map((c) => (
-          <th key={c} className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest whitespace-nowrap" style={{ color: "rgba(11,30,63,0.50)" }}>{c}</th>
-        ))}
-      </tr>
-    </thead>
-  );
+  const c = M[status] ?? ERP.warning;
+  return <ErpBadge color={c} size="sm" dot>{status}</ErpBadge>;
 }
 
 function Amt({ value, type }: { value: number; type?: "credit" | "debit" | "neutral" }) {
-  const color = type === "credit" ? "#16A34A" : type === "debit" ? "#DC2626" : "rgba(11,30,63,0.86)";
+  const color = type === "credit" ? ERP.success : type === "debit" ? ERP.destructive : ERP.navy;
   const prefix = type === "credit" ? "+" : type === "debit" ? "−" : "";
   return (
-    <span className="font-mono font-semibold text-xs" style={{ color, fontFamily: "var(--font-mono)" }}>
+    <span className="font-semibold text-xs" style={{ color, fontFamily: ERP.font.data }}>
       {prefix}SAR {value.toLocaleString()}
     </span>
   );
 }
 
+// Surface wrapper (no auto-padding — screens control inner padding).
 function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl ${className}`} style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+    <div className={`rounded-2xl ${className}`} style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
       {children}
     </div>
   );
@@ -139,17 +120,17 @@ function Card({ children, className = "" }: { children: ReactNode; className?: s
 
 function CardHead({ title, action }: { title: string; action?: ReactNode }) {
   return (
-    <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid rgba(11,30,63,0.11)", backgroundColor: "#FFFFFF" }}>
-      <span className="text-xs font-bold text-[#0B1E3F]">{title}</span>
+    <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${ERP.border}`, backgroundColor: ERP.surface }}>
+      <span className="text-xs font-bold" style={{ color: ERP.navy }}>{title}</span>
       {action}
     </div>
   );
 }
 
-// Category colour dot for pending charges
+// Category colour dot for pending charges — categorical theme accents.
 function CatDot({ cat }: { cat: string }) {
-  const map: Record<string, string> = { hotel: "#2563EB", visa: "#0D9488", transport: "#EA580C", catering: "#9333EA" };
-  return <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: map[cat] ?? "#64748B" }} />;
+  const map: Record<string, string> = { hotel: CAT.blue, visa: CAT.teal, transport: CAT.orange, catering: CAT.purple };
+  return <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: map[cat] ?? CAT.slate }} />;
 }
 
 // ─── Wallet Screen ────────────────────────────────────────────────────────────
@@ -248,12 +229,12 @@ function WalletScreen() {
       {/* Balance hero */}
       <div
         className="rounded-2xl p-6 relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg, ${FIN}22 0%, #FBFCFD 100%)`, border: `1px solid ${FIN}35` }}
+        style={{ background: `linear-gradient(135deg, ${erpAlpha(FIN, 13)} 0%, ${ERP.surfaceSoft} 100%)`, border: `1px solid ${erpAlpha(FIN, 21)}` }}
       >
         {/* Background orb */}
-        <div className="absolute -right-12 -top-12 w-40 h-40 rounded-full" style={{ backgroundColor: `${FIN}12` }} />
+        <div className="absolute -right-12 -top-12 w-40 h-40 rounded-full" style={{ backgroundColor: `${erpAlpha(FIN, 7)}` }} />
         <div className="relative">
-          <div className="text-[9px] font-bold uppercase tracking-[0.2em] mb-2" style={{ color: `${FIN}CC` }}>Available Balance</div>
+          <div className="text-[9px] font-bold uppercase tracking-[0.2em] mb-2" style={{ color: `${erpAlpha(FIN, 80)}` }}>Available Balance</div>
           {authed && wLoading ? (
             <div className="mb-4"><LoadingSkeleton tone="light" rows={2} /></div>
           ) : authed && wError ? (
@@ -261,15 +242,15 @@ function WalletScreen() {
           ) : (
             <>
               <div className="flex items-end gap-2 mb-3">
-                <span className="text-4xl font-bold text-[#0B1E3F]" style={{ fontFamily: "var(--font-mono)" }}>
+                <span className="text-4xl font-bold text-[color:var(--erp-text-strong)]" style={{ fontFamily: "var(--font-mono)" }}>
                   SAR {balance.toLocaleString()}
                 </span>
-                <span className="text-sm mb-1.5" style={{ color: "rgba(11,30,63,0.58)" }}>.00</span>
+                <span className="text-sm mb-1.5" style={{ color: ERP.muted }}>.00</span>
               </div>
-              <div className="flex items-center gap-4 text-[10px] mb-4" style={{ color: "rgba(11,30,63,0.58)" }}>
-                <span>Pending charges: <span style={{ color: "#DC2626" }}>−SAR {pending_out.toLocaleString()}</span></span>
+              <div className="flex items-center gap-4 text-[10px] mb-4" style={{ color: ERP.muted }}>
+                <span>Pending charges: <span style={{ color: ERP.destructive }}>−SAR {pending_out.toLocaleString()}</span></span>
                 <span>·</span>
-                <span>After pending: <span style={{ color: after >= 0 ? "#16A34A" : "#DC2626" }}>SAR {after.toLocaleString()}</span></span>
+                <span>After pending: <span style={{ color: after >= 0 ? ERP.success : ERP.destructive }}>SAR {after.toLocaleString()}</span></span>
               </div>
             </>
           )}
@@ -277,11 +258,11 @@ function WalletScreen() {
             <button
               onClick={() => setTopUpOpen(!topUpOpen)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold"
-              style={{ backgroundColor: FIN, color: "#0B1E3F" }}
+              style={{ backgroundColor: FIN, color: ERP.navy }}
             >
               <Plus size={13} /> Top Up Wallet
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold" style={{ backgroundColor: "#F5F7FA", color: "rgba(11,30,63,0.76)" }}>
+            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold" style={{ backgroundColor: ERP.surfaceSoft, color: ERP.muted }}>
               <Download size={13} /> Statement
             </button>
           </div>
@@ -291,7 +272,7 @@ function WalletScreen() {
       {/* Top-up form (collapsible) */}
       {topUpOpen && (
         <Card>
-          <CardHead title="Request Wallet Top-up" action={<button onClick={() => setTopUpOpen(false)} style={{ color: "rgba(11,30,63,0.50)" }}><X size={13} /></button>} />
+          <CardHead title="Request Wallet Top-up" action={<button onClick={() => setTopUpOpen(false)} style={{ color: ERP.muted }}><X size={13} /></button>} />
           <div className="p-5 grid grid-cols-3 gap-3">
             <FF label="Amount (SAR)"><FInput placeholder="e.g. 50,000" value={tuAmount} onChange={setTuAmount} /></FF>
             <FF label="Payment Method">
@@ -301,7 +282,7 @@ function WalletScreen() {
             <FF label="Payment Date"><FInput type="date" value={tuDate} onChange={setTuDate} /></FF>
             <FF label="Notes (optional)"><FInput placeholder="Any remarks…" value={tuNotes} onChange={setTuNotes} /></FF>
             <div className="flex items-end">
-              <button disabled={busy} onClick={() => void submitTopUp()} className="w-full py-2.5 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: FIN, color: "#0B1E3F" }}>Submit Top-up</button>
+              <button disabled={busy} onClick={() => void submitTopUp()} className="w-full py-2.5 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: FIN, color: ERP.navy }}>Submit Top-up</button>
             </div>
           </div>
         </Card>
@@ -311,24 +292,24 @@ function WalletScreen() {
       <div className="grid grid-cols-2 gap-5">
         {/* Pending charges */}
         <Card>
-          <CardHead title="Pending Charges" action={pendingState ? undefined : <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#F8717115", color: "#DC2626" }}>{pendingRows.length} items</span>} />
+          <CardHead title="Pending Charges" action={pendingState ? undefined : <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: erpAlpha(ERP.destructive, 8), color: ERP.destructive }}>{pendingRows.length} items</span>} />
           <div>
             {pendingState ?? (<>
             {pendingRows.map((c, i) => {
               const urgent = c.days <= 5;
               return (
-                <div key={c.ref + i} className="flex items-start gap-3 px-5 py-3.5" style={{ borderBottom: i < pendingRows.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }}>
+                <div key={c.ref + i} className="flex items-start gap-3 px-5 py-3.5" style={{ borderBottom: i < pendingRows.length - 1 ? `1px solid ${ERP.border}` : undefined }}>
                   <CatDot cat={c.category} />
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold text-[#0B1E3F] truncate" title={c.desc}>{c.desc}</div>
-                    <div className="flex items-center gap-2 mt-0.5 text-[9px]" style={{ color: "rgba(11,30,63,0.50)" }}>
+                    <div className="text-xs font-semibold text-[color:var(--erp-text-strong)] truncate" title={c.desc}>{c.desc}</div>
+                    <div className="flex items-center gap-2 mt-0.5 text-[9px]" style={{ color: ERP.muted }}>
                       <span className="truncate" style={{ fontFamily: "var(--font-mono)" }} title={c.ref}>{c.ref}</span>
                       <span className="shrink-0">· Due {c.due}</span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
                     <Amt value={c.amount} type="debit" />
-                    <div className="text-[9px] mt-0.5" style={{ color: urgent ? "#DC2626" : "rgba(11,30,63,0.50)" }}>
+                    <div className="text-[9px] mt-0.5" style={{ color: urgent ? ERP.destructive : ERP.muted }}>
                       {urgent ? `⚠ ${c.days}d left` : `${c.days}d`}
                     </div>
                   </div>
@@ -336,8 +317,8 @@ function WalletScreen() {
               );
             })}
             {/* Totals row */}
-            <div className="flex justify-between px-5 py-3" style={{ backgroundColor: "#FBFCFD", borderTop: "1px solid rgba(11,30,63,0.11)" }}>
-              <span className="text-xs font-bold text-[#0B1E3F]">Total Pending</span>
+            <div className="flex justify-between px-5 py-3" style={{ backgroundColor: ERP.surfaceSoft, borderTop: `1px solid ${ERP.border}` }}>
+              <span className="text-xs font-bold text-[color:var(--erp-text-strong)]">Total Pending</span>
               <Amt value={pending_out} type="debit" />
             </div>
             </>)}
@@ -347,22 +328,20 @@ function WalletScreen() {
         {/* Top-up history */}
         <Card>
           <CardHead title="Top-up History" />
-          <table className="w-full">
-            <THead cols={["Date", "Ref", "Method", "Amount", "Status"]} />
-            <tbody>
-              {topupState ? (
-                <tr><td colSpan={5} className="px-4">{topupState}</td></tr>
-              ) : topupRows.map((t, i) => (
-                <tr key={t.ref + i} style={{ borderBottom: i < topupRows.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }} className="hover:bg-white/2">
-                  <td className="px-4 py-2.5 text-[10px]" style={{ color: "rgba(11,30,63,0.66)" }}>{t.date}</td>
-                  <td className="px-4 py-2.5 text-[9px] font-mono" style={{ color: FIN, fontFamily: "var(--font-mono)" }}>{t.ref}</td>
-                  <td className="px-4 py-2.5 text-[10px] text-[#0B1E3F]">{t.method}</td>
-                  <td className="px-4 py-2.5"><Amt value={t.amount} type="credit" /></td>
-                  <td className="px-4 py-2.5"><SBadge status={t.status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {topupState ?? (
+            <ErpDataTable
+              flush
+              rows={topupRows}
+              rowKey={(t) => t.ref}
+              columns={[
+                { id: "date", header: "Date", cell: (t) => <span style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>{t.date}</span> },
+                { id: "ref", header: "Ref", cell: (t) => <span style={{ fontSize: ERP.text.size[9], color: FIN, fontFamily: ERP.font.data }}>{t.ref}</span> },
+                { id: "method", header: "Method", cell: (t) => <span style={{ fontSize: ERP.text.size[10], color: ERP.navy }}>{t.method}</span> },
+                { id: "amount", header: "Amount", align: "right", cell: (t) => <Amt value={t.amount} type="credit" /> },
+                { id: "status", header: "Status", cell: (t) => <SBadge status={t.status} /> },
+              ]}
+            />
+          )}
         </Card>
       </div>
     </div>
@@ -437,18 +416,18 @@ function LedgerScreen() {
       <div className="grid grid-cols-3 gap-4 mb-5">
         {[
           { label: "Closing Balance", value: `SAR ${closing.toLocaleString()}`, color: FIN,       icon: Wallet },
-          { label: "Total Credits",   value: `SAR ${totalCredit.toLocaleString()}`,       color: "#16A34A",  icon: ArrowUp },
-          { label: "Total Debits",    value: `SAR ${totalDebit.toLocaleString()}`,         color: "#DC2626",  icon: ArrowDown },
+          { label: "Total Credits",   value: `SAR ${totalCredit.toLocaleString()}`,       color: ERP.success,  icon: ArrowUp },
+          { label: "Total Debits",    value: `SAR ${totalDebit.toLocaleString()}`,         color: ERP.destructive,  icon: ArrowDown },
         ].map((k) => {
           const Icon = k.icon;
           return (
-            <div key={k.label} className="rounded-2xl p-4 flex items-center gap-4" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${k.color}18` }}>
+            <div key={k.label} className="rounded-2xl p-4 flex items-center gap-4" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${erpAlpha(k.color, 9)}` }}>
                 <Icon size={16} style={{ color: k.color }} />
               </div>
               <div>
-                <div className="text-sm font-bold text-[#0B1E3F]" style={{ fontFamily: "var(--font-mono)" }}>{k.value}</div>
-                <div className="text-[10px] mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>{k.label}</div>
+                <div className="text-sm font-bold text-[color:var(--erp-text-strong)]" style={{ fontFamily: "var(--font-mono)" }}>{k.value}</div>
+                <div className="text-[10px] mt-0.5" style={{ color: ERP.muted }}>{k.label}</div>
               </div>
             </div>
           );
@@ -458,14 +437,14 @@ function LedgerScreen() {
 
       {/* Filter bar */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="flex gap-0.5 p-0.5 rounded-xl" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
+        <div className="flex gap-0.5 p-0.5 rounded-xl" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
           {(["all", "credit", "debit"] as const).map((f) => (
-            <button key={f} onClick={() => setTypeFilter(f)} className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize" style={typeFilter === f ? { backgroundColor: FIN, color: "#0B1E3F" } : { color: "rgba(11,30,63,0.58)" }}>{f === "all" ? "All Entries" : f === "credit" ? "Credits" : "Debits"}</button>
+            <button key={f} onClick={() => setTypeFilter(f)} className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize" style={typeFilter === f ? { backgroundColor: FIN, color: ERP.navy } : { color: ERP.muted }}>{f === "all" ? "All Entries" : f === "credit" ? "Credits" : "Debits"}</button>
           ))}
         </div>
         <div className="flex-1 relative">
-          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(11,30,63,0.50)" }} />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by description or reference…" className="w-full pl-8 pr-4 py-2 text-xs rounded-xl focus:outline-none" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)", color: "#0B1E3F" }} />
+          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: ERP.muted }} />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by description or reference…" className="w-full pl-8 pr-4 py-2 text-xs rounded-xl focus:outline-none" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, color: ERP.navy }} />
         </div>
         <button
           type="button"
@@ -479,41 +458,28 @@ function LedgerScreen() {
             toast.success("CSV downloaded");
           }}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs disabled:opacity-50"
-          style={{ border: "1px solid rgba(11,30,63,0.11)", color: "rgba(11,30,63,0.58)" }}
+          style={{ border: `1px solid ${ERP.border}`, color: ERP.muted }}
         >
           <Download size={12} /> Export CSV
         </button>
       </div>
 
       {/* Ledger table */}
-      <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-        <table className="w-full">
-          <THead cols={["Date", "Type", "Description", "Reference", "Debit", "Credit", "Balance"]} />
-          <tbody>
-            {ledgerState ? (
-              <tr><td colSpan={7} className="px-4">{ledgerState}</td></tr>
-            ) : shown.map((e, i) => (
-              <tr key={e.ref + i} style={{ borderBottom: i < shown.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }} className="hover:bg-white/2">
-                <td className="px-4 py-3 text-[10px] whitespace-nowrap" style={{ color: "rgba(11,30,63,0.66)" }}>{e.date}</td>
-                <td className="px-4 py-3">
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: e.type === "credit" ? "#4ADE8018" : "#F8717118", color: e.type === "credit" ? "#16A34A" : "#DC2626" }}>
-                    {e.type}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-xs text-[#0B1E3F] max-w-[240px] truncate" title={e.desc}>{e.desc}</td>
-                <td className="px-4 py-3 text-[9px] max-w-[160px] truncate" style={{ color: "rgba(11,30,63,0.58)", fontFamily: "var(--font-mono)" }} title={e.ref}>{e.ref}</td>
-                <td className="px-4 py-3 text-right">{e.type === "debit"  ? <Amt value={e.amount} type="debit"  /> : <span className="text-[10px]" style={{ color: "rgba(11,30,63,0.38)" }}>—</span>}</td>
-                <td className="px-4 py-3 text-right">{e.type === "credit" ? <Amt value={e.amount} type="credit" /> : <span className="text-[10px]" style={{ color: "rgba(11,30,63,0.38)" }}>—</span>}</td>
-                <td className="px-4 py-3 text-right">
-                  <span className="font-mono font-bold text-xs" style={{ color: e.balance >= 0 ? "rgba(11,30,63,0.86)" : "#DC2626", fontFamily: "var(--font-mono)" }}>
-                    SAR {e.balance.toLocaleString()}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {ledgerState ?? (
+        <ErpDataTable
+          rows={shown}
+          rowKey={(e) => `${e.ref}-${e.date}-${e.balance}`}
+          columns={[
+            { id: "date", header: "Date", cell: (e) => <span className="whitespace-nowrap" style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>{e.date}</span> },
+            { id: "type", header: "Type", cell: (e) => { const col = e.type === "credit" ? ERP.success : ERP.destructive; return <span className="capitalize inline-block px-1.5 py-0.5 rounded-full" style={{ fontSize: ERP.text.size[9], fontWeight: ERP.text.weight.bold, backgroundColor: erpAlpha(col, 9), color: col }}>{e.type}</span>; } },
+            { id: "desc", header: "Description", cell: (e) => <span className="max-w-[240px] truncate block" style={{ fontSize: ERP.text.size[12], color: ERP.navy }} title={e.desc}>{e.desc}</span> },
+            { id: "ref", header: "Reference", cell: (e) => <span className="max-w-[160px] truncate block" style={{ fontSize: ERP.text.size[9], color: ERP.muted, fontFamily: ERP.font.data }} title={e.ref}>{e.ref}</span> },
+            { id: "debit", header: "Debit", align: "right", cell: (e) => e.type === "debit" ? <Amt value={e.amount} type="debit" /> : <span style={{ fontSize: ERP.text.size[10], color: ERP.mutedSoft }}>—</span> },
+            { id: "credit", header: "Credit", align: "right", cell: (e) => e.type === "credit" ? <Amt value={e.amount} type="credit" /> : <span style={{ fontSize: ERP.text.size[10], color: ERP.mutedSoft }}>—</span> },
+            { id: "balance", header: "Balance", align: "right", cell: (e) => <span style={{ fontSize: ERP.text.size[12], fontWeight: ERP.text.weight.bold, color: e.balance >= 0 ? ERP.navy : ERP.destructive, fontFamily: ERP.font.data }}>SAR {e.balance.toLocaleString()}</span> },
+          ]}
+        />
+      )}
     </div>
   );
 }
@@ -596,11 +562,11 @@ function PaymentSlipScreen() {
       {/* Form */}
       <div className="col-span-3 space-y-4">
         <div>
-          <h2 className="text-sm font-bold text-[#0B1E3F]">Payment Slip Upload</h2>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>Upload a bank transfer receipt or cheque scan to credit your wallet</p>
+          <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Payment Slip Upload</h2>
+          <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Upload a bank transfer receipt or cheque scan to credit your wallet</p>
         </div>
 
-        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
           <div className="grid grid-cols-2 gap-3">
             <FF label="Payment Type">
               <FSelect value={slipType} onChange={setSlipType}>
@@ -626,8 +592,8 @@ function PaymentSlipScreen() {
         </div>
 
         {/* File Upload */}
-        <div className="rounded-2xl p-5 space-y-3" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-          <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>Attach Payment Slip</div>
+        <div className="rounded-2xl p-5 space-y-3" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+          <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: ERP.muted }}>Attach Payment Slip</div>
           <input
             ref={fileRef}
             type="file"
@@ -639,32 +605,32 @@ function PaymentSlipScreen() {
             <div
               onClick={() => fileRef.current?.click()}
               className="flex flex-col items-center gap-3 p-6 rounded-xl cursor-pointer transition-all"
-              style={{ border: `2px dashed ${FIN}35`, backgroundColor: `${FIN}06` }}
+              style={{ border: `2px dashed ${erpAlpha(FIN, 21)}`, backgroundColor: `${erpAlpha(FIN, 2)}` }}
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${FIN}18` }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${erpAlpha(FIN, 9)}` }}>
                 <Upload size={18} style={{ color: FIN }} />
               </div>
               <div className="text-center">
-                <div className="text-xs font-semibold text-[#0B1E3F]">Drop slip image or PDF here</div>
-                <div className="text-[10px] mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>JPG, PNG, PDF · Max 10 MB</div>
+                <div className="text-xs font-semibold text-[color:var(--erp-text-strong)]">Drop slip image or PDF here</div>
+                <div className="text-[10px] mt-0.5" style={{ color: ERP.muted }}>JPG, PNG, PDF · Max 10 MB</div>
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: `${FIN}10`, border: `1px solid ${FIN}30` }}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#4ADE8018" }}>
-                <FileText size={14} style={{ color: "#16A34A" }} />
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: `${erpAlpha(FIN, 6)}`, border: `1px solid ${erpAlpha(FIN, 19)}` }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: erpAlpha(ERP.success, 9) }}>
+                <FileText size={14} style={{ color: ERP.success }} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold text-[#0B1E3F] truncate">{file.name}</div>
-                <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)" }}>Attached · {(file.size / 1024 / 1024).toFixed(1)} MB</div>
+                <div className="text-xs font-semibold text-[color:var(--erp-text-strong)] truncate">{file.name}</div>
+                <div className="text-[10px]" style={{ color: ERP.muted }}>Attached · {(file.size / 1024 / 1024).toFixed(1)} MB</div>
               </div>
-              <CheckCircle size={15} style={{ color: "#16A34A" }} />
-              <button onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = ""; }} style={{ color: "rgba(11,30,63,0.50)" }}><X size={13} /></button>
+              <CheckCircle size={15} style={{ color: ERP.success }} />
+              <button onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = ""; }} style={{ color: ERP.muted }}><X size={13} /></button>
             </div>
           )}
         </div>
 
-        <button disabled={busy} onClick={() => void submitSlip()} className="w-full py-3 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: FIN, color: "#0B1E3F" }}>
+        <button disabled={busy} onClick={() => void submitSlip()} className="w-full py-3 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: FIN, color: ERP.navy }}>
           Submit Payment Slip
         </button>
       </div>
@@ -673,28 +639,26 @@ function PaymentSlipScreen() {
       <div className="col-span-2">
         <Card>
           <CardHead title="Recent Uploads" />
-          <table className="w-full">
-            <THead cols={["Ref", "Date", "Type", "Amount", "Status"]} />
-            <tbody>
-              {uploadsState ? (
-                <tr><td colSpan={5} className="px-4">{uploadsState}</td></tr>
-              ) : uploads.map((r, i) => (
-                <tr key={r.ref + i} style={{ borderBottom: i < uploads.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }} className="hover:bg-white/2">
-                  <td className="px-4 py-2.5 text-[9px] font-mono" style={{ color: FIN, fontFamily: "var(--font-mono)" }}>{r.ref}</td>
-                  <td className="px-4 py-2.5 text-[10px]" style={{ color: "rgba(11,30,63,0.58)" }}>{r.date}</td>
-                  <td className="px-4 py-2.5 text-[10px] text-[#0B1E3F]">{r.type}</td>
-                  <td className="px-4 py-2.5"><Amt value={r.amount} type="credit" /></td>
-                  <td className="px-4 py-2.5"><SBadge status={r.status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {uploadsState ?? (
+            <ErpDataTable
+              flush
+              rows={uploads}
+              rowKey={(r) => r.ref}
+              columns={[
+                { id: "ref", header: "Ref", cell: (r) => <span style={{ fontSize: ERP.text.size[9], color: FIN, fontFamily: ERP.font.data }}>{r.ref}</span> },
+                { id: "date", header: "Date", cell: (r) => <span style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>{r.date}</span> },
+                { id: "type", header: "Type", cell: (r) => <span style={{ fontSize: ERP.text.size[10], color: ERP.navy }}>{r.type}</span> },
+                { id: "amount", header: "Amount", align: "right", cell: (r) => <Amt value={r.amount} type="credit" /> },
+                { id: "status", header: "Status", cell: (r) => <SBadge status={r.status} /> },
+              ]}
+            />
+          )}
         </Card>
 
         {/* Info box */}
-        <div className="flex items-start gap-2.5 px-4 py-3.5 rounded-xl mt-4" style={{ backgroundColor: `${FIN}0A`, border: `1px solid ${FIN}25` }}>
+        <div className="flex items-start gap-2.5 px-4 py-3.5 rounded-xl mt-4" style={{ backgroundColor: `${erpAlpha(FIN, 4)}`, border: `1px solid ${erpAlpha(FIN, 15)}` }}>
           <Info size={13} style={{ color: FIN }} className="mt-0.5 shrink-0" />
-          <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.66)" }}>
+          <div className="text-[10px]" style={{ color: ERP.muted }}>
             Payment slips are reviewed within 1–2 business days. Wallet balance updates automatically once confirmed by the finance team.
           </div>
         </div>
@@ -751,10 +715,10 @@ function StatementsScreen() {
       {/* Filters */}
       <div className="col-span-2 space-y-4">
         <div>
-          <h2 className="text-sm font-bold text-[#0B1E3F]">Generate Statement</h2>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>Export a period statement for your records or for submission</p>
+          <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Generate Statement</h2>
+          <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Export a period statement for your records or for submission</p>
         </div>
-        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
           <FF label="Date From"><FInput type="date" defaultValue="2025-01-01" /></FF>
           <FF label="Date To"><FInput type="date" defaultValue="2025-07-16" /></FF>
           <FF label="Statement Type">
@@ -771,7 +735,7 @@ function StatementsScreen() {
             </FSelect>
           </FF>
           <FF label="Currency"><FSelect><option>SAR — Saudi Riyal</option><option>USD — US Dollar</option></FSelect></FF>
-          <button onClick={generate} disabled={authed && loading} className="w-full py-3 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: FIN, color: "#0B1E3F" }}>
+          <button onClick={generate} disabled={authed && loading} className="w-full py-3 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: FIN, color: ERP.navy }}>
             Generate Statement
           </button>
         </div>
@@ -780,26 +744,26 @@ function StatementsScreen() {
       {/* Preview + download */}
       <div className="col-span-3 space-y-4">
         {!generated ? (
-          <div className="flex flex-col items-center justify-center h-64 text-center" style={{ border: "2px dashed rgba(11,30,63,0.11)", borderRadius: 16 }}>
-            <FileText size={28} style={{ color: "rgba(11,30,63,0.38)", marginBottom: 12 }} />
-            <div className="text-xs font-semibold" style={{ color: "rgba(11,30,63,0.50)" }}>Set date range and click Generate</div>
+          <div className="flex flex-col items-center justify-center h-64 text-center" style={{ border: `2px dashed ${ERP.border}`, borderRadius: ERP.radius.lg }}>
+            <FileText size={28} style={{ color: ERP.mutedSoft, marginBottom: ERP.space[3] }} />
+            <div className="text-xs font-semibold" style={{ color: ERP.muted }}>Set date range and click Generate</div>
           </div>
         ) : (
           <div>
             {/* Statement header */}
-            <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${FIN}30` }}>
-              <div className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: `${FIN}12` }}>
+            <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${erpAlpha(FIN, 19)}` }}>
+              <div className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: `${erpAlpha(FIN, 7)}` }}>
                 <div className="min-w-0">
                   <div className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color: FIN }}>TUBA AL HIJAZ · AGENT STATEMENT</div>
-                  <div className="text-sm font-bold text-[#0B1E3F] truncate" title={stmtParty}>{stmtParty}</div>
-                  <div className="text-[10px] mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>Period: 01 Jan 2025 – 16 Jul 2025</div>
+                  <div className="text-sm font-bold text-[color:var(--erp-text-strong)] truncate" title={stmtParty}>{stmtParty}</div>
+                  <div className="text-[10px] mt-0.5" style={{ color: ERP.muted }}>Period: 01 Jan 2025 – 16 Jul 2025</div>
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => window.print()}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
-                    style={{ backgroundColor: `${FIN}20`, color: FIN }}
+                    style={{ backgroundColor: `${erpAlpha(FIN, 13)}`, color: FIN }}
                     title="Print / Save as PDF"
                   >
                     <Download size={12} /> PDF
@@ -819,7 +783,7 @@ function StatementsScreen() {
                       toast.success("Statement CSV downloaded");
                     }}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
-                    style={{ backgroundColor: "#F5F7FA", color: "rgba(11,30,63,0.76)" }}
+                    style={{ backgroundColor: ERP.surfaceSoft, color: ERP.muted }}
                   >
                     <Download size={12} /> Excel
                   </button>
@@ -827,7 +791,7 @@ function StatementsScreen() {
                     type="button"
                     onClick={() => window.print()}
                     className="w-8 h-8 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: "#F5F7FA", color: "rgba(11,30,63,0.58)" }}
+                    style={{ backgroundColor: ERP.surfaceSoft, color: ERP.muted }}
                   >
                     <Printer size={14} />
                   </button>
@@ -835,39 +799,33 @@ function StatementsScreen() {
               </div>
               {stmtState ? <div className="px-5 py-4">{stmtState}</div> : (<>
               {/* Summary row */}
-              <div className="grid grid-cols-3 px-5 py-3 gap-4" style={{ backgroundColor: "#FFFFFF", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
+              <div className="grid grid-cols-3 px-5 py-3 gap-4" style={{ backgroundColor: ERP.surface, borderBottom: `1px solid ${ERP.border}` }}>
                 {[
-                  { label: "Opening Balance", value: `SAR ${opening.toLocaleString()}`,      color: "rgba(11,30,63,0.76)" },
-                  { label: "Total Credits",    value: `SAR ${totalCredits.toLocaleString()}`, color: "#16A34A" },
+                  { label: "Opening Balance", value: `SAR ${opening.toLocaleString()}`,      color: ERP.muted },
+                  { label: "Total Credits",    value: `SAR ${totalCredits.toLocaleString()}`, color: ERP.success },
                   { label: "Closing Balance",  value: `SAR ${closing.toLocaleString()}`,  color: FIN },
                 ].map((s) => (
                   <div key={s.label}>
-                    <div className="text-[9px]" style={{ color: "rgba(11,30,63,0.50)" }}>{s.label}</div>
+                    <div className="text-[9px]" style={{ color: ERP.muted }}>{s.label}</div>
                     <div className="text-sm font-bold mt-0.5" style={{ color: s.color, fontFamily: "var(--font-mono)" }}>{s.value}</div>
                   </div>
                 ))}
               </div>
               {/* Transactions preview */}
-              <table className="w-full">
-                <THead cols={["Date", "Description", "Ref", "Debit", "Credit", "Balance"]} />
-                <tbody>
-                  {statRows.map((e, i) => (
-                    <tr key={e.ref + i} style={{ borderBottom: i < statRows.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }}>
-                      <td className="px-4 py-2 text-[10px]" style={{ color: "rgba(11,30,63,0.66)" }}>{e.date}</td>
-                      <td className="px-4 py-2 text-[10px] text-[#0B1E3F] max-w-[180px] truncate" title={e.desc}>{e.desc}</td>
-                      <td className="px-4 py-2 text-[9px] max-w-[140px] truncate" style={{ color: "rgba(11,30,63,0.50)", fontFamily: "var(--font-mono)" }} title={e.ref}>{e.ref}</td>
-                      <td className="px-4 py-2 text-right text-[10px]">{e.debit > 0  ? <Amt value={e.debit} type="debit"  /> : <span style={{ color: "rgba(11,30,63,0.38)" }}>—</span>}</td>
-                      <td className="px-4 py-2 text-right text-[10px]">{e.credit > 0 ? <Amt value={e.credit} type="credit" /> : <span style={{ color: "rgba(11,30,63,0.38)" }}>—</span>}</td>
-                      <td className="px-4 py-2 text-right">
-                        <span className="text-[10px] font-mono font-bold" style={{ color: "rgba(11,30,63,0.86)", fontFamily: "var(--font-mono)" }}>
-                          SAR {e.balance.toLocaleString()}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="px-5 py-2 text-[9px] text-center" style={{ backgroundColor: "#FFFFFF", color: "rgba(11,30,63,0.38)", borderTop: "1px solid rgba(11,30,63,0.08)" }}>
+              <ErpDataTable
+                flush
+                rows={statRows}
+                rowKey={(e) => `${e.ref}-${e.date}-${e.balance}`}
+                columns={[
+                  { id: "date", header: "Date", cell: (e) => <span style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>{e.date}</span> },
+                  { id: "desc", header: "Description", cell: (e) => <span className="max-w-[180px] truncate block" style={{ fontSize: ERP.text.size[10], color: ERP.navy }} title={e.desc}>{e.desc}</span> },
+                  { id: "ref", header: "Ref", cell: (e) => <span className="max-w-[140px] truncate block" style={{ fontSize: ERP.text.size[9], color: ERP.muted, fontFamily: ERP.font.data }} title={e.ref}>{e.ref}</span> },
+                  { id: "debit", header: "Debit", align: "right", cell: (e) => e.debit > 0 ? <Amt value={e.debit} type="debit" /> : <span style={{ color: ERP.mutedSoft }}>—</span> },
+                  { id: "credit", header: "Credit", align: "right", cell: (e) => e.credit > 0 ? <Amt value={e.credit} type="credit" /> : <span style={{ color: ERP.mutedSoft }}>—</span> },
+                  { id: "balance", header: "Balance", align: "right", cell: (e) => <span style={{ fontSize: ERP.text.size[10], fontWeight: ERP.text.weight.bold, color: ERP.navy, fontFamily: ERP.font.data }}>SAR {e.balance.toLocaleString()}</span> },
+                ]}
+              />
+              <div className="px-5 py-2 text-[9px] text-center" style={{ backgroundColor: ERP.surface, color: ERP.mutedSoft, borderTop: `1px solid ${ERP.border}` }}>
                 Showing first 8 transactions · Full statement available in downloaded PDF
               </div>
               </>)}
@@ -885,10 +843,10 @@ function ReportsScreen() {
   return (
     <div className="p-7">
       <div className="mb-5">
-        <h2 className="text-sm font-bold text-[#0B1E3F]">Reports</h2>
-        <p className="text-xs mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>Generate, filter, and export financial reports</p>
+        <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Reports</h2>
+        <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Generate, filter, and export financial reports</p>
       </div>
-      <div className="rounded-2xl p-8" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
+      <div className="rounded-2xl p-8" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
         <EmptyState
           title="আর্থিক রিপোর্ট"
           hint="এই মডিউল এখনও কনফিগার করা হয়নি। ওয়ালেট, লেজার ও স্টেটমেন্ট অন্য ট্যাবে লাইভ।"
@@ -961,7 +919,7 @@ function DocumentsScreen() {
     : null;
 
   const StatusDot = ({ status }: { status: string }) => {
-    const c = status === "paid" || status === "confirmed" || status === "verified" ? "#16A34A" : status === "pending" ? "#B45309" : status === "processing" ? "#2563EB" : "#DC2626";
+    const c = status === "paid" || status === "confirmed" || status === "verified" ? ERP.success : status === "pending" ? ERP.warning : status === "processing" ? ERP.info : ERP.destructive;
     return <span className="inline-flex items-center gap-1 text-[9px] font-bold" style={{ color: c }}><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c }} />{status}</span>;
   };
 
@@ -969,10 +927,10 @@ function DocumentsScreen() {
     <div className="p-7">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h2 className="text-sm font-bold text-[#0B1E3F]">Documents Hub</h2>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>All financial and service documents in one place</p>
+          <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Documents Hub</h2>
+          <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>All financial and service documents in one place</p>
         </div>
-        <button className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold" style={{ backgroundColor: FIN, color: "#0B1E3F" }}>
+        <button className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold" style={{ backgroundColor: FIN, color: ERP.navy }}>
           <Plus size={12} /> Upload Document
         </button>
       </div>
@@ -981,14 +939,14 @@ function DocumentsScreen() {
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {ALL_TYPES.map((t) => {
           const count = t === "all" ? docs.length : docs.filter((d) => d.type === t).length;
-          const color = DOC_COLORS[t] ?? "rgba(11,30,63,0.50)";
+          const color = DOC_COLORS[t] ?? ERP.muted;
           const active = docType === t;
           return (
             <button
               key={t}
               onClick={() => setDocType(t)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all"
-              style={active ? { backgroundColor: color, color: "#0B1E3F" } : { backgroundColor: `${color}15`, color, border: `1px solid ${color}30` }}
+              style={active ? { backgroundColor: color, color: ERP.navy } : { backgroundColor: `${erpAlpha(color, 8)}`, color, border: `1px solid ${erpAlpha(color, 19)}` }}
             >
               {TYPE_LABELS[t]}
               <span className="text-[8px] opacity-70">{count}</span>
@@ -996,101 +954,61 @@ function DocumentsScreen() {
           );
         })}
         <div className="flex-1 min-w-[180px] relative ml-auto">
-          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(11,30,63,0.50)" }} />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search…" className="w-full pl-8 pr-4 py-2 text-xs rounded-xl focus:outline-none" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)", color: "#0B1E3F" }} />
+          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: ERP.muted }} />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search…" className="w-full pl-8 pr-4 py-2 text-xs rounded-xl focus:outline-none" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, color: ERP.navy }} />
         </div>
         {/* View toggle */}
-        <div className="flex gap-0.5 p-0.5 rounded-lg" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
+        <div className="flex gap-0.5 p-0.5 rounded-lg" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
           {([["list", List], ["grid", LayoutGrid]] as const).map(([v, Icon]) => (
             <button key={v} onClick={() => setView(v)} className="w-7 h-7 rounded-md flex items-center justify-center" style={{ backgroundColor: view === v ? FIN : "transparent" }}>
-              <Icon size={12} style={{ color: view === v ? "white" : "rgba(11,30,63,0.58)" }} />
+              <Icon size={12} style={{ color: view === v ? "white" : ERP.muted }} />
             </button>
           ))}
         </div>
       </div>
 
       {/* List view */}
-      {view === "list" && (
-        <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-          <table className="w-full">
-            <THead cols={["Document", "Type", "Reference", "Amount", "Date", "Due / Expiry", "Status", ""]} />
-            <tbody>
-              {docsState ? (
-                <tr><td colSpan={8} className="px-4">{docsState}</td></tr>
-              ) : filtered.map((doc, i) => {
-                const DIcon = DOC_ICONS[doc.type] ?? FileText;
-                const c     = DOC_COLORS[doc.type] ?? "#64748B";
-                return (
-                  <tr key={doc.id} style={{ borderBottom: i < filtered.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }} className="hover:bg-white/2">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${c}18` }}>
-                          <DIcon size={12} style={{ color: c }} />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-xs font-semibold text-[#0B1E3F] leading-tight truncate" title={doc.label}>{doc.label}</div>
-                          <div className="text-[9px] mt-0.5" style={{ color: "rgba(11,30,63,0.50)" }}>{doc.size}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full capitalize" style={{ backgroundColor: `${c}18`, color: c }}>{TYPE_LABELS[doc.type]}</span>
-                    </td>
-                    <td className="px-4 py-3 text-[9px] max-w-[140px] truncate" style={{ color: "rgba(11,30,63,0.58)", fontFamily: "var(--font-mono)" }} title={doc.ref}>{doc.ref}</td>
-                    <td className="px-4 py-3">
-                      {doc.amount ? (
-                        <span className="text-xs font-mono font-semibold" style={{ color: "rgba(11,30,63,0.86)", fontFamily: "var(--font-mono)" }}>{doc.amount}</span>
-                      ) : (
-                        <span className="text-[10px]" style={{ color: "rgba(11,30,63,0.38)" }}>—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-[10px]" style={{ color: "rgba(11,30,63,0.58)" }}>{doc.date}</td>
-                    <td className="px-4 py-3">
-                      {doc.due ? (
-                        <span className="text-[9px] font-bold" style={{ color: "#B45309" }}>{doc.due}</span>
-                      ) : (
-                        <span className="text-[10px]" style={{ color: "rgba(11,30,63,0.38)" }}>—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3"><StatusDot status={doc.status} /></td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        <button onClick={() => doc.fileId && void openDoc(doc.fileId)} className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: "rgba(11,30,63,0.50)" }}><Eye size={11} /></button>
-                        <button onClick={() => doc.fileId && void openDoc(doc.fileId)} className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: "rgba(11,30,63,0.50)" }}><Download size={11} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {view === "list" && (docsState ?? (
+          <ErpDataTable
+            rows={filtered}
+            rowKey={(doc) => doc.id}
+            columns={[
+              { id: "doc", header: "Document", cell: (doc) => { const DIcon = DOC_ICONS[doc.type] ?? FileText; const c = DOC_COLORS[doc.type] ?? CAT.slate; return (<div className="flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: erpAlpha(c, 9) }}><DIcon size={12} style={{ color: c }} /></div><div className="min-w-0"><div className="font-semibold text-[color:var(--erp-text-strong)] leading-tight truncate" style={{ fontSize: ERP.text.size[12] }} title={doc.label}>{doc.label}</div><div style={{ fontSize: ERP.text.size[9], color: ERP.muted }}>{doc.size}</div></div></div>); } },
+              { id: "type", header: "Type", cell: (doc) => { const c = DOC_COLORS[doc.type] ?? CAT.slate; return <span className="capitalize inline-block px-1.5 py-0.5 rounded-full" style={{ fontSize: ERP.text.size[9], fontWeight: ERP.text.weight.bold, backgroundColor: erpAlpha(c, 9), color: c }}>{TYPE_LABELS[doc.type]}</span>; } },
+              { id: "ref", header: "Reference", cell: (doc) => <span className="max-w-[140px] truncate block" style={{ fontSize: ERP.text.size[9], color: ERP.muted, fontFamily: ERP.font.data }} title={doc.ref}>{doc.ref}</span> },
+              { id: "amount", header: "Amount", cell: (doc) => doc.amount ? <span style={{ fontSize: ERP.text.size[12], fontWeight: ERP.text.weight.semibold, color: ERP.navy, fontFamily: ERP.font.data }}>{doc.amount}</span> : <span style={{ fontSize: ERP.text.size[10], color: ERP.mutedSoft }}>—</span> },
+              { id: "date", header: "Date", cell: (doc) => <span style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>{doc.date}</span> },
+              { id: "due", header: "Due / Expiry", cell: (doc) => doc.due ? <span style={{ fontSize: ERP.text.size[9], fontWeight: ERP.text.weight.bold, color: ERP.warning }}>{doc.due}</span> : <span style={{ fontSize: ERP.text.size[10], color: ERP.mutedSoft }}>—</span> },
+              { id: "status", header: "Status", cell: (doc) => <StatusDot status={doc.status} /> },
+              { id: "actions", header: "", align: "right", cell: (doc) => <div className="flex gap-1 justify-end"><button onClick={() => doc.fileId && void openDoc(doc.fileId)} className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: ERP.muted }}><Eye size={11} /></button><button onClick={() => doc.fileId && void openDoc(doc.fileId)} className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: ERP.muted }}><Download size={11} /></button></div> },
+            ]}
+          />
+        ))}
 
       {/* Grid view */}
       {view === "grid" && (docsState ?? (
         <div className="grid grid-cols-4 gap-4">
           {filtered.map((doc) => {
             const DIcon = DOC_ICONS[doc.type] ?? FileText;
-            const c     = DOC_COLORS[doc.type] ?? "#64748B";
+            const c     = DOC_COLORS[doc.type] ?? CAT.slate;
             return (
-              <div key={doc.id} className="rounded-2xl p-4 flex flex-col gap-3 transition-all hover:scale-[1.01]" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+              <div key={doc.id} className="rounded-2xl p-4 flex flex-col gap-3 transition-all hover:scale-[1.01]" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
                 <div className="flex items-start justify-between">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${c}18` }}><DIcon size={18} style={{ color: c }} /></div>
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full capitalize" style={{ backgroundColor: `${c}18`, color: c }}>{TYPE_LABELS[doc.type]}</span>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${erpAlpha(c, 9)}` }}><DIcon size={18} style={{ color: c }} /></div>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full capitalize" style={{ backgroundColor: `${erpAlpha(c, 9)}`, color: c }}>{TYPE_LABELS[doc.type]}</span>
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-[#0B1E3F] mb-0.5 leading-snug" title={doc.label}>{doc.label}</div>
-                  <div className="text-[9px] truncate" style={{ color: "rgba(11,30,63,0.50)", fontFamily: "var(--font-mono)" }} title={doc.ref}>{doc.ref}</div>
+                  <div className="text-xs font-bold text-[color:var(--erp-text-strong)] mb-0.5 leading-snug" title={doc.label}>{doc.label}</div>
+                  <div className="text-[9px] truncate" style={{ color: ERP.muted, fontFamily: "var(--font-mono)" }} title={doc.ref}>{doc.ref}</div>
                 </div>
                 {doc.amount && <div className="text-sm font-bold" style={{ color: c, fontFamily: "var(--font-mono)" }}>{doc.amount}</div>}
                 <div className="flex items-center justify-between mt-auto">
                   <StatusDot status={doc.status} />
-                  <span className="text-[9px]" style={{ color: "rgba(11,30,63,0.38)" }}>{doc.size}</span>
+                  <span className="text-[9px]" style={{ color: ERP.mutedSoft }}>{doc.size}</span>
                 </div>
-                <div className="flex gap-1.5 pt-2" style={{ borderTop: "1px solid rgba(11,30,63,0.11)" }}>
-                  <button onClick={() => doc.fileId && void openDoc(doc.fileId)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[9px] font-semibold" style={{ backgroundColor: `${c}18`, color: c }}><Eye size={10} /> View</button>
-                  <button onClick={() => doc.fileId && void openDoc(doc.fileId)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ border: "1px solid rgba(11,30,63,0.11)", color: "rgba(11,30,63,0.50)" }}><Download size={10} /></button>
+                <div className="flex gap-1.5 pt-2" style={{ borderTop: `1px solid ${ERP.border}` }}>
+                  <button onClick={() => doc.fileId && void openDoc(doc.fileId)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[9px] font-semibold" style={{ backgroundColor: `${erpAlpha(c, 9)}`, color: c }}><Eye size={10} /> View</button>
+                  <button onClick={() => doc.fileId && void openDoc(doc.fileId)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ border: `1px solid ${ERP.border}`, color: ERP.muted }}><Download size={10} /></button>
                 </div>
               </div>
             );
@@ -1129,33 +1047,21 @@ export function FinanceModule() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden" style={{ fontFamily: fontFor(lang) }}>
-      <div
-        className="flex items-center gap-0 px-4 sm:px-7 pt-4 shrink-0 overflow-x-auto"
-        style={{ borderBottom: "1px solid rgba(11,30,63,0.11)" }}
-        role="tablist"
-        aria-label={lang === "bn" ? "পেমেন্ট" : "Payments"}
-      >
-        {FIN_TABS.map((t) => {
-          const Icon = t.icon;
-          const active = t.id === tab;
-          return (
-            <button
-              key={t.id}
-              role="tab"
-              aria-selected={active}
-              onClick={() => setTab(t.id)}
-              className="relative flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs font-semibold transition-all whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ color: active ? "#0B1E3F" : "rgba(11,30,63,0.58)", outlineColor: GOLD }}
-            >
-              <Icon size={12} style={{ color: active ? FIN : "rgba(11,30,63,0.50)" }} />
-              {lang === "bn" ? t.labelBn : t.labelEn}
-              {active && <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full" style={{ backgroundColor: FIN }} />}
-            </button>
-          );
-        })}
+      <div className="px-4 sm:px-7 pt-4 shrink-0">
+        <ErpTabs
+          ariaLabel={lang === "bn" ? "পেমেন্ট" : "Payments"}
+          active={tab}
+          onChange={(id) => setTab(id as FinTab)}
+          tabs={FIN_TABS.map((t) => ({
+            id: t.id,
+            label: lang === "bn" ? t.labelBn : t.labelEn,
+            icon: t.icon,
+            accent: FIN,
+          }))}
+        />
       </div>
 
-      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(11,30,63,0.38) transparent" }}>
+      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: `${ERP.mutedSoft} transparent` }}>
         {screens[tab]}
       </div>
     </div>

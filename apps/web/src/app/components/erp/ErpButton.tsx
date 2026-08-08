@@ -15,19 +15,19 @@ export interface ErpButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> 
 
 const SIZE: Record<ErpButtonSize, CSSProperties> = {
   /** Dense table actions — coarse pointers bump via `.erp-btn` media query. */
-  sm: { padding: "6px 10px", fontSize: 12, minHeight: 36 },
-  md: { padding: "10px 14px", fontSize: 13, minHeight: ERP.touchMin },
-  lg: { padding: "12px 18px", fontSize: 14, minHeight: ERP.touchMin },
+  sm: { padding: `${ERP.space[1.5]}px ${ERP.space[2.5]}px`, fontSize: ERP.text.size[12], minHeight: 36 },
+  md: { padding: `${ERP.space[2.5]}px ${ERP.space[3.5]}px`, fontSize: ERP.text.size[13], minHeight: ERP.touchMin },
+  lg: { padding: `${ERP.space[3]}px ${ERP.space[4]}px`, fontSize: ERP.text.size[14], minHeight: ERP.touchMin },
 };
 
 function variantStyle(v: ErpButtonVariant, disabled: boolean): CSSProperties {
   const base: CSSProperties = {
     borderRadius: ERP.radius.sm,
-    fontWeight: 600,
+    fontWeight: ERP.text.weight.semibold,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: ERP.space[2],
     cursor: disabled ? "not-allowed" : "pointer",
     opacity: disabled ? 0.45 : 1,
     border: "1px solid transparent",
@@ -35,7 +35,7 @@ function variantStyle(v: ErpButtonVariant, disabled: boolean): CSSProperties {
   };
   switch (v) {
     case "primary":
-      return { ...base, backgroundColor: ERP.navy, color: "#FFFFFF" };
+      return { ...base, backgroundColor: ERP.primaryBg, color: ERP.primaryFg };
     case "secondary":
       return {
         ...base,
@@ -53,7 +53,7 @@ function variantStyle(v: ErpButtonVariant, disabled: boolean): CSSProperties {
     case "ghost":
       return { ...base, backgroundColor: "transparent", color: ERP.navy };
     case "danger":
-      return { ...base, backgroundColor: ERP.destructive, color: "#FFFFFF" };
+      return { ...base, backgroundColor: ERP.destructive, color: ERP.onDanger };
   }
 }
 

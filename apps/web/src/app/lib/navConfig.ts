@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, Building2, UserRound, FileCheck, CalendarDays,
   Wallet, BarChart3, ScanLine, Zap, ClipboardCheck,
   Bell, Truck, Navigation, Building, Bus, UtensilsCrossed, Shield,
-  FileText, LayoutGrid, Plane, UserCog, ScrollText, ShieldCheck, Gauge, MessageCircle, BellRing, FileCode, Inbox, Workflow, type LucideIcon,
+  FileText, LayoutGrid, Plane, UserCog, ScrollText, ShieldCheck, Gauge, MessageCircle, BellRing, FileCode, Inbox, Workflow, SlidersHorizontal, type LucideIcon,
 } from "lucide-react";
 import {
   canAccessPath,
@@ -126,6 +126,54 @@ export const STAFF_NAV_GROUPS: GlobalNavGroup[] = [
         path: "/flight-management",
         anyOf: [P.MANAGE_OPS],
       },
+      {
+        id: "flight-master",
+        labelBn: "ফ্লাইট মাস্টার",
+        labelEn: "Flight Master",
+        icon: asIcon(Plane),
+        path: "/flight-master",
+        anyOf: [P.MANAGE_FLIGHTS],
+      },
+      {
+        id: "flight-schedule",
+        labelBn: "ফ্লাইট সময়সূচি",
+        labelEn: "Flight Schedule",
+        icon: asIcon(CalendarDays),
+        path: "/flight-schedule",
+        anyOf: [P.MANAGE_FLIGHTS],
+      },
+      {
+        id: "flight-ops-control",
+        labelBn: "ফ্লাইট অপস কন্ট্রোল",
+        labelEn: "Flight Ops Control",
+        icon: asIcon(Gauge),
+        path: "/flight-ops-control",
+        anyOf: [P.MANAGE_FLIGHTS],
+      },
+      {
+        id: "ground-ops",
+        labelBn: "গ্রাউন্ড অপারেশনস",
+        labelEn: "Ground Operations",
+        icon: asIcon(Truck),
+        path: "/ground-ops",
+        anyOf: [P.MANAGE_FLIGHTS],
+      },
+      {
+        id: "meet-assist",
+        labelBn: "মিট অ্যান্ড অ্যাসিস্ট",
+        labelEn: "Meet & Assist",
+        icon: asIcon(Users),
+        path: "/meet-assist",
+        anyOf: [P.MANAGE_FLIGHTS],
+      },
+      {
+        id: "command-center",
+        labelBn: "কমান্ড সেন্টার",
+        labelEn: "Flight Command Center",
+        icon: asIcon(Gauge),
+        path: "/command-center",
+        anyOf: [P.MANAGE_FLIGHTS],
+      },
     ],
   },
   {
@@ -224,6 +272,14 @@ export const STAFF_NAV_GROUPS: GlobalNavGroup[] = [
     labelBn: "সেটিংস",
     labelEn: "Settings",
     items: [
+      {
+        id: "settings-hub",
+        labelBn: "সিস্টেম প্রশাসন",
+        labelEn: "System Administration",
+        icon: asIcon(SlidersHorizontal),
+        path: "/settings",
+        anyOf: [P.MANAGE_SYSTEM_SETTINGS, P.APPROVE_COMPANIES, P.MANAGE_USERS],
+      },
       {
         id: "users",
         labelBn: "ব্যবহারকারী",
