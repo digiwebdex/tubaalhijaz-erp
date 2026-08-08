@@ -75,7 +75,7 @@ const controlBase = {
   border: `1px solid ${ERP.border}`,
   backgroundColor: ERP.surface,
   color: ERP.navy,
-  fontSize: 13,
+  fontSize: ERP.text.size[13],
 } as const;
 
 export function ErpInput({
@@ -107,7 +107,7 @@ export function ErpTextarea({
         ...controlBase,
         height: "auto",
         minHeight: 88,
-        padding: 12,
+        padding: ERP.space[3],
         borderColor: error ? ERP.destructive : ERP.border,
         resize: "vertical",
         ...style,

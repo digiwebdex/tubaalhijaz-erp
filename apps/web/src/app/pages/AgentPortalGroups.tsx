@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 import { EmptyState, LoadingSkeleton, ErrorState, SampleDataBanner } from "../components/States";
 import {
+  ERP, CAT, erpAlpha,
   ErpPageTemplate, ErpButton, ErpSearchBar, ErpFilterPanel, ErpDataTable,
   ErpPagination, ErpDrawer, ErpDrawerFooterActions, ErpForm, ErpFormRow, ErpField,
   ErpInput, ErpSelect, ErpTextarea, ErpStatusChip, ErpDeleteDialog, erpToast,
@@ -35,9 +36,9 @@ import {
 import { OcrIntakeModal } from "./OCRCenter";
 import { downloadCsv } from "../lib/exportCsv";
 
-const AGENT = "#0EA5E9";
-const GOLD  = "#C9A24B";
-const NAVY  = "#0B1E3F";
+const AGENT = CAT.sky;   // agent-portal accent (categorical, themed)
+const GOLD  = ERP.accent;
+const NAVY  = ERP.navy;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -243,16 +244,16 @@ function useGroups() {
 
 function SBadge({ status }: { status: string }) {
   const M: Record<string, { bg: string; c: string; label: string }> = {
-    verified:    { bg: "#16A34A15", c: "#16A34A", label: "Verified" },
-    pending:     { bg: "#D9770618", c: "#B45309", label: "Pending" },
-    review:      { bg: "#2563EB15", c: "#2563EB", label: "Under Review" },
-    rejected:    { bg: "#DC262615", c: "#DC2626", label: "Rejected" },
-    in_progress: { bg: "#2563EB15", c: "#2563EB", label: "In Progress" },
-    completed:   { bg: "#0D988815", c: "#2DD4BF", label: "Completed" },
+    verified:    { bg: erpAlpha(ERP.success, 8), c: ERP.success, label: "Verified" },
+    pending:     { bg: erpAlpha(ERP.warning, 9), c: ERP.warning, label: "Pending" },
+    review:      { bg: erpAlpha(ERP.info, 8), c: ERP.info, label: "Under Review" },
+    rejected:    { bg: erpAlpha(ERP.destructive, 8), c: ERP.destructive, label: "Rejected" },
+    in_progress: { bg: erpAlpha(ERP.info, 8), c: ERP.info, label: "In Progress" },
+    completed:   { bg: erpAlpha(CAT.teal, 8), c: CAT.teal, label: "Completed" },
     // GroupStatus.CANCELLED had no Figma badge. Reuses the existing `rejected`
     // tokens verbatim rather than letting a cancelled group fall through to the
     // "Pending" default and misreport its real status.
-    cancelled:   { bg: "#DC262615", c: "#DC2626", label: "Cancelled" },
+    cancelled:   { bg: erpAlpha(ERP.destructive, 8), c: ERP.destructive, label: "Cancelled" },
   };
   const s = M[status] ?? M.pending;
   return (
@@ -265,10 +266,10 @@ function SBadge({ status }: { status: string }) {
 
 function Pipeline({ pax, v, h, t, c }: { pax: number; v: number; h: number; t: number; c: number }) {
   const stages = [
-    { k: "V", done: v, color: "#0D9488", label: "Visa" },
-    { k: "H", done: h, color: "#2563EB", label: "Hotel" },
-    { k: "T", done: t, color: "#EA580C", label: "Transport" },
-    { k: "C", done: c, color: "#9333EA", label: "Catering" },
+    { k: "V", done: v, color: CAT.teal, label: "Visa" },
+    { k: "H", done: h, color: ERP.info, label: "Hotel" },
+    { k: "T", done: t, color: CAT.orange, label: "Transport" },
+    { k: "C", done: c, color: CAT.purple, label: "Catering" },
   ];
   return (
     <div className="flex items-center gap-2.5">
@@ -276,9 +277,9 @@ function Pipeline({ pax, v, h, t, c }: { pax: number; v: number; h: number; t: n
         const pct = pax > 0 ? Math.round((s.done / pax) * 100) : 0;
         return (
           <div key={s.k} title={`${s.label}: ${s.done}/${pax}`} className="flex flex-col items-center gap-0.5">
-            <span className="text-[8px] font-bold" style={{ color: pct === 100 ? s.color : "rgba(11,30,63,0.50)" }}>{s.k}</span>
-            <div className="w-9 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "#F5F7FA" }}>
-              <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: pct === 100 ? s.color : pct === 0 ? "transparent" : `${s.color}99` }} />
+            <span className="text-[8px] font-bold" style={{ color: pct === 100 ? s.color : ERP.muted }}>{s.k}</span>
+            <div className="w-9 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: ERP.surfaceSoft }}>
+              <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: pct === 100 ? s.color : pct === 0 ? "transparent" : `${erpAlpha(s.color, 60)}` }} />
             </div>
           </div>
         );
@@ -290,9 +291,9 @@ function Pipeline({ pax, v, h, t, c }: { pax: number; v: number; h: number; t: n
 function THead({ cols }: { cols: string[] }) {
   return (
     <thead>
-      <tr style={{ backgroundColor: "#FBFCFD", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
+      <tr style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
         {cols.map((c) => (
-          <th key={c} className="px-3 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest whitespace-nowrap" style={{ color: "rgba(11,30,63,0.50)" }}>{c}</th>
+          <th key={c} className="px-3 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest whitespace-nowrap" style={{ color: ERP.muted }}>{c}</th>
         ))}
       </tr>
     </thead>
@@ -308,7 +309,7 @@ function ModuleNotConfigured({ title }: { title?: string }) {
         tone="light"
         title={title ?? (lang === "bn" ? "মডিউল প্রস্তুত নয়" : "Module not ready")}
         hint="এই মডিউল এখনও কনফিগার করা হয়নি।"
-        icon={<AlertCircle size={30} style={{ color: "rgba(11,30,63,0.35)" }} />}
+        icon={<AlertCircle size={30} style={{ color: ERP.mutedSoft }} />}
       />
     </div>
   );
@@ -963,12 +964,12 @@ function GroupTimelineTab({ groupId, live }: { groupId: string; live: boolean })
 
 const NATIONALITIES = ["Saudi Arabia","Egypt","Pakistan","Indonesia","Morocco","Turkey","Nigeria","India","Bangladesh","Malaysia","Jordan","Yemen","Sudan","Algeria","Tunisia","United Kingdom","United States"];
 const PX_CLS = "w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none";
-const PX_STYLE = { backgroundColor: "#F5F7FA", border: `1px solid ${AGENT}30`, color: "#0B1E3F" } as const;
+const PX_STYLE = { backgroundColor: ERP.surfaceSoft, border: `1px solid ${erpAlpha(AGENT, 19)}`, color: ERP.navy } as const;
 
 function PxField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <label className="text-[9px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: "rgba(11,30,63,0.50)" }}>{label}</label>
+      <label className="text-[9px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: ERP.muted }}>{label}</label>
       {children}
     </div>
   );
@@ -1062,7 +1063,7 @@ function ManualPassengerDrawer({ groupId, open, onClose, onAdded }: {
           <ErpInput value={f.phone} onChange={(e) => set("phone", e.target.value)} />
         </ErpField>
       </ErpForm>
-      {err && <div className="mt-3 text-xs font-medium" style={{ color: "#DC2626" }} role="alert">{err}</div>}
+      {err && <div className="mt-3 text-xs font-medium" style={{ color: ERP.destructive }} role="alert">{err}</div>}
     </ErpDrawer>
   );
 }
@@ -1166,7 +1167,7 @@ function EditPassengerDrawer({ pax, open, onClose, onSaved }: {
           <ErpInput value={f.phone} onChange={(e) => set("phone", e.target.value)} />
         </ErpField>
       </ErpForm>
-      {err && <div className="mt-3 text-xs font-medium" style={{ color: "#DC2626" }} role="alert">{err}</div>}
+      {err && <div className="mt-3 text-xs font-medium" style={{ color: ERP.destructive }} role="alert">{err}</div>}
     </ErpDrawer>
   );
 }
@@ -1302,24 +1303,24 @@ function CsvImportModal({ groupId, onClose, onImported }: { groupId: string; onC
   const s = preview?.summary;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(6,15,32,0.85)" }} onClick={onClose}>
-      <div className="w-[680px] max-h-[92vh] overflow-y-auto rounded-2xl shadow-2xl" style={{ backgroundColor: "#F0F3F7", border: "1px solid rgba(11,30,63,0.15)" }} onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-4 sticky top-0 z-10" style={{ backgroundColor: "#F0F3F7", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: ERP.scrim }} onClick={onClose}>
+      <div className="w-[680px] max-h-[92vh] overflow-y-auto rounded-2xl shadow-2xl" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 sticky top-0 z-10" style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
           <div>
-            <div className="text-sm font-bold text-[#0B1E3F]">Mutamer Excel Import</div>
+            <div className="text-sm font-bold text-[color:var(--erp-text-strong)]">Mutamer Excel Import</div>
             <div className="flex items-center gap-3 mt-1">
               {(["Upload", "Preview", "Done"] as const).map((label, i) => (
                 <div key={label} className="flex items-center gap-1.5">
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ backgroundColor: step > i + 1 ? "#4ADE8020" : step === i + 1 ? AGENT : "#EEF1F6", color: step > i + 1 ? "#16A34A" : step === i + 1 ? "white" : "rgba(11,30,63,0.50)" }}>
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ backgroundColor: step > i + 1 ? erpAlpha(ERP.success, 13) : step === i + 1 ? AGENT : ERP.surfaceSoft, color: step > i + 1 ? ERP.success : step === i + 1 ? "white" : ERP.muted }}>
                     {step > i + 1 ? "✓" : i + 1}
                   </div>
-                  <span className="text-[9px]" style={{ color: step === i + 1 ? "#0B1E3F" : "rgba(11,30,63,0.50)" }}>{label}</span>
-                  {i < 2 && <ChevronRight size={9} style={{ color: "rgba(11,30,63,0.38)" }} />}
+                  <span className="text-[9px]" style={{ color: step === i + 1 ? ERP.navy : ERP.muted }}>{label}</span>
+                  {i < 2 && <ChevronRight size={9} style={{ color: ERP.mutedSoft }} />}
                 </div>
               ))}
             </div>
           </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: "rgba(11,30,63,0.58)" }}>
+          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: ERP.muted }}>
             <X size={14} />
           </button>
         </div>
@@ -1327,32 +1328,32 @@ function CsvImportModal({ groupId, onClose, onImported }: { groupId: string; onC
         <div className="p-5">
           {step === 1 && (
             <div>
-              <label className="flex flex-col items-center gap-3 p-8 rounded-2xl cursor-pointer transition-all" style={{ border: `2px dashed ${AGENT}35`, backgroundColor: `${AGENT}05`, opacity: previewing ? 0.6 : 1 }}>
+              <label className="flex flex-col items-center gap-3 p-8 rounded-2xl cursor-pointer transition-all" style={{ border: `2px dashed ${erpAlpha(AGENT, 21)}`, backgroundColor: `${erpAlpha(AGENT, 2)}`, opacity: previewing ? 0.6 : 1 }}>
                 <input type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" disabled={previewing} onChange={(e) => onFile(e.target.files?.[0])} />
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${AGENT}18` }}>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${erpAlpha(AGENT, 9)}` }}>
                   {previewing ? <Loader2 size={20} className="animate-spin" style={{ color: AGENT }} /> : <Upload size={20} style={{ color: AGENT }} />}
                 </div>
                 <div className="text-center">
-                  <div className="text-sm font-semibold text-[#0B1E3F] mb-1">{previewing ? "Validating workbook…" : "Upload Mutamer Excel / CSV"}</div>
-                  <div className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>.xlsx or .csv · up to 1000 rows · preview before import</div>
+                  <div className="text-sm font-semibold text-[color:var(--erp-text-strong)] mb-1">{previewing ? "Validating workbook…" : "Upload Mutamer Excel / CSV"}</div>
+                  <div className="text-xs" style={{ color: ERP.muted }}>.xlsx or .csv · up to 1000 rows · preview before import</div>
                 </div>
               </label>
 
               <div className="mt-4 flex gap-2">
                 {(["business", "legacy"] as const).map((k) => (
                   <button key={k} type="button" onClick={() => setTemplateKind(k)} className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase"
-                    style={{ backgroundColor: templateKind === k ? `${AGENT}18` : "#EEF1F6", color: templateKind === k ? AGENT : "rgba(11,30,63,0.55)" }}>
+                    style={{ backgroundColor: templateKind === k ? `${erpAlpha(AGENT, 9)}` : ERP.surfaceSoft, color: templateKind === k ? AGENT : ERP.muted }}>
                     {k === "business" ? "Business template" : "Legacy template"}
                   </button>
                 ))}
               </div>
 
-              <div className="mt-3 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-                <div className="px-4 py-2.5 flex items-center justify-between gap-3" style={{ backgroundColor: "#FBFCFD", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.58)" }}>
+              <div className="mt-3 rounded-xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
+                <div className="px-4 py-2.5 flex items-center justify-between gap-3" style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
+                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: ERP.muted }}>
                     {templateKind === "business" ? "Business Mutamer columns" : "Legacy columns"}
                   </span>
-                  <button type="button" onClick={downloadTemplate} className="flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-lg shrink-0" style={{ backgroundColor: `${AGENT}15`, color: AGENT }}>
+                  <button type="button" onClick={downloadTemplate} className="flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-lg shrink-0" style={{ backgroundColor: `${erpAlpha(AGENT, 8)}`, color: AGENT }}>
                     <Download size={11} /> Download CSV template
                   </button>
                 </div>
@@ -1361,8 +1362,8 @@ function CsvImportModal({ groupId, onClose, onImported }: { groupId: string; onC
                     <thead>
                       <tr>
                         {guide.map((c) => (
-                          <th key={c.h} className="px-2 py-1 text-left text-[10px] whitespace-nowrap" style={{ color: AGENT, borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-                            {c.h}{c.req && <span style={{ color: "#DC2626" }}> *</span>}
+                          <th key={c.h} className="px-2 py-1 text-left text-[10px] whitespace-nowrap" style={{ color: AGENT, borderBottom: `1px solid ${ERP.border}` }}>
+                            {c.h}{c.req && <span style={{ color: ERP.destructive }}> *</span>}
                           </th>
                         ))}
                       </tr>
@@ -1370,19 +1371,19 @@ function CsvImportModal({ groupId, onClose, onImported }: { groupId: string; onC
                     <tbody>
                       <tr>
                         {guide.map((c) => (
-                          <td key={c.h} className="px-2 py-1.5 text-[10px] whitespace-nowrap" style={{ color: "rgba(11,30,63,0.70)" }}>{c.sample || "—"}</td>
+                          <td key={c.h} className="px-2 py-1.5 text-[10px] whitespace-nowrap" style={{ color: ERP.navy }}>{c.sample || "—"}</td>
                         ))}
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
-              <p className="text-[10px] mt-3 flex items-start gap-1.5" style={{ color: "rgba(11,30,63,0.55)" }}>
+              <p className="text-[10px] mt-3 flex items-start gap-1.5" style={{ color: ERP.muted }}>
                 <Info size={11} style={{ color: AGENT }} className="mt-px shrink-0" />
                 <span>Nothing is written until you confirm the preview. Duplicates and invalid rows block import (no silent overwrite).</span>
               </p>
               {err && (
-                <div className="mt-3 px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>{err}</div>
+                <div className="mt-3 px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: erpAlpha(ERP.destructive, 8), border: `1px solid ${erpAlpha(ERP.destructive, 20)}`, color: ERP.destructive }}>{err}</div>
               )}
             </div>
           )}
@@ -1390,63 +1391,63 @@ function CsvImportModal({ groupId, onClose, onImported }: { groupId: string; onC
           {step === 2 && preview && (
             <div>
               <div className="flex items-center justify-between mb-3 gap-2">
-                <span className="text-xs text-[#0B1E3F] font-semibold truncate" title={preview.fileName}>
+                <span className="text-xs text-[color:var(--erp-text-strong)] font-semibold truncate" title={preview.fileName}>
                   {preview.fileName} · {preview.mode} · {preview.format}
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: preview.summary.canCommit ? "#4ADE8015" : "#DC262615", color: preview.summary.canCommit ? "#16A34A" : "#DC2626" }}>
+                <span className="text-[10px] px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: preview.summary.canCommit ? erpAlpha(ERP.success, 8) : erpAlpha(ERP.destructive, 8), color: preview.summary.canCommit ? ERP.success : ERP.destructive }}>
                   {preview.summary.canCommit ? "Ready to import" : "Blocked"}
                 </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                 {[
-                  { label: "Valid", value: String(s?.valid ?? 0), color: "#16A34A" },
-                  { label: "Invalid", value: String(s?.invalid ?? 0), color: "#DC2626" },
-                  { label: "Warnings", value: String(s?.warnings ?? 0), color: "#B45309" },
-                  { label: "Duplicates", value: String(s?.duplicates ?? 0), color: "#7C3AED" },
+                  { label: "Valid", value: String(s?.valid ?? 0), color: ERP.success },
+                  { label: "Invalid", value: String(s?.invalid ?? 0), color: ERP.destructive },
+                  { label: "Warnings", value: String(s?.warnings ?? 0), color: ERP.warning },
+                  { label: "Duplicates", value: String(s?.duplicates ?? 0), color: CAT.purple },
                 ].map((st) => (
-                  <div key={st.label} className="rounded-xl p-3 text-center" style={{ backgroundColor: `${st.color}10`, border: `1px solid ${st.color}25` }}>
+                  <div key={st.label} className="rounded-xl p-3 text-center" style={{ backgroundColor: `${erpAlpha(st.color, 6)}`, border: `1px solid ${erpAlpha(st.color, 15)}` }}>
                     <div className="text-lg font-bold mb-0.5" style={{ color: st.color, fontFamily: "var(--font-mono)" }}>{st.value}</div>
-                    <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.58)" }}>{st.label}</div>
+                    <div className="text-[10px]" style={{ color: ERP.muted }}>{st.label}</div>
                   </div>
                 ))}
               </div>
 
-              <div className="rounded-xl overflow-hidden mb-3" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-                <div className="px-4 py-2.5" style={{ backgroundColor: "#FBFCFD", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-                  <span className="text-[10px] font-bold text-[#0B1E3F]">Column mapping (auto)</span>
+              <div className="rounded-xl overflow-hidden mb-3" style={{ border: `1px solid ${ERP.border}` }}>
+                <div className="px-4 py-2.5" style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
+                  <span className="text-[10px] font-bold text-[color:var(--erp-text-strong)]">Column mapping (auto)</span>
                 </div>
-                <div className="max-h-[120px] overflow-y-auto px-3 py-2 text-[10px]" style={{ fontFamily: "var(--font-mono)", color: "rgba(11,30,63,0.66)" }}>
+                <div className="max-h-[120px] overflow-y-auto px-3 py-2 text-[10px]" style={{ fontFamily: "var(--font-mono)", color: ERP.muted }}>
                   {preview.mapping.map((m, i) => (
                     <div key={i}>{m.header || "(blank)"} → {m.field ?? "ignored"}</div>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-xl overflow-hidden mb-4" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-                <div className="px-4 py-2.5" style={{ backgroundColor: "#FBFCFD", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-                  <span className="text-[10px] font-bold text-[#0B1E3F]">Validation / duplicates</span>
+              <div className="rounded-xl overflow-hidden mb-4" style={{ border: `1px solid ${ERP.border}` }}>
+                <div className="px-4 py-2.5" style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
+                  <span className="text-[10px] font-bold text-[color:var(--erp-text-strong)]">Validation / duplicates</span>
                 </div>
                 <div className="max-h-[200px] overflow-y-auto">
                   {preview.issues.length === 0 ? (
                     <div className="px-4 py-3 flex items-center gap-2.5">
-                      <CheckCircle size={13} style={{ color: "#16A34A" }} />
-                      <span className="text-xs" style={{ color: "rgba(11,30,63,0.66)" }}>All rows valid — confirm to import.</span>
+                      <CheckCircle size={13} style={{ color: ERP.success }} />
+                      <span className="text-xs" style={{ color: ERP.muted }}>All rows valid — confirm to import.</span>
                     </div>
                   ) : preview.issues.slice(0, 80).map((iss, k) => (
-                    <div key={k} className="px-4 py-2 flex items-start gap-2.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                      <AlertCircle size={13} style={{ color: iss.level === "error" ? "#DC2626" : iss.level === "duplicate" ? "#7C3AED" : "#B45309" }} className="mt-0.5 shrink-0" />
-                      <div className="text-[11px]" style={{ color: iss.level === "error" ? "#DC2626" : iss.level === "duplicate" ? "#7C3AED" : "#B45309" }}>{iss.message}</div>
+                    <div key={k} className="px-4 py-2 flex items-start gap-2.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                      <AlertCircle size={13} style={{ color: iss.level === "error" ? ERP.destructive : iss.level === "duplicate" ? CAT.purple : ERP.warning }} className="mt-0.5 shrink-0" />
+                      <div className="text-[11px]" style={{ color: iss.level === "error" ? ERP.destructive : iss.level === "duplicate" ? CAT.purple : ERP.warning }}>{iss.message}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               {err && (
-                <div className="mb-3 px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>{err}</div>
+                <div className="mb-3 px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: erpAlpha(ERP.destructive, 8), border: `1px solid ${erpAlpha(ERP.destructive, 20)}`, color: ERP.destructive }}>{err}</div>
               )}
               <div className="flex gap-2.5">
-                <button onClick={() => { setStep(1); setPreview(null); setErr(null); }} className="px-4 py-2 rounded-xl text-xs" style={{ border: "1px solid rgba(11,30,63,0.15)", color: "rgba(11,30,63,0.58)" }}>Back</button>
-                <button onClick={commit} disabled={committing || !preview.summary.canCommit} className="flex-1 py-2 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: AGENT, color: "#0B1E3F" }}>
+                <button onClick={() => { setStep(1); setPreview(null); setErr(null); }} className="px-4 py-2 rounded-xl text-xs" style={{ border: `1px solid ${ERP.border}`, color: ERP.muted }}>Back</button>
+                <button onClick={commit} disabled={committing || !preview.summary.canCommit} className="flex-1 py-2 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: AGENT, color: ERP.navy }}>
                   {committing ? "Importing…" : `Confirm import ${preview.summary.valid} Mutamer${preview.summary.valid === 1 ? "" : "s"}`}
                 </button>
               </div>
@@ -1455,14 +1456,14 @@ function CsvImportModal({ groupId, onClose, onImported }: { groupId: string; onC
 
           {step === 3 && (
             <div className="text-center py-6">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: "#4ADE8018" }}>
-                <CheckCircle size={28} style={{ color: "#16A34A" }} />
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: erpAlpha(ERP.success, 9) }}>
+                <CheckCircle size={28} style={{ color: ERP.success }} />
               </div>
-              <h3 className="text-sm font-bold text-[#0B1E3F] mb-1">Import complete</h3>
-              <p className="text-xs mb-5" style={{ color: "rgba(11,30,63,0.66)" }}>
+              <h3 className="text-sm font-bold text-[color:var(--erp-text-strong)] mb-1">Import complete</h3>
+              <p className="text-xs mb-5" style={{ color: ERP.muted }}>
                 {preview?.summary.valid ?? 0} Mutamer(s) written to this group. Audit log recorded.
               </p>
-              <button onClick={onClose} className="px-6 py-2.5 rounded-xl text-xs font-bold" style={{ backgroundColor: AGENT, color: "#0B1E3F" }}>Close</button>
+              <button onClick={onClose} className="px-6 py-2.5 rounded-xl text-xs font-bold" style={{ backgroundColor: AGENT, color: ERP.navy }}>Close</button>
             </div>
           )}
         </div>
@@ -1514,7 +1515,7 @@ function GroupsListView({ onSelect, onNew, authed, groups, loading, error, refre
       cell: (g) => (
         <div>
           <div className="text-[11px] font-semibold" style={{ color: AGENT, fontFamily: "var(--font-mono)" }}>{g.id}</div>
-          <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)", fontFamily: "var(--font-mono)" }}>
+          <div className="text-[10px]" style={{ color: ERP.muted, fontFamily: "var(--font-mono)" }}>
             Nusuk {formatNusuk(g.nusukGroupNumber)}
           </div>
         </div>
@@ -1525,8 +1526,8 @@ function GroupsListView({ onSelect, onNew, authed, groups, loading, error, refre
       header: lang === "bn" ? "নাম" : "Name",
       cell: (g) => (
         <div>
-          <div className="text-xs font-semibold text-[#0B1E3F] max-w-[200px] truncate" title={g.name}>{g.name}</div>
-          <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)" }}>
+          <div className="text-xs font-semibold text-[color:var(--erp-text-strong)] max-w-[200px] truncate" title={g.name}>{g.name}</div>
+          <div className="text-[10px]" style={{ color: ERP.muted }}>
             {g.type} · {g.pkg}{g.gates ? ` · ${gateSummary(g.gates)}` : ""}
           </div>
         </div>
@@ -1536,7 +1537,7 @@ function GroupsListView({ onSelect, onNew, authed, groups, loading, error, refre
       id: "dest",
       header: lang === "bn" ? "গন্তব্য" : "Destination",
       cell: (g) => (
-        <span className="inline-flex items-center gap-1 text-xs" style={{ color: "rgba(11,30,63,0.76)" }}>
+        <span className="inline-flex items-center gap-1 text-xs" style={{ color: ERP.navy }}>
           <MapPin size={11} /> {g.dest}
         </span>
       ),
@@ -1551,9 +1552,9 @@ function GroupsListView({ onSelect, onNew, authed, groups, loading, error, refre
       id: "dates",
       header: lang === "bn" ? "তারিখ" : "Dates",
       cell: (g) => (
-        <div className="text-[11px]" style={{ color: "rgba(11,30,63,0.66)" }}>
+        <div className="text-[11px]" style={{ color: ERP.muted }}>
           <div>{g.depart}</div>
-          <div style={{ color: "rgba(11,30,63,0.45)" }}>→ {g.ret}</div>
+          <div style={{ color: ERP.muted }}>→ {g.ret}</div>
         </div>
       ),
     },
@@ -1945,8 +1946,8 @@ function GroupWizard({ onBack, onDone, onCreated }: {
         <ErpButton variant="ghost" size="sm" icon={<ArrowLeft size={14} />} onClick={onBack}>
           {lang === "bn" ? "গ্রুপ" : "Groups"}
         </ErpButton>
-        <ChevronRight size={12} style={{ color: "rgba(11,30,63,0.38)" }} />
-        <span className="text-sm font-semibold text-[#0B1E3F]">{lang === "bn" ? "নতুন গ্রুপ" : "New Group"}</span>
+        <ChevronRight size={12} style={{ color: ERP.mutedSoft }} />
+        <span className="text-sm font-semibold text-[color:var(--erp-text-strong)]">{lang === "bn" ? "নতুন গ্রুপ" : "New Group"}</span>
         <div className="flex-1" />
         <div className="flex flex-wrap items-center gap-2">
           {STEPS.map((label, i) => {
@@ -1956,14 +1957,14 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
                   style={{
-                    backgroundColor: step > n ? "#16A34A20" : step === n ? NAVY : "#EEF1F6",
-                    color: step > n ? "#16A34A" : step === n ? "#fff" : "rgba(11,30,63,0.50)",
+                    backgroundColor: step > n ? erpAlpha(ERP.success, 13) : step === n ? NAVY : ERP.surfaceSoft,
+                    color: step > n ? ERP.success : step === n ? "#fff" : ERP.muted,
                   }}
                 >
                   {step > n ? "✓" : n}
                 </div>
-                <span className="text-xs hidden md:block" style={{ color: step === n ? NAVY : "rgba(11,30,63,0.55)" }}>{label}</span>
-                {n < 4 && <ChevronRight size={12} style={{ color: "rgba(11,30,63,0.3)" }} />}
+                <span className="text-xs hidden md:block" style={{ color: step === n ? NAVY : ERP.muted }}>{label}</span>
+                {n < 4 && <ChevronRight size={12} style={{ color: ERP.mutedSoft }} />}
               </div>
             );
           })}
@@ -1972,11 +1973,11 @@ function GroupWizard({ onBack, onDone, onCreated }: {
 
       <div className="max-w-3xl mx-auto">
         {step === 1 && (
-          <div className="rounded-xl p-5 md:p-6 space-y-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-            <h2 className="text-base font-bold text-[#0B1E3F]">{lang === "bn" ? "১ · গ্রুপ তথ্য" : "1 · Group Info"}</h2>
+          <div className="rounded-xl p-5 md:p-6 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+            <h2 className="text-base font-bold text-[color:var(--erp-text-strong)]">{lang === "bn" ? "১ · গ্রুপ তথ্য" : "1 · Group Info"}</h2>
             {staff && (
-              <div className="rounded-xl p-3 mb-1" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.10)" }}>
-                <div className="text-[11px] font-semibold mb-2" style={{ color: "rgba(11,30,63,0.55)" }}>
+              <div className="rounded-xl p-3 mb-1" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+                <div className="text-[11px] font-semibold mb-2" style={{ color: ERP.muted }}>
                   {lang === "bn" ? "মালিকানা (স্টাফ)" : "Ownership (staff)"}
                 </div>
                 <div className="flex flex-wrap gap-2 mb-3">
@@ -1996,7 +1997,7 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                   </ErpSelect>
                 </ErpField>
                 {ownership === "direct" && (
-                  <p className="text-[11px] mt-2" style={{ color: "rgba(11,30,63,0.50)" }}>
+                  <p className="text-[11px] mt-2" style={{ color: ERP.muted }}>
                     {lang === "bn"
                       ? "ডাইরেক্ট কাস্টমার — নির্বাচিত কোম্পানির অধীনে তৈরি (uploadedByLabel = Direct Customer)।"
                       : "Direct customer booking under the selected company account (uploadedByLabel = Direct Customer)."}
@@ -2044,12 +2045,12 @@ function GroupWizard({ onBack, onDone, onCreated }: {
         )}
 
         {step === 2 && (
-          <div className="rounded-xl p-5 md:p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-            <h2 className="text-base font-bold text-[#0B1E3F] mb-1">{lang === "bn" ? "২ · প্যাকেজ" : "2 · Package"}</h2>
-            <p className="text-xs mb-4" style={{ color: "rgba(11,30,63,0.55)" }}>
+          <div className="rounded-xl p-5 md:p-6" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+            <h2 className="text-base font-bold text-[color:var(--erp-text-strong)] mb-1">{lang === "bn" ? "২ · প্যাকেজ" : "2 · Package"}</h2>
+            <p className="text-xs mb-4" style={{ color: ERP.muted }}>
               {lang === "bn" ? "ভিসা, প্যাকেজ, তারিখ ও ধারণক্ষমতা।" : "Visa, package, travel dates, and capacity."}
             </p>
-            <div className="mb-2 text-[11px] font-semibold" style={{ color: "rgba(11,30,63,0.55)" }}>
+            <div className="mb-2 text-[11px] font-semibold" style={{ color: ERP.muted }}>
               {lang === "bn" ? "প্যাকেজ টাইপ" : "Package Type"}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5" role="radiogroup" aria-label={lang === "bn" ? "প্যাকেজ" : "Package"}>
@@ -2066,19 +2067,19 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                   onClick={() => setPkg(p.id)}
                   className="rounded-xl p-4 text-left min-h-[96px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{
-                    border: `2px solid ${pkg === p.id ? AGENT : "rgba(11,30,63,0.12)"}`,
-                    backgroundColor: pkg === p.id ? `${AGENT}10` : "#FBFCFD",
+                    border: `2px solid ${pkg === p.id ? AGENT : ERP.border}`,
+                    backgroundColor: pkg === p.id ? `${erpAlpha(AGENT, 6)}` : ERP.surfaceSoft,
                     outlineColor: GOLD,
                   }}
                 >
-                  <div className="text-sm font-bold text-[#0B1E3F]">{lang === "bn" ? p.titleBn : p.titleEn}</div>
-                  <div className="text-[11px] mt-1" style={{ color: "rgba(11,30,63,0.55)" }}>
+                  <div className="text-sm font-bold text-[color:var(--erp-text-strong)]">{lang === "bn" ? p.titleBn : p.titleEn}</div>
+                  <div className="text-[11px] mt-1" style={{ color: ERP.muted }}>
                     {lang === "bn" ? p.hintBn : p.hintEn}
                   </div>
                 </button>
               ))}
             </div>
-            <div className="mb-2 text-[11px] font-semibold" style={{ color: "rgba(11,30,63,0.55)" }}>
+            <div className="mb-2 text-[11px] font-semibold" style={{ color: ERP.muted }}>
               {lang === "bn" ? "ভিসার ধরন" : "Visa Type"}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label={lang === "bn" ? "ভিসা" : "Visa"}>
@@ -2095,13 +2096,13 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                   onClick={() => setVisaType(v.id)}
                   className="rounded-xl p-4 text-left min-h-[88px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{
-                    border: `2px solid ${visaType === v.id ? NAVY : "rgba(11,30,63,0.12)"}`,
-                    backgroundColor: visaType === v.id ? `${NAVY}08` : "#FBFCFD",
+                    border: `2px solid ${visaType === v.id ? NAVY : ERP.border}`,
+                    backgroundColor: visaType === v.id ? `${erpAlpha(NAVY, 3)}` : ERP.surfaceSoft,
                     outlineColor: GOLD,
                   }}
                 >
                   <FileCheck size={18} style={{ color: AGENT }} className="mb-2" />
-                  <div className="text-sm font-bold text-[#0B1E3F]">{lang === "bn" ? v.titleBn : v.titleEn}</div>
+                  <div className="text-sm font-bold text-[color:var(--erp-text-strong)]">{lang === "bn" ? v.titleBn : v.titleEn}</div>
                 </button>
               ))}
             </div>
@@ -2139,11 +2140,11 @@ function GroupWizard({ onBack, onDone, onCreated }: {
         )}
 
         {step === 3 && (
-          <div className="rounded-xl p-5 md:p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+          <div className="rounded-xl p-5 md:p-6" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
             <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
               <div>
-                <h2 className="text-base font-bold text-[#0B1E3F]">{lang === "bn" ? "৩ · যাত্রী" : "3 · Passengers"}</h2>
-                <p className="text-sm mt-1" style={{ color: "rgba(11,30,63,0.58)" }}>
+                <h2 className="text-base font-bold text-[color:var(--erp-text-strong)]">{lang === "bn" ? "৩ · যাত্রী" : "3 · Passengers"}</h2>
+                <p className="text-sm mt-1" style={{ color: ERP.muted }}>
                   {lang === "bn"
                     ? "ম্যানুয়াল, পাসপোর্ট OCR অথবা Excel/CSV দিয়ে যাত্রী যোগ করুন।"
                     : "Add passengers via Manual, Passport OCR, or Excel/CSV."}
@@ -2151,14 +2152,14 @@ function GroupWizard({ onBack, onDone, onCreated }: {
               </div>
               <div
                 className="rounded-xl px-3 py-2 text-center min-w-[88px]"
-                style={{ backgroundColor: paxCount > 0 ? "#16A34A12" : "#F5F7FA", border: `1px solid ${paxCount > 0 ? "#16A34A40" : "rgba(11,30,63,0.11)"}` }}
+                style={{ backgroundColor: paxCount > 0 ? erpAlpha(ERP.success, 7) : ERP.surfaceSoft, border: `1px solid ${paxCount > 0 ? erpAlpha(ERP.success, 25) : ERP.border}` }}
               >
-                <div className="text-lg font-bold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: paxCount > 0 ? "#16A34A" : NAVY }}>{paxCount}</div>
-                <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.55)" }}>{lang === "bn" ? "যাত্রী" : "Passengers"}</div>
+                <div className="text-lg font-bold tabular-nums" style={{ fontFamily: "var(--font-mono)", color: paxCount > 0 ? ERP.success : NAVY }}>{paxCount}</div>
+                <div className="text-[10px]" style={{ color: ERP.muted }}>{lang === "bn" ? "যাত্রী" : "Passengers"}</div>
               </div>
             </div>
             {draftGroup?.id && (
-              <p className="text-[11px] mb-3 font-mono" style={{ color: "rgba(11,30,63,0.45)" }}>
+              <p className="text-[11px] mb-3 font-mono" style={{ color: ERP.muted }}>
                 {draftGroup.id}
               </p>
             )}
@@ -2176,16 +2177,16 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                     disabled={draftBusy}
                     onClick={() => void openIntake(m.kind)}
                     className="rounded-xl p-4 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50"
-                    style={{ border: `1px solid ${AGENT}40`, backgroundColor: `${AGENT}08`, outlineColor: GOLD }}
+                    style={{ border: `1px solid ${erpAlpha(AGENT, 25)}`, backgroundColor: `${erpAlpha(AGENT, 3)}`, outlineColor: GOLD }}
                   >
                     <Icon size={18} style={{ color: AGENT }} className="mb-2" />
-                    <div className="text-xs font-bold text-[#0B1E3F]">{lang === "bn" ? m.titleBn : m.titleEn}</div>
+                    <div className="text-xs font-bold text-[color:var(--erp-text-strong)]">{lang === "bn" ? m.titleBn : m.titleEn}</div>
                   </button>
                 );
               })}
             </div>
             {paxError && (
-              <div className="mb-3 text-xs font-medium" style={{ color: "#DC2626" }} role="alert">
+              <div className="mb-3 text-xs font-medium" style={{ color: ERP.destructive }} role="alert">
                 কমপক্ষে ১ জন যাত্রী যোগ করুন।
               </div>
             )}
@@ -2203,8 +2204,8 @@ function GroupWizard({ onBack, onDone, onCreated }: {
         )}
 
         {step === 4 && (
-          <div className="rounded-xl p-5 md:p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-            <h2 className="text-base font-bold text-[#0B1E3F] mb-4">{lang === "bn" ? "৪ · নিশ্চিত করুন" : "4 · Confirm"}</h2>
+          <div className="rounded-xl p-5 md:p-6" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+            <h2 className="text-base font-bold text-[color:var(--erp-text-strong)] mb-4">{lang === "bn" ? "৪ · নিশ্চিত করুন" : "4 · Confirm"}</h2>
             <dl className="space-y-2 text-sm mb-5">
               {[
                 [lang === "bn" ? "নাম" : "Name", name || "—"],
@@ -2216,9 +2217,9 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                 [lang === "bn" ? "যাত্রী" : "Passengers", String(paxCount)],
                 ...(staff ? [[lang === "bn" ? "মালিকানা" : "Ownership", ownership === "direct" ? (lang === "bn" ? "ডাইরেক্ট কাস্টমার" : "Direct Customer") : (lang === "bn" ? "এজেন্ট" : "Agent")]] : []),
               ].map(([k, v]) => (
-                <div key={String(k)} className="flex justify-between gap-4 py-2" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                  <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                  <dd className="font-semibold text-[#0B1E3F] text-right">{v}</dd>
+                <div key={String(k)} className="flex justify-between gap-4 py-2" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                  <dt style={{ color: ERP.muted }}>{k}</dt>
+                  <dd className="font-semibold text-[color:var(--erp-text-strong)] text-right">{v}</dd>
                 </div>
               ))}
             </dl>
@@ -2350,7 +2351,7 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
       header: "OCR",
       cell: (p) => p.ocrLinked
         ? <ErpStatusChip status="info" label="OCR" lang={lang} />
-        : <span className="text-[10px]" style={{ color: "rgba(11,30,63,0.35)" }}>—</span>,
+        : <span className="text-[10px]" style={{ color: ERP.mutedSoft }}>—</span>,
     },
   ];
 
@@ -2367,7 +2368,7 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
             {addOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setAddOpen(false)} />
-                <div className="absolute right-0 top-11 w-56 rounded-xl overflow-hidden z-20 shadow-lg" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.12)" }}>
+                <div className="absolute right-0 top-11 w-56 rounded-xl overflow-hidden z-20 shadow-lg" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
                   {[
                     { label: lang === "bn" ? "ম্যানুয়াল এন্ট্রি" : "Manual Entry", icon: Users, on: () => setShowManual(true) },
                     { label: lang === "bn" ? "পাসপোর্ট OCR" : "Passport OCR", icon: ScanLine, on: () => setShowOcr(true) },
@@ -2377,7 +2378,7 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
                       key={label}
                       type="button"
                       onClick={() => { setAddOpen(false); on(); }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-left hover:bg-[rgba(11,30,63,0.04)]"
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-left hover:bg-white/5"
                     >
                       <Icon size={13} style={{ color: AGENT }} /> {label}
                     </button>
@@ -2516,9 +2517,9 @@ function PassengersTab({ group, onChanged }: { group: GroupRec; onChanged: () =>
               ["Transport", detailPax.transport],
               ["MoH", detailPax.moh],
             ].map(([k, v]) => (
-              <div key={String(k)} className="flex justify-between gap-3 py-2" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                <dd className="font-semibold text-[#0B1E3F]">{v}</dd>
+              <div key={String(k)} className="flex justify-between gap-3 py-2" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                <dt style={{ color: ERP.muted }}>{k}</dt>
+                <dd className="font-semibold text-[color:var(--erp-text-strong)]">{v}</dd>
               </div>
             ))}
           </dl>
@@ -2615,18 +2616,18 @@ function GroupFoundationPanel({
     "—";
 
   const field = "w-full px-3 py-2 text-xs rounded-xl focus:outline-none";
-  const fieldStyle = { backgroundColor: "#F5F7FA", border: `1px solid ${AGENT}30`, color: "#0B1E3F" } as const;
+  const fieldStyle = { backgroundColor: ERP.surfaceSoft, border: `1px solid ${erpAlpha(AGENT, 19)}`, color: ERP.navy } as const;
 
   return (
-    <div className="mx-7 mt-5 mb-2 rounded-2xl p-5 space-y-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+    <div className="mx-7 mt-5 mb-2 rounded-2xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-bold text-[#0B1E3F]">Group Foundation</h2>
-          <p className="text-[10px] mt-0.5" style={{ color: "rgba(11,30,63,0.50)" }}>
+          <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Group Foundation</h2>
+          <p className="text-[10px] mt-0.5" style={{ color: ERP.muted }}>
             Internal code <span style={{ fontFamily: "var(--font-mono)", color: AGENT }}>{detail?.code ?? "—"}</span>
           </p>
         </div>
-        <button onClick={save} disabled={saving || !detail} className="px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: AGENT, color: "#0B1E3F" }}>
+        <button onClick={save} disabled={saving || !detail} className="px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: AGENT, color: ERP.navy }}>
           {saving ? "Saving…" : "Save"}
         </button>
       </div>
@@ -2636,11 +2637,11 @@ function GroupFoundationPanel({
           <h3 className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: AGENT }}>Group Information</h3>
           <div className="space-y-2.5">
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: "rgba(11,30,63,0.50)" }}>Nusuk Group Number</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: ERP.muted }}>Nusuk Group Number</label>
               <input value={nusuk} onChange={(e) => setNusuk(e.target.value)} className={field} style={{ ...fieldStyle, fontFamily: "var(--font-mono)" }} />
             </div>
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: "rgba(11,30,63,0.50)" }}>Visa Type</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: ERP.muted }}>Visa Type</label>
               <select value={visaUi} onChange={(e) => setVisaUi(e.target.value as VisaTypeUi)} className={field} style={fieldStyle}>
                 <option value="umrah">Umrah Visa</option>
                 <option value="hajj">Hajj Visa</option>
@@ -2653,7 +2654,7 @@ function GroupFoundationPanel({
         <section>
           <h3 className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: AGENT }}>Package</h3>
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: "rgba(11,30,63,0.50)" }}>Package Type</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: ERP.muted }}>Package Type</label>
             <select value={pkg} onChange={(e) => setPkg(e.target.value)} className={field} style={fieldStyle}>
               <option>Economy</option><option>Standard</option><option>Premium</option>
             </select>
@@ -2664,15 +2665,15 @@ function GroupFoundationPanel({
           <h3 className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: AGENT }}>Communication</h3>
           <div className="space-y-2.5">
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: "rgba(11,30,63,0.50)" }}>Haji WhatsApp</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: ERP.muted }}>Haji WhatsApp</label>
               <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className={field} style={fieldStyle} />
             </div>
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: "rgba(11,30,63,0.50)" }}>Consulate</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: ERP.muted }}>Consulate</label>
               <input value={consulate} onChange={(e) => setConsulate(e.target.value)} className={field} style={fieldStyle} />
             </div>
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: "rgba(11,30,63,0.50)" }}>Umrah Company</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: ERP.muted }}>Umrah Company</label>
               <select value={umrahCompanyId} onChange={(e) => setUmrahCompanyId(e.target.value)} className={field} style={fieldStyle}>
                 <option value="">— None —</option>
                 {umrahCompanies.map((c) => (
@@ -2681,8 +2682,8 @@ function GroupFoundationPanel({
               </select>
             </div>
             <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: "rgba(11,30,63,0.50)" }}>Uploaded By</label>
-              <div className="text-xs px-3 py-2 rounded-xl" style={{ backgroundColor: "#EEF1F6", color: "rgba(11,30,63,0.66)" }}>{uploadedBy}</div>
+              <label className="text-[9px] font-bold uppercase tracking-widest block mb-1" style={{ color: ERP.muted }}>Uploaded By</label>
+              <div className="text-xs px-3 py-2 rounded-xl" style={{ backgroundColor: ERP.surfaceSoft, color: ERP.muted }}>{uploadedBy}</div>
             </div>
           </div>
         </section>
@@ -2691,7 +2692,7 @@ function GroupFoundationPanel({
           <h3 className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: AGENT }}>Readiness</h3>
           <div className="grid grid-cols-1 gap-2">
             {GATE_LABELS.map(({ key, label }) => (
-              <label key={key} className="flex items-center gap-2.5 text-xs text-[#0B1E3F] cursor-pointer">
+              <label key={key} className="flex items-center gap-2.5 text-xs text-[color:var(--erp-text-strong)] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={gates[key]}
@@ -2790,12 +2791,12 @@ function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => voi
   return (
     <div className="flex flex-col h-full">
       {/* Group header */}
-      <div className="px-7 pt-5 pb-0" style={{ borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
+      <div className="px-7 pt-5 pb-0" style={{ borderBottom: `1px solid ${ERP.border}` }}>
         <div className="flex items-center gap-2 mb-3">
-          <button onClick={onBack} className="flex items-center gap-1 text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>
+          <button onClick={onBack} className="flex items-center gap-1 text-xs" style={{ color: ERP.muted }}>
             <ArrowLeft size={12} /> Groups
           </button>
-          <ChevronRight size={10} style={{ color: "rgba(11,30,63,0.38)" }} />
+          <ChevronRight size={10} style={{ color: ERP.mutedSoft }} />
           <span className="text-xs" style={{ color: AGENT, fontFamily: "var(--font-mono)" }}>{group.id}</span>
           <div className="flex-1" />
           {live && (
@@ -2813,10 +2814,10 @@ function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => voi
         <div className="flex items-start justify-between mb-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2.5 mb-1 min-w-0">
-              <h1 className="text-base font-bold text-[#0B1E3F] truncate" title={group.name}>{group.name}</h1>
+              <h1 className="text-base font-bold text-[color:var(--erp-text-strong)] truncate" title={group.name}>{group.name}</h1>
               <span className="shrink-0"><SBadge status={group.status} /></span>
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-[10px]" style={{ color: "rgba(11,30,63,0.58)" }}>
+            <div className="flex flex-wrap items-center gap-3 text-[10px]" style={{ color: ERP.muted }}>
               <span><MapPin size={9} className="inline mr-1" />{group.dest}</span>
               <span>·</span>
               <span>{VISA_LABEL[detail?.visaType ?? group.visaTypeEnum ?? ""] ?? group.type}</span>
@@ -2847,7 +2848,7 @@ function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => voi
               key={id}
               onClick={() => setTab(id)}
               className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold transition-all relative"
-              style={{ color: tab === id ? "#0B1E3F" : "rgba(11,30,63,0.58)" }}
+              style={{ color: tab === id ? ERP.navy : ERP.muted }}
             >
               <Icon size={12} />
               {label.charAt(0).toUpperCase() + label.slice(1)}
@@ -2858,7 +2859,7 @@ function GroupDetailView({ group, onBack }: { group: GroupRec; onBack: () => voi
       </div>
 
       {/* Tab content (scrollable) */}
-      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(11,30,63,0.38) transparent" }}>
+      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: `${ERP.mutedSoft} transparent` }}>
         {tab === "foundation" && (
           live
             ? <GroupFoundationPanel groupId={group.apiId!} detail={detail} onSaved={refresh} />

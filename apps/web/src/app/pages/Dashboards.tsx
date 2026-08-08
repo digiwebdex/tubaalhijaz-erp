@@ -18,6 +18,7 @@ import {
   FileCheck, ShieldAlert, CalendarCheck2,
 } from "lucide-react";
 import { ERPShell, type NavItem, type IconFC } from "../components/ERPShell";
+import { ERP, CAT, erpAlpha, ErpThemeProvider, ErpStatCard } from "../components/erp";
 
 /** ESP-03 — defer Ops Today / Executive / Reports until those tabs are opened. */
 const OpsTodayDashboard = lazy(() =>
@@ -32,7 +33,7 @@ const ReportsManagementView = lazy(() =>
 
 // ─── Module constant ──────────────────────────────────────────────────────────
 
-const DASH = "#06B6D4";
+const DASH = ERP.info;
 
 // ─── Live-data helpers (Phase 12) ──────────────────────────────────────────────
 // Money formatter matching the frozen KPI style: SAR 8.45M / SAR 323.7K / SAR n
@@ -158,7 +159,7 @@ const VISA_PIPELINE_ORDER = [
   "NEW", "MOFA", "EMBASSY", "BIOMETRIC", "SUBMITTED", "PROCESSING",
   "ISSUED", "REJECTED", "PASSPORT_RETURNED", "COMPLETED", "REJECTED_CLOSED",
 ] as const;
-const VISA_C = "#0D9488";
+const VISA_C = CAT.teal;
 
 // ─── Chart data ───────────────────────────────────────────────────────────────
 
@@ -187,8 +188,8 @@ const SUP_FCST = [
 function CTip({ active, payload, label, prefix = "" }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="px-3 py-2 rounded-xl text-[10px]" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.15)" }}>
-      <div className="font-bold text-[#0B1E3F] mb-1">{label}</div>
+    <div className="px-3 py-2 rounded-xl text-[10px]" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
+      <div className="font-bold text-[color:var(--erp-text-strong)] mb-1">{label}</div>
       {payload.map((p: any) => (
         <div key={p.name} style={{ color: p.color }}>{p.name}: {prefix}{typeof p.value==="number"?p.value.toLocaleString():p.value}</div>
       ))}
@@ -202,17 +203,14 @@ function DKpi({ label, value, sub, color, trend, up, icon: Icon }: {
   trend?: string; up?: boolean; icon: typeof TrendingUp;
 }) {
   return (
-    <div className="rounded-2xl p-5" style={{ backgroundColor:"#FBFCFD", border:"1px solid rgba(11,30,63,0.11)" }}>
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor:`${color}18` }}>
-          <Icon size={16} style={{ color }} />
-        </div>
-        {trend && <span className="text-[9px] font-bold" style={{ color: up ? "#16A34A" : "#DC2626" }}>{up?"↑":"↓"} {trend}</span>}
-      </div>
-      <div className="text-xl font-black text-[#0B1E3F] truncate" title={value} style={{ fontFamily:"var(--font-mono)" }}>{value}</div>
-      <div className="text-xs mt-1 truncate" title={label} style={{ color:"rgba(11,30,63,0.66)" }}>{label}</div>
-      {sub && <div className="text-[9px] mt-0.5 truncate" title={sub} style={{ color:"rgba(11,30,63,0.50)" }}>{sub}</div>}
-    </div>
+    <ErpStatCard
+      label={label}
+      value={value}
+      hint={sub}
+      accent={color}
+      icon={<Icon size={16} style={{ color }} />}
+      delta={trend ? { val: trend, up: !!up } : undefined}
+    />
   );
 }
 
@@ -244,11 +242,11 @@ function DCard({ title, sub, action, children, color, minH }: {
   // UX: hide card deep-links the session cannot access (API still enforces).
   const showAction = !!(dest && canAccessPath(dest));
   return (
-    <div className="rounded-2xl overflow-hidden h-full flex flex-col" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.11)", minHeight:minH }}>
-      <div className="flex items-center justify-between px-5 py-3.5 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"#FFFFFF" }}>
+    <div className="rounded-2xl overflow-hidden h-full flex flex-col" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}`, minHeight:minH }}>
+      <div className="flex items-center justify-between px-5 py-3.5 shrink-0" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:ERP.surface }}>
         <div>
-          <div className="text-xs font-bold text-[#0B1E3F]">{title}</div>
-          {sub && <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>{sub}</div>}
+          <div className="text-xs font-bold text-[color:var(--erp-text-strong)]">{title}</div>
+          {sub && <div className="text-[9px] mt-0.5" style={{ color:ERP.muted }}>{sub}</div>}
         </div>
         {showAction && (
           <button
@@ -273,7 +271,7 @@ function DashFrame({ kpis, main, side, widgets, bodyBanner, widgetsBanner }: {
   bodyBanner?: ReactNode; widgetsBanner?: ReactNode;
 }) {
   return (
-    <div className="p-6 h-full overflow-y-auto space-y-4" style={{ scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }}>
+    <div className="p-6 h-full overflow-y-auto space-y-4" style={{ scrollbarWidth:"thin", scrollbarColor:"${ERP.mutedSoft} transparent" }}>
       <div className="grid grid-cols-4 gap-4">{kpis.map((k,i) => <div key={i}>{k}</div>)}</div>
       {bodyBanner}
       <div className="grid grid-cols-3 gap-4">
@@ -292,10 +290,10 @@ function MBar({ label, value, max, color, fmt }: { label:string; value:number; m
   return (
     <div className="mb-2.5">
       <div className="flex justify-between mb-1">
-        <span className="text-[10px] min-w-0 truncate" title={label} style={{ color:"rgba(11,30,63,0.76)" }}>{label}</span>
+        <span className="text-[10px] min-w-0 truncate" title={label} style={{ color:ERP.navy }}>{label}</span>
         <span className="text-[10px] font-bold font-mono shrink-0 whitespace-nowrap tabular-nums" style={{ color, fontFamily:"var(--font-mono)" }}>{fmt ? fmt(value) : value.toLocaleString()}</span>
       </div>
-      <div className="h-1.5 rounded-full" style={{ backgroundColor:"#F5F7FA" }}>
+      <div className="h-1.5 rounded-full" style={{ backgroundColor:ERP.surfaceSoft }}>
         <div className="h-full rounded-full" style={{ width:`${pct}%`, backgroundColor:color }} />
       </div>
     </div>
@@ -305,19 +303,19 @@ function MBar({ label, value, max, color, fmt }: { label:string; value:number; m
 // Status pill
 function SPill({ s, map }: { s:string; map:Record<string,[string,string]> }) {
   const [c, l] = map[s] ?? [DASH, s];
-  return <span className="inline-flex px-2 py-0.5 rounded-full text-[8px] font-black" style={{ backgroundColor:`${c}18`, color:c }}>{l}</span>;
+  return <span className="inline-flex px-2 py-0.5 rounded-full text-[8px] font-black" style={{ backgroundColor:`${erpAlpha(c, 9)}`, color:c }}>{l}</span>;
 }
 
 // Activity list item for sidebar panels
 function ALi({ label, sub, time, urgent }: { label:string; sub?:string; time?:string; urgent?:boolean }) {
   return (
-    <div className="px-4 py-2.5 flex items-start gap-3" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)", borderLeft:`3px solid ${urgent?"#EF4444":"transparent"}` }}>
-      {urgent && <AlertTriangle size={11} className="mt-0.5 shrink-0" style={{ color:"#EF4444" }} />}
+    <div className="px-4 py-2.5 flex items-start gap-3" style={{ borderBottom:`1px solid ${ERP.border}`, borderLeft:`3px solid ${urgent?ERP.destructive:"transparent"}` }}>
+      {urgent && <AlertTriangle size={11} className="mt-0.5 shrink-0" style={{ color:ERP.destructive }} />}
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] font-semibold truncate" style={{ color: urgent?"#DC2626":"#0B1E3F" }}>{label}</div>
-        {sub && <div className="text-[9px] mt-0.5 truncate" style={{ color:"rgba(11,30,63,0.58)" }}>{sub}</div>}
+        <div className="text-[10px] font-semibold truncate" style={{ color: urgent?ERP.destructive:ERP.navy }}>{label}</div>
+        {sub && <div className="text-[9px] mt-0.5 truncate" style={{ color:ERP.muted }}>{sub}</div>}
       </div>
-      {time && <span className="text-[9px] shrink-0" style={{ color:"rgba(11,30,63,0.50)", fontFamily:"var(--font-mono)" }}>{time}</span>}
+      {time && <span className="text-[9px] shrink-0" style={{ color:ERP.muted, fontFamily:"var(--font-mono)" }}>{time}</span>}
     </div>
   );
 }
@@ -353,41 +351,41 @@ function OpsDash() {
   return (
     <DashFrame
       kpis={[
-        <DKpi label="Groups Active"    value={k ? String(k.groupsActive) : "8"}   sub={k ? `Today: ${k.arrivalsToday} arr, ${k.departuresToday} dep` : "Today: 3 arr, 2 dep"}    color="#DC4E2A" icon={Users}         />,
-        <DKpi label="Pending Tasks"    value={k ? String(k.pendingTasks) : "12"}  sub={k ? "—" : "2 urgent · 10 normal"}   color="#B45309"    icon={ClipboardList}   />,
-        <DKpi label="Completed Today"  value={k ? String(k.completedToday) : "4"}   sub={k ? "—" : "—"}        color="#16A34A" icon={CheckCircle}   />,
-        <DKpi label="Delayed Dispatch" value={k ? String(k.delayedDispatch) : "1"}   sub={k ? "—" : "GRP-2990 · 3h delay"}    color="#EF4444"                     icon={AlertTriangle}   />,
+        <DKpi label="Groups Active"    value={k ? String(k.groupsActive) : "8"}   sub={k ? `Today: ${k.arrivalsToday} arr, ${k.departuresToday} dep` : "Today: 3 arr, 2 dep"}    color={CAT.orange} icon={Users}         />,
+        <DKpi label="Pending Tasks"    value={k ? String(k.pendingTasks) : "12"}  sub={k ? "—" : "2 urgent · 10 normal"}   color={ERP.warning}    icon={ClipboardList}   />,
+        <DKpi label="Completed Today"  value={k ? String(k.completedToday) : "4"}   sub={k ? "—" : "—"}        color={ERP.success} icon={CheckCircle}   />,
+        <DKpi label="Delayed Dispatch" value={k ? String(k.delayedDispatch) : "1"}   sub={k ? "—" : "GRP-2990 · 3h delay"}    color={ERP.destructive}                     icon={AlertTriangle}   />,
       ]}
       main={
-        <DCard title="Hourly Activity — Today" sub="Arrivals vs Departures" action="Ops Control" color="#DC4E2A">
+        <DCard title="Hourly Activity — Today" sub="Arrivals vs Departures" action="Ops Control" color={CAT.orange}>
           {hrlyData.length === 0 ? (
             <EmptyState tone="light" title="No movements today" hint="Arrivals and departures appear here as flights are scheduled." />
           ) : (
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={hrlyData} margin={{ top:4, right:4, bottom:0, left:0 }} barGap={3}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,30,63,0.38)" />
-              <XAxis dataKey="h" tick={{ fill:"rgba(11,30,63,0.58)", fontSize:9 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill:"rgba(11,30,63,0.58)", fontSize:9 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={ERP.mutedSoft} />
+              <XAxis dataKey="h" tick={{ fill:ERP.muted, fontSize:9 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill:ERP.muted, fontSize:9 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CTip />} />
               <Bar dataKey="arr" name="Arrivals"   fill={DASH}      radius={[3,3,0,0]} />
-              <Bar dataKey="dep" name="Departures" fill="#F59E0B"   radius={[3,3,0,0]} />
+              <Bar dataKey="dep" name="Departures" fill={ERP.warning}   radius={[3,3,0,0]} />
             </BarChart>
           </ResponsiveContainer>
           )}
         </DCard>
       }
       side={
-        <DCard title="Pending Action Queue" color="#DC4E2A">
+        <DCard title="Pending Action Queue" color={CAT.orange}>
           <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>
       }
       widgets={[
-        <DCard title="Department Queue Depths" color="#DC4E2A">
+        <DCard title="Department Queue Depths" color={CAT.orange}>
           {deptData.length === 0
             ? <EmptyState tone="light" title="No queued work" hint="Department queues fill as tasks are raised." />
-            : deptData.map(([n,v]) => <MBar key={n as string} label={n as string} value={v as number} max={deptMax} color="#DC4E2A" fmt={v=>`${v} tasks`} />)}
+            : deptData.map(([n,v]) => <MBar key={n as string} label={n as string} value={v as number} max={deptMax} color={CAT.orange} fmt={v=>`${v} tasks`} />)}
         </DCard>,
-        <DCard title="Today's Flight Schedule" color="#DC4E2A">
+        <DCard title="Today's Flight Schedule" color={CAT.orange}>
           <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
         <DCard title="Visa Pipeline Backlog" sub="Mutamer states · drill to Visa Desk" action="Visa Desk" color={VISA_C}>
@@ -401,7 +399,7 @@ function OpsDash() {
                  .map((s) => (
                    <MBar key={s} label={s} value={v.pipeline[s] ?? 0} max={pipeMax} color={VISA_C} />
                  ))}
-               <div className="text-[9px] mt-2" style={{ color:"rgba(11,30,63,0.50)" }}>
+               <div className="text-[9px] mt-2" style={{ color:ERP.muted }}>
                  Not issued {v.backlog.notIssued} · Bio backlog {v.backlog.biometricNotIssued} · LS red {v.longStay.redCards}
                </div>
              </>
@@ -427,15 +425,15 @@ function VisaDash() {
     <DashFrame
       kpis={[
         <DKpi label="Not Issued" value={v ? String(v.backlog.notIssued) : "—"} sub="Mutamers still open" color={VISA_C} icon={FileCheck} />,
-        <DKpi label="Biometric Backlog" value={v ? String(v.backlog.biometricNotIssued) : "—"} sub="Registered · visa not issued" color="#B45309" icon={UserCheck} />,
+        <DKpi label="Biometric Backlog" value={v ? String(v.backlog.biometricNotIssued) : "—"} sub="Registered · visa not issued" color={ERP.warning} icon={UserCheck} />,
         <DKpi
           label={`Arriving ≤${v?.backlog.arrivingSoon.days ?? 7}d`}
           value={v ? String(v.backlog.arrivingSoon.groups) : "—"}
           sub={v ? `${v.backlog.arrivingSoon.mutamersNotIssued} mutamers not issued` : "Groups still not issued"}
-          color="#DC4E2A"
+          color={CAT.orange}
           icon={Plane}
         />,
-        <DKpi label="Long Stay Red Cards" value={v ? String(v.longStay.redCards) : "—"} sub={v ? `DUE ${v.longStay.due} · ESC ${v.longStay.escalated}` : "Day-85 / day-90"} color="#EF4444" icon={ShieldAlert} />,
+        <DKpi label="Long Stay Red Cards" value={v ? String(v.longStay.redCards) : "—"} sub={v ? `DUE ${v.longStay.due} · ESC ${v.longStay.escalated}` : "Day-85 / day-90"} color={ERP.destructive} icon={ShieldAlert} />,
       ]}
       main={
         <DCard title="Active Visa Pipeline" sub="Mutamer counts by pipeline state" action="Visa Desk" color={VISA_C}>
@@ -445,7 +443,7 @@ function VisaDash() {
             <EmptyState tone="light" title="No visa data" hint="Mutamer pipeline counts appear once passengers are on the desk." />
           ) : (
             VISA_PIPELINE_ORDER.map((s) => (
-              <MBar key={s} label={s.replace(/_/g, " ")} value={v.pipeline[s] ?? 0} max={pipeMax} color={s === "REJECTED" || s === "REJECTED_CLOSED" ? "#EF4444" : VISA_C} />
+              <MBar key={s} label={s.replace(/_/g, " ")} value={v.pipeline[s] ?? 0} max={pipeMax} color={s === "REJECTED" || s === "REJECTED_CLOSED" ? ERP.destructive : VISA_C} />
             ))
           )}
         </DCard>
@@ -459,65 +457,65 @@ function VisaDash() {
               <div className="text-3xl font-black mb-1" style={{ color:VISA_C, fontFamily:"var(--font-mono)" }}>
                 {v.mofa.completePercent}%
               </div>
-              <div className="text-[10px] mb-3" style={{ color:"rgba(11,30,63,0.66)" }}>
+              <div className="text-[10px] mb-3" style={{ color:ERP.muted }}>
                 {v.mofa.issuedWithMofa} of {v.mofa.issuedTotal} issued · pending {v.mofa.pendingPercent}%
               </div>
-              <MBar label="Complete" value={v.mofa.issuedWithMofa} max={Math.max(1, v.mofa.issuedTotal)} color="#16A34A" />
-              <MBar label="Pending" value={Math.max(0, v.mofa.issuedTotal - v.mofa.issuedWithMofa)} max={Math.max(1, v.mofa.issuedTotal)} color="#B45309" />
-              <p className="text-[9px] mt-3" style={{ color:"rgba(11,30,63,0.50)" }}>{v.mofa.note}</p>
+              <MBar label="Complete" value={v.mofa.issuedWithMofa} max={Math.max(1, v.mofa.issuedTotal)} color={ERP.success} />
+              <MBar label="Pending" value={Math.max(0, v.mofa.issuedTotal - v.mofa.issuedWithMofa)} max={Math.max(1, v.mofa.issuedTotal)} color={ERP.warning} />
+              <p className="text-[9px] mt-3" style={{ color:ERP.muted }}>{v.mofa.note}</p>
             </>
           )}
         </DCard>
       }
       widgets={[
-        <DCard title="Long Stay Red Cards" sub="Day-85 due · Day-90 escalated" action="Long Stay" color="#EF4444">
+        <DCard title="Long Stay Red Cards" sub="Day-85 due · Day-90 escalated" action="Long Stay" color={ERP.destructive}>
           {!v ? (
             <EmptyState tone="light" title="No Long Stay figures" hint="Red cards come from the Day-85 compliance pack on LongStay." />
           ) : (
             <>
-              <MBar label="Day-85 Due" value={v.longStay.due} max={Math.max(1, v.longStay.total)} color="#DC2626" />
-              <MBar label="Day-90 Escalated" value={v.longStay.escalated} max={Math.max(1, v.longStay.total)} color="#991B1B" />
-              <MBar label="Approaching" value={v.longStay.approaching} max={Math.max(1, v.longStay.total)} color="#B45309" />
-              <MBar label="Resolved" value={v.longStay.resolved} max={Math.max(1, v.longStay.total)} color="#16A34A" />
-              <div className="text-[9px] mt-2" style={{ color:"rgba(11,30,63,0.50)" }}>
+              <MBar label="Day-85 Due" value={v.longStay.due} max={Math.max(1, v.longStay.total)} color={ERP.destructive} />
+              <MBar label="Day-90 Escalated" value={v.longStay.escalated} max={Math.max(1, v.longStay.total)} color={ERP.destructive} />
+              <MBar label="Approaching" value={v.longStay.approaching} max={Math.max(1, v.longStay.total)} color={ERP.warning} />
+              <MBar label="Resolved" value={v.longStay.resolved} max={Math.max(1, v.longStay.total)} color={ERP.success} />
+              <div className="text-[9px] mt-2" style={{ color:ERP.muted }}>
                 Host complete {v.longStay.hostCompletePercent}% ({v.longStay.hostComplete}/{v.longStay.total}) · red cards {v.longStay.redCards}
               </div>
             </>
           )}
         </DCard>,
-        <DCard title="Gate Readiness" sub="Active groups · T001-09 gates" action="Group Master" color="#DC4E2A">
+        <DCard title="Gate Readiness" sub="Active groups · T001-09 gates" action="Group Master" color={CAT.orange}>
           {!v ? (
             <EmptyState tone="light" title="No gate figures" hint="gateVisa / package / payment / bill rollup over active groups." />
           ) : (
             <>
-              <MBar label="Ready (all gates)" value={v.gates.ready} max={gateMax} color="#16A34A" />
+              <MBar label="Ready (all gates)" value={v.gates.ready} max={gateMax} color={ERP.success} />
               <MBar label="Waiting Visa" value={v.gates.waitingVisa} max={gateMax} color={VISA_C} />
-              <MBar label="Waiting Package" value={v.gates.waitingPackage} max={gateMax} color="#2563EB" />
-              <MBar label="Waiting Payment" value={v.gates.waitingPayment} max={gateMax} color="#B45309" />
-              <MBar label="Waiting Bill" value={v.gates.waitingBill} max={gateMax} color="#9333EA" />
-              <div className="text-[9px] mt-2" style={{ color:"rgba(11,30,63,0.50)" }}>
+              <MBar label="Waiting Package" value={v.gates.waitingPackage} max={gateMax} color={ERP.info} />
+              <MBar label="Waiting Payment" value={v.gates.waitingPayment} max={gateMax} color={ERP.warning} />
+              <MBar label="Waiting Bill" value={v.gates.waitingBill} max={gateMax} color={CAT.purple} />
+              <div className="text-[9px] mt-2" style={{ color:ERP.muted }}>
                 {v.gates.activeGroups} active groups
               </div>
             </>
           )}
         </DCard>,
-        <DCard title="Biometric & Arrival Risk" sub="Ops Command backlog" action="Visa Desk" color="#B45309">
+        <DCard title="Biometric & Arrival Risk" sub="Ops Command backlog" action="Visa Desk" color={ERP.warning}>
           {!v ? (
             <EmptyState tone="light" title="No backlog figures" hint="Biometric registered / arriving ≤7d not issued." />
           ) : (
             <>
-              <div className="rounded-xl p-3 mb-2" style={{ backgroundColor:"#FBFCFD", border:"1px solid rgba(180,83,9,0.20)" }}>
-                <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>Biometric registered, visa not issued</div>
-                <div className="text-xl font-black" style={{ color:"#B45309", fontFamily:"var(--font-mono)" }}>{v.backlog.biometricNotIssued}</div>
+              <div className="rounded-xl p-3 mb-2" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${erpAlpha(ERP.warning, 20)}` }}>
+                <div className="text-[10px]" style={{ color:ERP.muted }}>Biometric registered, visa not issued</div>
+                <div className="text-xl font-black" style={{ color:ERP.warning, fontFamily:"var(--font-mono)" }}>{v.backlog.biometricNotIssued}</div>
               </div>
-              <div className="rounded-xl p-3 mb-2" style={{ backgroundColor:"#FBFCFD", border:"1px solid rgba(220,78,42,0.20)" }}>
-                <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>Groups arriving ≤{v.backlog.arrivingSoon.days}d still not issued</div>
-                <div className="text-xl font-black" style={{ color:"#DC4E2A", fontFamily:"var(--font-mono)" }}>{v.backlog.arrivingSoon.groups}</div>
-                <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.50)" }}>{v.backlog.arrivingSoon.mutamersNotIssued} mutamers</div>
+              <div className="rounded-xl p-3 mb-2" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${erpAlpha(CAT.orange, 20)}` }}>
+                <div className="text-[10px]" style={{ color:ERP.muted }}>Groups arriving ≤{v.backlog.arrivingSoon.days}d still not issued</div>
+                <div className="text-xl font-black" style={{ color:CAT.orange, fontFamily:"var(--font-mono)" }}>{v.backlog.arrivingSoon.groups}</div>
+                <div className="text-[9px] mt-0.5" style={{ color:ERP.muted }}>{v.backlog.arrivingSoon.mutamersNotIssued} mutamers</div>
               </div>
-              <div className="rounded-xl p-3" style={{ backgroundColor:"#FBFCFD", border:"1px solid rgba(239,68,68,0.20)" }}>
-                <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>Rejected (open)</div>
-                <div className="text-xl font-black" style={{ color:"#EF4444", fontFamily:"var(--font-mono)" }}>{v.backlog.rejectedOpen}</div>
+              <div className="rounded-xl p-3" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${erpAlpha(ERP.destructive, 20)}` }}>
+                <div className="text-[10px]" style={{ color:ERP.muted }}>Rejected (open)</div>
+                <div className="text-xl font-black" style={{ color:ERP.destructive, fontFamily:"var(--font-mono)" }}>{v.backlog.rejectedOpen}</div>
               </div>
             </>
           )}
@@ -529,7 +527,7 @@ function VisaDash() {
 
 // ─── 3. Finance Dashboard ─────────────────────────────────────────────────────
 
-const FIN_AR = [["0–30 days",850,"#16A34A"],["31–60 days",620,"#B45309"],["61–90 days",450,"#FB923C"],["90+ days",220,"#EF4444"]];
+const FIN_AR = [["0–30 days",850,ERP.success],["31–60 days",620,ERP.warning],["61–90 days",450,CAT.orange],["90+ days",220,ERP.destructive]];
 
 function FinanceDash() {
   const { data: live, loading, error, refetch } = useDash<FinDashData>("/dashboards/finance");
@@ -540,7 +538,7 @@ function FinanceDash() {
   const cashData = live
     ? live.cashTrend.map(c => ({ m: monthLabel(c.month), cash: Math.round(c.total / 1000) }))
     : FIN_CASH;
-  const AR_COLORS = ["#16A34A","#B45309","#FB923C","#EF4444"];
+  const AR_COLORS = [ERP.success,ERP.warning,CAT.orange,ERP.destructive];
   const finAr: [string, number, string][] = live
     ? live.arAging.map((a, i) => [a.bucket, Math.round(a.amount / 1000), AR_COLORS[i] ?? DASH])
     : FIN_AR as [string, number, string][];
@@ -549,13 +547,13 @@ function FinanceDash() {
   return (
     <DashFrame
       kpis={[
-        <DKpi label="Cash Position"        value={k ? fmtSAR(k.cashPosition) : "—"} sub={k ? "—" : "—"}      color="#16A34A" icon={CreditCard}   />,
-        <DKpi label="Accounts Receivable"  value={k ? fmtSAR(k.accountsReceivable) : "—"} sub={k ? "—" : "—"} color="#B45309"     icon={ArrowDownLeft} />,
-        <DKpi label="Accounts Payable"     value={k ? fmtSAR(k.accountsPayable) : "—"}  sub={k ? "—" : "—"} color="#DC2626"                   icon={ArrowUpRight}  />,
-        <DKpi label="YTD Net Profit"       value={k ? fmtSAR(k.netProfit) : "—"} sub={k ? `Margin: ${k.netMargin.toFixed(1)}%` : "Margin: 19.3%"}         color="#16A34A" icon={TrendingUp}   />,
+        <DKpi label="Cash Position"        value={k ? fmtSAR(k.cashPosition) : "—"} sub={k ? "—" : "—"}      color={ERP.success} icon={CreditCard}   />,
+        <DKpi label="Accounts Receivable"  value={k ? fmtSAR(k.accountsReceivable) : "—"} sub={k ? "—" : "—"} color={ERP.warning}     icon={ArrowDownLeft} />,
+        <DKpi label="Accounts Payable"     value={k ? fmtSAR(k.accountsPayable) : "—"}  sub={k ? "—" : "—"} color={ERP.destructive}                   icon={ArrowUpRight}  />,
+        <DKpi label="YTD Net Profit"       value={k ? fmtSAR(k.netProfit) : "—"} sub={k ? `Margin: ${k.netMargin.toFixed(1)}%` : "Margin: 19.3%"}         color={ERP.success} icon={TrendingUp}   />,
       ]}
       main={
-        <DCard title="Cash Position — 2025" sub="Monthly closing balance (SAR K)" action="Finance ERP" color="#16A34A">
+        <DCard title="Cash Position — 2025" sub="Monthly closing balance (SAR K)" action="Finance ERP" color={ERP.success}>
           {cashData.length === 0 ? (
             <EmptyState tone="light" title="No cash movement yet" hint="Closing balances appear once payments are recorded." />
           ) : (
@@ -563,22 +561,22 @@ function FinanceDash() {
             <AreaChart data={cashData} margin={{ top:4, right:4, bottom:0, left:0 }}>
               <defs>
                 <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#16A34A" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#16A34A" stopOpacity={0} />
+                  <stop offset="5%"  stopColor={ERP.success} stopOpacity={0.25} />
+                  <stop offset="95%" stopColor={ERP.success} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,30,63,0.38)" />
-              <XAxis dataKey="m" tick={{ fill:"rgba(11,30,63,0.58)", fontSize:9 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill:"rgba(11,30,63,0.58)", fontSize:9 }} axisLine={false} tickLine={false} tickFormatter={v=>`${v}K`} />
+              <CartesianGrid strokeDasharray="3 3" stroke={ERP.mutedSoft} />
+              <XAxis dataKey="m" tick={{ fill:ERP.muted, fontSize:9 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill:ERP.muted, fontSize:9 }} axisLine={false} tickLine={false} tickFormatter={v=>`${v}K`} />
               <Tooltip content={<CTip prefix="SAR " />} />
-              <Area type="monotone" dataKey="cash" name="Cash (SAR K)" stroke="#16A34A" strokeWidth={2.5} fill="url(#cashGrad)" />
+              <Area type="monotone" dataKey="cash" name="Cash (SAR K)" stroke={ERP.success} strokeWidth={2.5} fill="url(#cashGrad)" />
             </AreaChart>
           </ResponsiveContainer>
           )}
         </DCard>
       }
       side={
-        <DCard title="AR Aging Summary" sub={`Total: SAR ${finArTotalRaw.toLocaleString()}`} action="AR Desk" color="#16A34A">
+        <DCard title="AR Aging Summary" sub={`Total: SAR ${finArTotalRaw.toLocaleString()}`} action="AR Desk" color={ERP.success}>
           <div className="space-y-3 pt-1">
             {finAr.length === 0 && (
               <EmptyState tone="light" title="Nothing outstanding" hint="Unpaid invoices are bucketed here by age." />
@@ -589,10 +587,10 @@ function FinanceDash() {
               return (
                 <div key={l as string}>
                   <div className="flex justify-between mb-1.5 text-[10px]">
-                    <span style={{ color:"rgba(11,30,63,0.76)" }}>{l}</span>
+                    <span style={{ color:ERP.navy }}>{l}</span>
                     <span className="font-bold font-mono" style={{ color:c as string, fontFamily:"var(--font-mono)" }}>SAR {(v as number).toLocaleString()}</span>
                   </div>
-                  <div className="h-1.5 rounded-full" style={{ backgroundColor:"#F5F7FA" }}>
+                  <div className="h-1.5 rounded-full" style={{ backgroundColor:ERP.surfaceSoft }}>
                     <div className="h-full rounded-full" style={{ width:`${pct}%`, backgroundColor:c as string }} />
                   </div>
                 </div>
@@ -602,13 +600,13 @@ function FinanceDash() {
         </DCard>
       }
       widgets={[
-        <DCard title="Revenue by Category" color="#16A34A">
+        <DCard title="Revenue by Category" color={ERP.success}>
           <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
-        <DCard title="AP Aging" color="#16A34A">
+        <DCard title="AP Aging" color={ERP.success}>
           <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
-        <DCard title="Recent Transactions" color="#16A34A">
+        <DCard title="Recent Transactions" color={ERP.success}>
           <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
       ]}
@@ -619,8 +617,8 @@ function FinanceDash() {
 // ─── 4. Dispatch Dashboard ────────────────────────────────────────────────────
 
 const DSP_MAP: Record<string,[string,string]> = {
-  ASSIGNED:  ["#B45309","ASSIGNED"], EN_ROUTE: [DASH,"EN ROUTE"],
-  DELIVERED: ["#16A34A","DELIVERED"], DELAYED: ["#EF4444","DELAYED"],
+  ASSIGNED:  [ERP.warning,"ASSIGNED"], EN_ROUTE: [DASH,"EN ROUTE"],
+  DELIVERED: [ERP.success,"DELIVERED"], DELAYED: [ERP.destructive,"DELAYED"],
 };
 const DISPATCHES = [
   { id:"DSP-001", from:"KAIA T1", to:"Jabal Omar Hyatt",  driver:"Ahmed Hassan",  pax:47, status:"EN_ROUTE",  eta:"14m", pct:65 },
@@ -652,13 +650,13 @@ function DispatchDash() {
   return (
     <DashFrame
       kpis={[
-        <DKpi label="Active Dispatches"  value={k ? String(k.activeDispatches) : "6"}   sub={k ? "—" : "3 en route · 1 assigned"}  color="#EA580C" icon={Truck}       />,
-        <DKpi label="Delivered Today"    value={k ? String(k.deliveredToday) : "2"}   sub={k ? "—" : "—"}          color="#16A34A" icon={CheckCircle} />,
+        <DKpi label="Active Dispatches"  value={k ? String(k.activeDispatches) : "6"}   sub={k ? "—" : "3 en route · 1 assigned"}  color={CAT.orange} icon={Truck}       />,
+        <DKpi label="Delivered Today"    value={k ? String(k.deliveredToday) : "2"}   sub={k ? "—" : "—"}          color={ERP.success} icon={CheckCircle} />,
         <DKpi label="Total Pax Moving"   value={k ? String(k.totalPaxMoving) : "194"} sub={k ? "—" : "Across 6 vehicles"}         color={DASH} icon={Users}       />,
-        <DKpi label="Delayed"            value={k ? String(k.delayed) : "1"}   sub={k ? "—" : "DSP-006 · +25m SLA breach"} color="#EF4444"                        icon={AlertTriangle} />,
+        <DKpi label="Delayed"            value={k ? String(k.delayed) : "1"}   sub={k ? "—" : "DSP-006 · +25m SLA breach"} color={ERP.destructive}                        icon={AlertTriangle} />,
       ]}
       main={
-        <DCard title="Live Dispatch Status" sub="All active vehicles" action="Ops Control" color="#EA580C">
+        <DCard title="Live Dispatch Status" sub="All active vehicles" action="Ops Control" color={CAT.orange}>
           <div className="space-y-3">
             {dispatches.length === 0 && (
               <EmptyState tone="light" title="No active dispatches" hint="Vehicles appear here once a transport order is assigned." />
@@ -666,16 +664,16 @@ function DispatchDash() {
             {dispatches.map(d => {
               const [sc] = DSP_MAP[d.status] ?? [DASH];
               return (
-                <div key={d.id} className="rounded-xl p-3" style={{ backgroundColor:"#FBFCFD", border:`1px solid rgba(11,30,63,0.11)`, borderLeft:`3px solid ${sc}` }}>
+                <div key={d.id} className="rounded-xl p-3" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}`, borderLeft:`3px solid ${sc}` }}>
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-[9px] font-black" style={{ color:"#EA580C", fontFamily:"var(--font-mono)" }}>{d.id}</span>
-                    <span className="flex-1 min-w-0 truncate text-[10px] font-semibold text-[#0B1E3F]" title={`${d.from} → ${d.to}`}>{d.from} → {d.to}</span>
+                    <span className="text-[9px] font-black" style={{ color:CAT.orange, fontFamily:"var(--font-mono)" }}>{d.id}</span>
+                    <span className="flex-1 min-w-0 truncate text-[10px] font-semibold text-[color:var(--erp-text-strong)]" title={`${d.from} → ${d.to}`}>{d.from} → {d.to}</span>
                     <SPill s={d.status} map={DSP_MAP} />
                     <span className="text-[9px] font-bold font-mono" style={{ color:sc, fontFamily:"var(--font-mono)" }}>ETA {d.eta}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-[9px] min-w-0 truncate" title={`${d.driver} · ${d.pax} pax`} style={{ color:"rgba(11,30,63,0.58)" }}>{d.driver} · {d.pax} pax</span>
-                    <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor:"#F5F7FA" }}>
+                    <span className="text-[9px] min-w-0 truncate" title={`${d.driver} · ${d.pax} pax`} style={{ color:ERP.muted }}>{d.driver} · {d.pax} pax</span>
+                    <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor:ERP.surfaceSoft }}>
                       <div className="h-full rounded-full" style={{ width:`${d.pct}%`, backgroundColor:sc }} />
                     </div>
                     <span className="text-[9px] font-bold" style={{ color:sc }}>{d.pct}%</span>
@@ -687,18 +685,18 @@ function DispatchDash() {
         </DCard>
       }
       side={
-        <DCard title="Driver Status" color="#EA580C">
+        <DCard title="Driver Status" color={CAT.orange}>
           <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>
       }
       widgets={[
-        <DCard title="Vehicle Utilization" color="#EA580C">
+        <DCard title="Vehicle Utilization" color={CAT.orange}>
           <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
-        <DCard title="SLA Compliance — Today" color="#EA580C">
+        <DCard title="SLA Compliance — Today" color={CAT.orange}>
           <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
-        <DCard title="Route Performance" color="#EA580C">
+        <DCard title="Route Performance" color={CAT.orange}>
           <EmptyState tone="light" title="প্রস্তুত নয়" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
         </DCard>,
       ]}
@@ -714,8 +712,8 @@ const ARRIVALS = [
   { flight:"PK-901", airline:"PIA",      from:"KHI", pax:67, status:"SCHEDULED", time:"15:40", grp:"GRP-3301", bus:"—",     cleared:0  },
 ];
 const ARR_MAP: Record<string,[string,string]> = {
-  AT_GATE:["#16A34A","AT GATE"], EN_ROUTE:[DASH,"EN ROUTE"], SCHEDULED:["#9CA3AF","SCHEDULED"],
-  IMMIGRATION:["#B45309","IMMIGRATION"], BAGGAGE:["#F59E0B","BAGGAGE"], DELIVERED:["#16A34A","DELIVERED"],
+  AT_GATE:[ERP.success,"AT GATE"], EN_ROUTE:[DASH,"EN ROUTE"], SCHEDULED:[ERP.muted,"SCHEDULED"],
+  IMMIGRATION:[ERP.warning,"IMMIGRATION"], BAGGAGE:[ERP.warning,"BAGGAGE"], DELIVERED:[ERP.success,"DELIVERED"],
 };
 
 function ArrivalDash() {
@@ -743,9 +741,9 @@ function ArrivalDash() {
     <DashFrame
       kpis={[
         <DKpi label="Flights Today"    value={k ? String(k.flights) : "3"}          sub={k ? "—" : "1 landed · 1 inbound · 1 later"} color={DASH}      icon={Plane}         />,
-        <DKpi label="Total Inbound Pax"value={String(totalPax)} sub={k ? "—" : "Across 3 flights"}         color="#2563EB" icon={Users}      />,
-        <DKpi label="Cleared & Bussed" value={String(cleared)}  sub={`${totalPax ? Math.round(cleared/totalPax*100) : 0}% of today`} color="#16A34A" icon={CheckCircle} />,
-        <DKpi label="Pending Clearance"value={k ? String(k.pendingPax) : String(totalPax-cleared)} sub={k ? "—" : "2 flights not yet landed"} color="#B45309" icon={Clock} />,
+        <DKpi label="Total Inbound Pax"value={String(totalPax)} sub={k ? "—" : "Across 3 flights"}         color={ERP.info} icon={Users}      />,
+        <DKpi label="Cleared & Bussed" value={String(cleared)}  sub={`${totalPax ? Math.round(cleared/totalPax*100) : 0}% of today`} color={ERP.success} icon={CheckCircle} />,
+        <DKpi label="Pending Clearance"value={k ? String(k.pendingPax) : String(totalPax-cleared)} sub={k ? "—" : "2 flights not yet landed"} color={ERP.warning} icon={Clock} />,
       ]}
       main={
         <DCard title="Today's Arrivals" sub="16 Jul 2025 · KAIA Jeddah" action="Live Board" color={DASH}>
@@ -756,25 +754,25 @@ function ArrivalDash() {
             {arrivals.map(a => {
               const [sc,sl] = ARR_MAP[a.status] ?? [DASH, a.status];
               return (
-                <div key={a.flight} className="rounded-xl p-4" style={{ backgroundColor:"#FBFCFD", border:`1px solid rgba(11,30,63,0.11)`, borderLeft:`3px solid ${sc}` }}>
+                <div key={a.flight} className="rounded-xl p-4" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}`, borderLeft:`3px solid ${sc}` }}>
                   <div className="flex items-center gap-3 mb-2">
                     <Plane size={14} style={{ color:sc }} />
-                    <span className="text-base font-black text-[#0B1E3F]">{a.flight}</span>
-                    <span className="text-xs min-w-0 truncate" title={`${a.airline} · ${a.from}`} style={{ color:"rgba(11,30,63,0.66)" }}>{a.airline} · {a.from}</span>
+                    <span className="text-base font-black text-[color:var(--erp-text-strong)]">{a.flight}</span>
+                    <span className="text-xs min-w-0 truncate" title={`${a.airline} · ${a.from}`} style={{ color:ERP.muted }}>{a.airline} · {a.from}</span>
                     <span className="ml-auto shrink-0 text-xl font-black tabular-nums" style={{ color:sc, fontFamily:"var(--font-mono)" }}>{a.pax}</span>
-                    <span className="text-xs shrink-0" style={{ color:"rgba(11,30,63,0.58)" }}>pax</span>
+                    <span className="text-xs shrink-0" style={{ color:ERP.muted }}>pax</span>
                     <SPill s={a.status} map={ARR_MAP} />
                   </div>
                   <div className="flex items-center gap-4 text-[10px]">
-                    <span style={{ color:"rgba(11,30,63,0.58)" }}>ETD {a.time}</span>
-                    <span style={{ color:"rgba(11,30,63,0.58)" }}>Group: <span className="text-[#0B1E3F] font-bold">{a.grp}</span></span>
-                    <span style={{ color:"rgba(11,30,63,0.58)" }}>Bus: <span className="text-[#0B1E3F] font-bold">{a.bus}</span></span>
+                    <span style={{ color:ERP.muted }}>ETD {a.time}</span>
+                    <span style={{ color:ERP.muted }}>Group: <span className="text-[color:var(--erp-text-strong)] font-bold">{a.grp}</span></span>
+                    <span style={{ color:ERP.muted }}>Bus: <span className="text-[color:var(--erp-text-strong)] font-bold">{a.bus}</span></span>
                     {a.cleared > 0 && a.pax > 0 && (
                       <div className="flex-1 flex items-center gap-2">
-                        <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor:"#F5F7FA" }}>
-                          <div className="h-full rounded-full" style={{ width:`${a.cleared/a.pax*100}%`, backgroundColor:"#16A34A" }} />
+                        <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor:ERP.surfaceSoft }}>
+                          <div className="h-full rounded-full" style={{ width:`${a.cleared/a.pax*100}%`, backgroundColor:ERP.success }} />
                         </div>
-                        <span className="font-bold" style={{ color:"#16A34A" }}>{a.cleared}/{a.pax} cleared</span>
+                        <span className="font-bold" style={{ color:ERP.success }}>{a.cleared}/{a.pax} cleared</span>
                       </div>
                     )}
                   </div>
@@ -811,8 +809,8 @@ const DEPARTURES = [
   { flight:"BG-089", airline:"Biman BD", to:"CGP", pax:26, status:"CHECK_IN",  time:"17:15", grp:"GRP-2101", gate:"H04", checkedIn:14 },
 ];
 const DEP_MAP: Record<string,[string,string]> = {
-  CHECK_IN:["#B45309","CHECK-IN"], BOARDING:[DASH,"BOARDING"],
-  DEPARTED:["#16A34A","DEPARTED"], STANDBY:["#9CA3AF","STANDBY"], DELAYED:["#EF4444","DELAYED"],
+  CHECK_IN:[ERP.warning,"CHECK-IN"], BOARDING:[DASH,"BOARDING"],
+  DEPARTED:[ERP.success,"DEPARTED"], STANDBY:[ERP.muted,"STANDBY"], DELAYED:[ERP.destructive,"DELAYED"],
 };
 
 function DepartureDash() {
@@ -838,9 +836,9 @@ function DepartureDash() {
     <DashFrame
       kpis={[
         <DKpi label="Flights Departing"  value={k ? String(k.flights) : "2"}   sub={k ? "—" : "1 boarding · 1 check-in"}    color={DASH}    icon={Plane}       />,
-        <DKpi label="Total Outbound Pax" value={k ? String(k.totalPax) : "64"}  sub={k ? "—" : "Across 2 groups"}            color="#0D9488" icon={Users}       />,
-        <DKpi label="Check-In Completed" value={k ? String(k.processedPax) : "52"}  sub={k ? "—" : "81% of today's departures"}  color="#16A34A" icon={CheckCircle} />,
-        <DKpi label="Gates Open"         value="2"   sub="G12 (SV-801) · H04 (BG-089)"color="#B45309"                   icon={ArrowUpRight}  />,
+        <DKpi label="Total Outbound Pax" value={k ? String(k.totalPax) : "64"}  sub={k ? "—" : "Across 2 groups"}            color={CAT.teal} icon={Users}       />,
+        <DKpi label="Check-In Completed" value={k ? String(k.processedPax) : "52"}  sub={k ? "—" : "81% of today's departures"}  color={ERP.success} icon={CheckCircle} />,
+        <DKpi label="Gates Open"         value="2"   sub="G12 (SV-801) · H04 (BG-089)" color={ERP.warning}                   icon={ArrowUpRight}  />,
       ]}
       main={
         <DCard title="Today's Departures" sub="16 Jul 2025 · KAIA Jeddah" action="Live Board" color={DASH}>
@@ -851,23 +849,23 @@ function DepartureDash() {
             {departures.map(d => {
               const [sc] = DEP_MAP[d.status] ?? [DASH];
               return (
-                <div key={d.flight} className="rounded-xl p-4" style={{ backgroundColor:"#FBFCFD", border:`1px solid rgba(11,30,63,0.11)`, borderLeft:`3px solid ${sc}` }}>
+                <div key={d.flight} className="rounded-xl p-4" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}`, borderLeft:`3px solid ${sc}` }}>
                   <div className="flex items-center gap-3 mb-2">
                     <Plane size={14} style={{ color:sc, transform:"rotate(45deg)" }} />
-                    <span className="text-base font-black text-[#0B1E3F]">{d.flight}</span>
-                    <span className="text-xs min-w-0 truncate" title={`${d.airline} → ${d.to}`} style={{ color:"rgba(11,30,63,0.66)" }}>{d.airline} → {d.to}</span>
+                    <span className="text-base font-black text-[color:var(--erp-text-strong)]">{d.flight}</span>
+                    <span className="text-xs min-w-0 truncate" title={`${d.airline} → ${d.to}`} style={{ color:ERP.muted }}>{d.airline} → {d.to}</span>
                     <span className="ml-auto shrink-0 text-xl font-black tabular-nums" style={{ color:sc, fontFamily:"var(--font-mono)" }}>{d.pax}</span>
-                    <span className="text-xs shrink-0" style={{ color:"rgba(11,30,63,0.58)" }}>pax</span>
+                    <span className="text-xs shrink-0" style={{ color:ERP.muted }}>pax</span>
                     <SPill s={d.status} map={DEP_MAP} />
                   </div>
                   <div className="flex items-center gap-4 text-[10px] mb-2">
-                    <span style={{ color:"rgba(11,30,63,0.58)" }}>STD {d.time}</span>
-                    <span style={{ color:"rgba(11,30,63,0.58)" }}>Gate: <span className="font-bold text-[#0B1E3F]">{d.gate}</span></span>
-                    <span style={{ color:"rgba(11,30,63,0.58)" }}>Group: <span className="font-bold text-[#0B1E3F]">{d.grp}</span></span>
+                    <span style={{ color:ERP.muted }}>STD {d.time}</span>
+                    <span style={{ color:ERP.muted }}>Gate: <span className="font-bold text-[color:var(--erp-text-strong)]">{d.gate}</span></span>
+                    <span style={{ color:ERP.muted }}>Group: <span className="font-bold text-[color:var(--erp-text-strong)]">{d.grp}</span></span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>Check-In</span>
-                    <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor:"#F5F7FA" }}>
+                    <span className="text-[9px]" style={{ color:ERP.muted }}>Check-In</span>
+                    <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor:ERP.surfaceSoft }}>
                       <div className="h-full rounded-full" style={{ width:`${d.pax ? d.checkedIn/d.pax*100 : 0}%`, backgroundColor:sc }} />
                     </div>
                     <span className="text-[9px] font-bold shrink-0 tabular-nums" style={{ color:sc }}>{d.checkedIn}/{d.pax}</span>
@@ -900,7 +898,7 @@ function DepartureDash() {
 
 // ─── 7. Agent Dashboard ───────────────────────────────────────────────────────
 
-const AGT_C = "#9333EA";
+const AGT_C = CAT.purple;
 
 function AgentDash() {
   const { data: live, loading, error, refetch } = useDash<AgentDashData>("/dashboards/agent");
@@ -911,11 +909,11 @@ function AgentDash() {
     ? live.paxTrend.map(p => ({ m: monthLabel(p.month), pax: p.pax }))
     : AGT_TREND;
   const agentGroups: [string,string,string,string][] = live
-    ? live.groups.map(g => [g.code, `${g.paxCount} pax`, g.opsStatus || g.status, g.status === "COMPLETED" ? "#16A34A" : "#B45309"] as [string,string,string,string])
-    : [["GRP-2891","47 pax · Jabal Omar","In Progress","#16A34A"],["GRP-2401","28 pax · Makkah Towers","In Progress","#B45309"]];
+    ? live.groups.map(g => [g.code, `${g.paxCount} pax`, g.opsStatus || g.status, g.status === "COMPLETED" ? ERP.success : ERP.warning] as [string,string,string,string])
+    : [["GRP-2891","47 pax · Jabal Omar","In Progress",ERP.success],["GRP-2401","28 pax · Makkah Towers","In Progress",ERP.warning]];
   const agentInvoices: [string,string,string,string][] = live
-    ? live.invoices.map(v => [v.code, `SAR ${v.total.toLocaleString()}`, v.status === "PAID" ? "Paid" : "Outstanding", v.status === "PAID" ? "#16A34A" : "#B45309"] as [string,string,string,string])
-    : [["INV-1446-0091","SAR 323,725","Outstanding","#B45309"],["INV-1446-0087","SAR 202,400","Paid","#16A34A"],["INV-1446-0082","SAR 448,500","Paid","#16A34A"]];
+    ? live.invoices.map(v => [v.code, `SAR ${v.total.toLocaleString()}`, v.status === "PAID" ? "Paid" : "Outstanding", v.status === "PAID" ? ERP.success : ERP.warning] as [string,string,string,string])
+    : [["INV-1446-0091","SAR 323,725","Outstanding",ERP.warning],["INV-1446-0087","SAR 202,400","Paid",ERP.success],["INV-1446-0082","SAR 448,500","Paid",ERP.success]];
   // T002-09 §12 — Agent Visa Status card (tenant-scoped pipeline from /dashboards/agent).
   const visa = live?.visa;
   const visaMax = visa ? Math.max(1, ...VISA_PIPELINE_ORDER.map((s) => visa.pipeline[s] ?? 0)) : 1;
@@ -924,8 +922,8 @@ function AgentDash() {
       kpis={[
         <DKpi label="Wallet Balance"     value={k ? fmtSAR(k.walletBalance, k.currency) : "—"}  sub={k ? "—" : "Rashidi Travel Co."}         color={AGT_C}    icon={Wallet}      />,
         <DKpi label="Active Groups"      value={k ? String(k.activeGroups) : "2"}           sub={k ? "—" : "GRP-2891 · GRP-2401"}        color={DASH} icon={Users}      />,
-        <DKpi label="Season Groups"      value={k ? String(k.seasonGroups) : "5"}           sub="Season 1446H total"          color="#16A34A" icon={Activity}   />,
-        <DKpi label="Outstanding Inv."   value={k ? fmtSAR(k.outstandingAmount) : "—"}  sub={k ? "—" : "INV-1446-0091 · Net 30d"}    color="#B45309"                      icon={ClipboardList}/>,
+        <DKpi label="Season Groups"      value={k ? String(k.seasonGroups) : "5"}           sub="Season 1446H total"          color={ERP.success} icon={Activity}   />,
+        <DKpi label="Outstanding Inv."   value={k ? fmtSAR(k.outstandingAmount) : "—"}  sub={k ? "—" : "INV-1446-0091 · Net 30d"}    color={ERP.warning}                      icon={ClipboardList}/>,
       ]}
       main={
         <DCard title="Monthly Pax Volume — 2025" sub="Season 1446H bookings" action="All Groups" color={AGT_C}>
@@ -940,9 +938,9 @@ function AgentDash() {
                   <stop offset="95%" stopColor={AGT_C} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,30,63,0.38)" />
-              <XAxis dataKey="m" tick={{ fill:"rgba(11,30,63,0.58)", fontSize:9 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill:"rgba(11,30,63,0.58)", fontSize:9 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={ERP.mutedSoft} />
+              <XAxis dataKey="m" tick={{ fill:ERP.muted, fontSize:9 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill:ERP.muted, fontSize:9 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CTip />} />
               <Area type="monotone" dataKey="pax" name="Passengers" stroke={AGT_C} strokeWidth={2.5} fill="url(#agtGrad)" />
             </AreaChart>
@@ -960,9 +958,9 @@ function AgentDash() {
           {agentGroups.length === 0
             ? <EmptyState tone="light" title="No groups yet" hint="Your booked groups will be listed here." />
             : agentGroups.map(([g,d,s,c]) => (
-              <div key={g as string} className="rounded-xl p-3 mb-2" style={{ backgroundColor:"#FBFCFD", border:`1px solid ${c as string}20` }}>
-                <div className="flex justify-between mb-1"><span className="text-xs font-bold text-[#0B1E3F] min-w-0 truncate" title={g as string}>{g}</span><span className="text-[9px] font-black shrink-0 whitespace-nowrap" style={{ color:c as string }}>{s}</span></div>
-                <div className="text-[9px] truncate" title={d as string} style={{ color:"rgba(11,30,63,0.66)" }}>{d}</div>
+              <div key={g as string} className="rounded-xl p-3 mb-2" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${erpAlpha(c as string, 13)}` }}>
+                <div className="flex justify-between mb-1"><span className="text-xs font-bold text-[color:var(--erp-text-strong)] min-w-0 truncate" title={g as string}>{g}</span><span className="text-[9px] font-black shrink-0 whitespace-nowrap" style={{ color:c as string }}>{s}</span></div>
+                <div className="text-[9px] truncate" title={d as string} style={{ color:ERP.muted }}>{d}</div>
               </div>
             ))}
         </DCard>,
@@ -977,7 +975,7 @@ function AgentDash() {
                 .map((s) => (
                   <MBar key={s} label={s.replace(/_/g, " ")} value={visa.pipeline[s] ?? 0} max={visaMax} color={AGT_C} />
                 ))}
-              <div className="text-[9px] mt-2" style={{ color:"rgba(11,30,63,0.50)" }}>
+              <div className="text-[9px] mt-2" style={{ color:ERP.muted }}>
                 Not issued {visa.notIssued} · MOFA complete {visa.mofaCompletePercent}%
               </div>
             </>
@@ -987,9 +985,9 @@ function AgentDash() {
           {agentInvoices.length === 0
             ? <EmptyState tone="light" title="No invoices yet" hint="Invoices are listed here once they are issued." />
             : agentInvoices.map(([id,amt,s,c]) => (
-              <div key={id as string} className="py-2" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
-                <div className="flex justify-between text-[10px]"><span className="font-bold text-[#0B1E3F] min-w-0 truncate" title={id as string}>{id}</span><span className="font-black shrink-0 whitespace-nowrap" style={{ color:c as string }}>{s}</span></div>
-                <div className="text-[9px] mt-0.5 whitespace-nowrap tabular-nums" style={{ color:"rgba(11,30,63,0.66)" }}>{amt}</div>
+              <div key={id as string} className="py-2" style={{ borderBottom:`1px solid ${ERP.border}` }}>
+                <div className="flex justify-between text-[10px]"><span className="font-bold text-[color:var(--erp-text-strong)] min-w-0 truncate" title={id as string}>{id}</span><span className="font-black shrink-0 whitespace-nowrap" style={{ color:c as string }}>{s}</span></div>
+                <div className="text-[9px] mt-0.5 whitespace-nowrap tabular-nums" style={{ color:ERP.muted }}>{amt}</div>
               </div>
             ))}
         </DCard>,
@@ -1000,7 +998,7 @@ function AgentDash() {
 
 // ─── 8. Supplier Dashboard ────────────────────────────────────────────────────
 
-const SUP_C = "#F59E0B";
+const SUP_C = ERP.warning;
 
 function SupplierDash() {
   const { data: live, loading, error, refetch } = useDash<SupplierDashData>("/dashboards/supplier");
@@ -1012,8 +1010,8 @@ function SupplierDash() {
     <DashFrame
       kpis={[
         <DKpi label="Pending Bookings"   value={k ? String(k.pendingBookings) : "3"}          sub={k ? "—" : "GRP-2891, GRP-2744, GRP-3301"}  color={SUP_C}  icon={Package}     />,
-        <DKpi label="Invoices Outstanding"value={k ? fmtSAR(k.invoicesOutstanding) : "—"} sub={k ? "—" : "Jabal Omar Hyatt — 1 invoice"}  color="#B45309"   icon={ClipboardList}/>,
-        <DKpi label="This Season Revenue" value={k ? fmtSAR(k.seasonRevenue) : "—"}  sub="Hotel contract value 1446H"    color="#16A34A" icon={TrendingUp}  />,
+        <DKpi label="Invoices Outstanding"value={k ? fmtSAR(k.invoicesOutstanding) : "—"} sub={k ? "—" : "Jabal Omar Hyatt — 1 invoice"}  color={ERP.warning}   icon={ClipboardList}/>,
+        <DKpi label="This Season Revenue" value={k ? fmtSAR(k.seasonRevenue) : "—"}  sub="Hotel contract value 1446H"    color={ERP.success} icon={TrendingUp}  />,
         <DKpi label="Upcoming Services"   value={k ? String(k.upcomingServices) : "5"}         sub={k ? "—" : "—"}        color={DASH} icon={CheckCircle} />,
       ]}
       main={
@@ -1087,7 +1085,7 @@ export default function Dashboards() {
   const lazyTab = screen === "today" || screen === "ceo" || screen === "reports";
 
   return (
-    <ERPShell
+    <ErpThemeProvider theme="ds"><ERPShell
       moduleId="dashboards"
       moduleName="Dashboards"
       moduleColor={DASH}
@@ -1101,6 +1099,6 @@ export default function Dashboards() {
       <div className="h-full overflow-hidden">
         {lazyTab ? <Suspense fallback={<RouteFallback />}>{body}</Suspense> : body}
       </div>
-    </ERPShell>
+    </ERPShell></ErpThemeProvider>
   );
 }

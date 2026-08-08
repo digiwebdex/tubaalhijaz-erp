@@ -3,11 +3,12 @@ import { CheckCircle2, XCircle, CornerUpLeft, Lock, Unlock, Eye, RefreshCw, Shie
 import { ERPShell, type NavItem, type IconFC } from "../components/ERPShell";
 import { LoadingSkeleton, ErrorState, EmptyState } from "../components/States";
 import { ErpPageTemplate, ErpButton, ErpSearchBar, ErpDataTable, ErpDrawer, ErpDrawerFooterActions, ErpForm, ErpField, ErpSelect, ErpTextarea, ErpStatusChip, erpToast, type ErpColumn, type ErpStatusKind } from "../components/erp";
+import { ERP, CAT, erpAlpha, ErpThemeProvider } from "../components/erp";
 import { api, ApiError, isLoggedIn } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 
-const APR = "#0D9488";
+const APR = CAT.teal;
 interface Group { id: string; code: string; name: string; approvalStatus: string; locked: boolean; lockType: string | null; paxCount: number; tenant?: { name: string } | null }
 interface Sig { id: string; level: number; approverUserId: string; signatureHash: string; reason: string | null; createdAt: string }
 interface Version { id: string; version: number; changedByUserId: string | null; reason: string | null; createdAt: string }
@@ -43,7 +44,7 @@ export default function ApprovalDashboard() {
     { id: "tenant", header: lang === "bn" ? "এজেন্সি" : "Agency", cell: (g) => g.tenant?.name || "—" },
     { id: "pax", header: "Pax", align: "center", cell: (g) => <span className="font-mono">{g.paxCount}</span> },
     { id: "st", header: lang === "bn" ? "স্ট্যাটাস" : "Status", cell: (g) => <ErpStatusChip status={stKind(g.approvalStatus)} label={g.approvalStatus} lang={lang} /> },
-    { id: "lock", header: lang === "bn" ? "লক" : "Lock", align: "center", cell: (g) => g.locked ? <span className="inline-flex items-center gap-1 text-[10px] font-bold" style={{ color: g.lockType === "HARD" ? "#B91C1C" : "#B45309" }}><Lock size={11} />{g.lockType || "SOFT"}</span> : "—" },
+    { id: "lock", header: lang === "bn" ? "লক" : "Lock", align: "center", cell: (g) => g.locked ? <span className="inline-flex items-center gap-1 text-[10px] font-bold" style={{ color: g.lockType === "HARD" ? ERP.destructive : ERP.warning }}><Lock size={11} />{g.lockType || "SOFT"}</span> : "—" },
     { id: "act", header: "", align: "right", cell: (g) => (
       <div className="flex gap-1 justify-end" onClick={(e) => e.stopPropagation()}>
         {g.approvalStatus === "PENDING_APPROVAL" && <>
@@ -59,7 +60,7 @@ export default function ApprovalDashboard() {
   ];
 
   return (
-    <ERPShell moduleId="admin" moduleName="Approvals" moduleColor={APR} moduleIcon={ShieldCheck as IconFC}
+    <ErpThemeProvider theme="ds"><ERPShell moduleId="admin" moduleName="Approvals" moduleColor={APR} moduleIcon={ShieldCheck as IconFC}
       navItems={NAV} activeItem="approvals" onItemClick={() => undefined} breadcrumb={[lang === "bn" ? "প্রশাসন" : "Administration", lang === "bn" ? "অনুমোদন" : "Approvals"]} userName="Administration" userRole="TUBA AL HIJAZ">
       <div className="flex-1 overflow-y-auto p-4 md:p-5" style={{ fontFamily: fontFor(lang) }}>
         <ErpPageTemplate title={lang === "bn" ? "অনুমোদন ড্যাশবোর্ড" : "Approval Dashboard"} subtitle={lang === "bn" ? "গ্রুপ অনুমোদন, লক ও সংস্করণ" : "Group approval, locking & versioning"}
@@ -84,7 +85,7 @@ export default function ApprovalDashboard() {
         </ErpDrawer>
       )}
       {detail && <DetailDrawer group={detail} onClose={() => setDetail(null)} lang={lang} onChanged={load} />}
-    </ERPShell>
+    </ERPShell></ErpThemeProvider>
   );
 }
 
@@ -106,11 +107,11 @@ function DetailDrawer({ group, onClose, lang, onChanged }: { group: Group; onClo
       <div className="space-y-5 text-[11px]" style={{ fontFamily: fontFor(lang) }}>
         <section>
           <h4 className="text-[11px] font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1" style={{ color: APR }}><ShieldCheck size={12} />{lang === "bn" ? "ডিজিটাল স্বাক্ষর" : "Digital Signatures"}</h4>
-          {sigs.length === 0 ? <p style={{ color: "rgba(11,30,63,0.5)" }}>{lang === "bn" ? "কোনো স্বাক্ষর নেই" : "No signatures yet"}</p> : sigs.map((s) => <div key={s.id} className="border rounded px-2 py-1 mb-1 font-mono" style={{ borderColor: "rgba(11,30,63,0.12)" }}>L{s.level} · {new Date(s.createdAt).toLocaleString()} · <span title={s.signatureHash}>{s.signatureHash.slice(0, 16)}…</span></div>)}
+          {sigs.length === 0 ? <p style={{ color: ERP.muted }}>{lang === "bn" ? "কোনো স্বাক্ষর নেই" : "No signatures yet"}</p> : sigs.map((s) => <div key={s.id} className="border rounded px-2 py-1 mb-1 font-mono" style={{ borderColor: ERP.border }}>L{s.level} · {new Date(s.createdAt).toLocaleString()} · <span title={s.signatureHash}>{s.signatureHash.slice(0, 16)}…</span></div>)}
         </section>
         <section>
           <h4 className="text-[11px] font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1" style={{ color: APR }}><Layers size={12} />{lang === "bn" ? "সংস্করণ" : "Versions"}</h4>
-          {versions.map((v) => <div key={v.id} className="border rounded px-2 py-1 mb-1" style={{ borderColor: "rgba(11,30,63,0.12)" }}>v{v.version} · {new Date(v.createdAt).toLocaleString()} · {v.reason}</div>)}
+          {versions.map((v) => <div key={v.id} className="border rounded px-2 py-1 mb-1" style={{ borderColor: ERP.border }}>v{v.version} · {new Date(v.createdAt).toLocaleString()} · {v.reason}</div>)}
           {versions.length >= 2 && <div className="flex gap-1.5 items-center mt-1.5">
             <GitCompare size={13} style={{ color: APR }} />
             <ErpSelect value={String(diffA)} onChange={(e) => setDiffA(e.target.value ? +e.target.value : "")} aria-label="Version A"><option value="">v…</option>{versions.map((v) => <option key={v.id} value={v.version}>v{v.version}</option>)}</ErpSelect>
@@ -118,18 +119,18 @@ function DetailDrawer({ group, onClose, lang, onChanged }: { group: Group; onClo
             <ErpSelect value={String(diffB)} onChange={(e) => setDiffB(e.target.value ? +e.target.value : "")} aria-label="Version B"><option value="">v…</option>{versions.map((v) => <option key={v.id} value={v.version}>v{v.version}</option>)}</ErpSelect>
             <ErpButton size="sm" variant="outline" onClick={runDiff}>{lang === "bn" ? "তুলনা" : "Compare"}</ErpButton>
           </div>}
-          {diff && <pre className="rounded p-2 mt-1.5 overflow-x-auto" style={{ background: "#F5F7FA", maxHeight: 160 }}>{diff.changed.length ? JSON.stringify(diff.diff, null, 2) : (lang === "bn" ? "কোনো পরিবর্তন নেই" : "No differences")}</pre>}
+          {diff && <pre className="rounded p-2 mt-1.5 overflow-x-auto" style={{ background: ERP.surfaceSoft, maxHeight: 160 }}>{diff.changed.length ? JSON.stringify(diff.diff, null, 2) : (lang === "bn" ? "কোনো পরিবর্তন নেই" : "No differences")}</pre>}
         </section>
         <section>
           <h4 className="text-[11px] font-bold uppercase tracking-widest mb-1.5" style={{ color: APR }}>{lang === "bn" ? "পরিবর্তন অনুরোধ" : "Change Requests"}</h4>
-          {crs.length === 0 ? <p style={{ color: "rgba(11,30,63,0.5)" }}>{lang === "bn" ? "কোনো অনুরোধ নেই" : "None"}</p> : crs.map((c) => <div key={c.id} className="border rounded px-2 py-1.5 mb-1 flex items-center justify-between" style={{ borderColor: "rgba(11,30,63,0.12)" }}>
+          {crs.length === 0 ? <p style={{ color: ERP.muted }}>{lang === "bn" ? "কোনো অনুরোধ নেই" : "None"}</p> : crs.map((c) => <div key={c.id} className="border rounded px-2 py-1.5 mb-1 flex items-center justify-between" style={{ borderColor: ERP.border }}>
             <span>{c.description} <ErpStatusChip status={stKind(c.status)} label={c.status} lang={lang} /></span>
             {c.status === "PENDING" && <span className="flex gap-1"><ErpButton size="sm" variant="primary" onClick={() => decideCr(c.id, "approve")}>{lang === "bn" ? "অনুমোদন" : "Approve"}</ErpButton><ErpButton size="sm" variant="danger" onClick={() => decideCr(c.id, "reject")}>✕</ErpButton></span>}
           </div>)}
         </section>
         <section>
           <h4 className="text-[11px] font-bold uppercase tracking-widest mb-1.5" style={{ color: APR }}>{lang === "bn" ? "টাইমলাইন" : "Timeline"}</h4>
-          {tl.map((t) => <div key={t.id} className="flex gap-2 mb-1"><span className="font-mono" style={{ color: APR }}>{t.event}</span><span style={{ color: "rgba(11,30,63,0.6)" }}>{t.actorLabel} · {new Date(t.createdAt).toLocaleString()}{t.note ? ` · ${t.note}` : ""}</span></div>)}
+          {tl.map((t) => <div key={t.id} className="flex gap-2 mb-1"><span className="font-mono" style={{ color: APR }}>{t.event}</span><span style={{ color: ERP.muted }}>{t.actorLabel} · {new Date(t.createdAt).toLocaleString()}{t.note ? ` · ${t.note}` : ""}</span></div>)}
         </section>
       </div>
     </ErpDrawer>

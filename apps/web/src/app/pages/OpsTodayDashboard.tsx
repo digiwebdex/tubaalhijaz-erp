@@ -4,6 +4,7 @@
  * Reuses existing /dashboards/* and /notifications — no new APIs.
  */
 import { useMemo, useState } from "react";
+import { ERP, CAT, erpAlpha } from "../components/erp";
 import { useNavigate } from "react-router";
 import {
   Plus, Users, UserRound, FileCheck, CalendarDays, Wallet,
@@ -25,8 +26,8 @@ import {
 } from "../lib/rbac";
 import { EmptyState, LoadingSkeleton, ErrorState } from "../components/States";
 
-const NAVY = "#0B1E3F";
-const GOLD = "#C9A24B";
+const NAVY = ERP.navy;
+const GOLD = ERP.accent;
 
 // ─── API shapes (same as Dashboards.tsx — read-only reuse) ───────────────────
 
@@ -184,13 +185,13 @@ function WorkCard({
       onClick={onClick}
       className="text-left rounded-2xl p-5 min-h-[120px] transition-all active:scale-[0.99] w-full"
       style={{
-        backgroundColor: "#FFFFFF",
-        border: "1px solid rgba(11,30,63,0.10)",
+        backgroundColor: ERP.surface,
+        border: `1px solid ${ERP.border}`,
         borderLeft: `4px solid ${tone}`,
         fontFamily: fontFor(lang),
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${tone}55`; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(11,30,63,0.10)"; e.currentTarget.style.borderLeftColor = tone; }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${erpAlpha(tone, 33)}`; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = ERP.border; e.currentTarget.style.borderLeftColor = tone; }}
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: tone }} />
@@ -200,7 +201,7 @@ function WorkCard({
         {value}
       </div>
       {hint && (
-        <div className="text-xs mt-2" style={{ color: "rgba(11,30,63,0.55)" }}>{hint}</div>
+        <div className="text-xs mt-2" style={{ color: ERP.muted }}>{hint}</div>
       )}
     </button>
   );
@@ -223,13 +224,13 @@ function ActionChip({
       onClick={onClick}
       className="inline-flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold min-h-[44px] transition-all active:scale-[0.98]"
       style={{
-        backgroundColor: "#FFFFFF",
-        border: "1px solid rgba(11,30,63,0.12)",
+        backgroundColor: ERP.surface,
+        border: `1px solid ${ERP.border}`,
         color: NAVY,
         fontFamily: fontFor(lang),
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${GOLD}88`; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(11,30,63,0.12)"; }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${erpAlpha(GOLD, 53)}`; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = ERP.border; }}
     >
       <Icon size={16} style={{ color: GOLD }} />
       {label}
@@ -349,7 +350,7 @@ export function OpsTodayDashboard() {
       cards.push(
         {
           id: "ag-g",
-          tone: "#2563EB",
+          tone: ERP.info,
           label: lang === "bn" ? "আমার গ্রুপ" : "My Groups",
           value: num(lang, a.kpis.activeGroups),
           hint: lang === "bn" ? `মৌসুম ${num(lang, a.kpis.seasonGroups)}` : `Season ${a.kpis.seasonGroups}`,
@@ -357,14 +358,14 @@ export function OpsTodayDashboard() {
         },
         {
           id: "ag-p",
-          tone: "#0D9488",
+          tone: CAT.teal,
           label: lang === "bn" ? "আমার যাত্রী" : "My Passengers",
           value: num(lang, pax),
           path: "/agent-portal",
         },
         {
           id: "ag-v",
-          tone: "#D97706",
+          tone: ERP.warning,
           label: lang === "bn" ? "ভিসা স্ট্যাটাস" : "Visa Status",
           value: num(lang, a.visa?.notIssued ?? null),
           hint: lang === "bn" ? "এখনও ইস্যু হয়নি" : "Not issued",
@@ -372,7 +373,7 @@ export function OpsTodayDashboard() {
         },
         {
           id: "ag-pay",
-          tone: "#DC2626",
+          tone: ERP.destructive,
           label: lang === "bn" ? "পেমেন্ট বকেয়া" : "My Payments",
           value: a.kpis ? fmtSAR(a.kpis.outstandingAmount, a.kpis.currency) : "—",
           hint: a.kpis ? `${num(lang, a.kpis.outstandingCount)} ${lang === "bn" ? "চালান" : "invoices"}` : undefined,
@@ -386,21 +387,21 @@ export function OpsTodayDashboard() {
       cards.push(
         {
           id: "su-b",
-          tone: "#D97706",
+          tone: ERP.warning,
           label: lang === "bn" ? "অপেক্ষমাণ বুকিং" : "Pending Bookings",
           value: num(lang, s.kpis.pendingBookings),
           path: "/supplier-portal",
         },
         {
           id: "su-i",
-          tone: "#DC2626",
+          tone: ERP.destructive,
           label: lang === "bn" ? "বকেয়া চালান" : "Outstanding Invoices",
           value: fmtSAR(s.kpis.invoicesOutstanding),
           path: "/supplier-portal",
         },
         {
           id: "su-u",
-          tone: "#2563EB",
+          tone: ERP.info,
           label: lang === "bn" ? "আসন্ন সেবা" : "Upcoming Services",
           value: num(lang, s.kpis.upcomingServices),
           path: "/supplier-portal",
@@ -418,28 +419,28 @@ export function OpsTodayDashboard() {
       cards.push(
         {
           id: "visa-p",
-          tone: "#DC2626",
+          tone: ERP.destructive,
           label: lang === "bn" ? "ভিসা পেন্ডিং" : "Visa Pending",
           value: num(lang, visaPending),
           path: "/ops-departments",
         },
         {
           id: "emb",
-          tone: "#EA580C",
+          tone: CAT.orange,
           label: lang === "bn" ? "এম্বাসি পেন্ডিং" : "Embassy Pending",
           value: num(lang, embassy),
           path: "/ops-departments",
         },
         {
           id: "pass",
-          tone: "#D97706",
+          tone: ERP.warning,
           label: lang === "bn" ? "পাসপোর্ট রিটার্ন" : "Passport Return",
           value: num(lang, passport),
           path: "/ops-departments",
         },
         {
           id: "mofa",
-          tone: "#16A34A",
+          tone: ERP.success,
           label: lang === "bn" ? "মোফা পেন্ডিং" : "MOFA Pending",
           value: num(lang, mofaPending),
           hint: `${num(lang, v.mofa.completePercent)}% ${lang === "bn" ? "সম্পূর্ণ" : "complete"}`,
@@ -447,14 +448,14 @@ export function OpsTodayDashboard() {
         },
         {
           id: "ls",
-          tone: "#2563EB",
+          tone: ERP.info,
           label: lang === "bn" ? "লং স্টে" : "Long Stay",
           value: num(lang, v.longStay.tracking || v.longStay.total),
           path: "/ops-control?tab=longstay",
         },
         {
           id: "d85",
-          tone: "#DC2626",
+          tone: ERP.destructive,
           label: lang === "bn" ? "ডে-৮৫" : "Day-85",
           value: num(lang, v.longStay.due),
           hint: lang === "bn"
@@ -472,7 +473,7 @@ export function OpsTodayDashboard() {
       const finCards = [
         {
           id: "fi-c",
-          tone: "#16A34A",
+          tone: ERP.success,
           label: lang === "bn" ? "কালেকশন (AR)" : "Collection (AR)",
           value: fmtSAR(f.kpis.accountsReceivable),
           path: "/finance-erp",
@@ -480,7 +481,7 @@ export function OpsTodayDashboard() {
         },
         {
           id: "fi-e",
-          tone: "#EA580C",
+          tone: CAT.orange,
           label: lang === "bn" ? "খরচ (AP)" : "Expense (AP)",
           value: fmtSAR(f.kpis.accountsPayable),
           path: "/finance-erp",
@@ -488,7 +489,7 @@ export function OpsTodayDashboard() {
         },
         {
           id: "fi-d",
-          tone: "#DC2626",
+          tone: ERP.destructive,
           label: lang === "bn" ? "বকেয়া" : "Due",
           value: fmtSAR(due90),
           hint: lang === "bn" ? "এজিং বাকেট" : "Aging bucket",
@@ -505,7 +506,7 @@ export function OpsTodayDashboard() {
       if (needVisa || needFin || needAgent) {
         cards.push({
           id: "empty",
-          tone: "#6B7280",
+          tone: ERP.muted,
           label: lang === "bn" ? "কোনো কাজের তথ্য নেই" : "No work items yet",
           value: "—",
           path: persona === "agent" ? "/agent-portal" : "/ops-control",
@@ -545,7 +546,7 @@ export function OpsTodayDashboard() {
           <h1 className="text-2xl md:text-3xl font-bold" style={{ color: NAVY }}>
             {lang === "bn" ? "আজকের কাজ" : "Today's Work"}
           </h1>
-          <p className="text-sm mt-1.5" style={{ color: "rgba(11,30,63,0.58)" }}>
+          <p className="text-sm mt-1.5" style={{ color: ERP.muted }}>
             {lang === "bn"
               ? "আজ আমাকে কী কাজ করতে হবে?"
               : "What do I need to do today?"}
@@ -555,7 +556,7 @@ export function OpsTodayDashboard() {
           type="button"
           onClick={refetchAll}
           className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold min-h-[40px]"
-          style={{ border: "1px solid rgba(11,30,63,0.12)", color: NAVY, backgroundColor: "#FFFFFF" }}
+          style={{ border: `1px solid ${ERP.border}`, color: NAVY, backgroundColor: ERP.surface }}
         >
           <RefreshCw size={14} />
           {lang === "bn" ? "রিফ্রেশ" : "Refresh"}
@@ -599,8 +600,8 @@ export function OpsTodayDashboard() {
           onClick={() => setShowMore((x) => !x)}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold min-h-[44px]"
           style={{
-            backgroundColor: showMore ? `${GOLD}18` : "#FFFFFF",
-            border: `1px solid ${showMore ? `${GOLD}55` : "rgba(11,30,63,0.12)"}`,
+            backgroundColor: showMore ? `${erpAlpha(GOLD, 9)}` : ERP.surface,
+            border: `1px solid ${showMore ? `${erpAlpha(GOLD, 33)}` : ERP.border}`,
             color: NAVY,
             fontFamily: fontFor(lang),
           }}
@@ -628,25 +629,25 @@ export function OpsTodayDashboard() {
                     {
                       label: lang === "bn" ? "ভিসা রেডি" : "Visa Ready",
                       wait: v.gates.waitingVisa,
-                      tone: "#0D9488",
+                      tone: CAT.teal,
                       icon: FileCheck,
                     },
                     {
                       label: lang === "bn" ? "প্যাকেজ রেডি" : "Package Ready",
                       wait: v.gates.waitingPackage,
-                      tone: "#2563EB",
+                      tone: ERP.info,
                       icon: Stamp,
                     },
                     {
                       label: lang === "bn" ? "পেমেন্ট রেডি" : "Payment Ready",
                       wait: v.gates.waitingPayment,
-                      tone: "#D97706",
+                      tone: ERP.warning,
                       icon: Wallet,
                     },
                     {
                       label: lang === "bn" ? "বিল রেডি" : "Bill Ready",
                       wait: v.gates.waitingBill,
-                      tone: "#9333EA",
+                      tone: CAT.purple,
                       icon: Building2,
                     },
                   ].map((g) => {
@@ -657,14 +658,14 @@ export function OpsTodayDashboard() {
                         type="button"
                         onClick={() => go("/ops-control?tab=groups")}
                         className="rounded-2xl p-5 text-left"
-                        style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.10)" }}
+                        style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}
                       >
                         <g.icon size={18} style={{ color: g.tone }} className="mb-3" />
-                        <div className="text-xs font-semibold mb-2" style={{ color: "rgba(11,30,63,0.65)" }}>{g.label}</div>
+                        <div className="text-xs font-semibold mb-2" style={{ color: ERP.muted }}>{g.label}</div>
                         <div className="text-2xl font-bold" style={{ color: NAVY, fontFamily: "var(--font-mono)" }}>
                           {num(lang, readyish)}
                         </div>
-                        <div className="text-[11px] mt-1" style={{ color: "rgba(11,30,63,0.50)" }}>
+                        <div className="text-[11px] mt-1" style={{ color: ERP.muted }}>
                           {lang === "bn" ? `অপেক্ষা ${num(lang, g.wait)}` : `${g.wait} waiting`}
                           {" · "}
                           {lang === "bn" ? `রেডি ${num(lang, v.gates.ready)}` : `${v.gates.ready} all-ready`}
@@ -680,7 +681,7 @@ export function OpsTodayDashboard() {
           {/* Section 4 — Today's Activity */}
           <section>
             <SectionTitle bn="আজকের কার্যক্রম" en="Today's Activity" lang={lang} />
-            <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.10)" }}>
+            <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
               {activity.loading ? (
                 <div className="p-4"><LoadingSkeleton tone="light" rows={4} /></div>
               ) : activity.error || !activity.data?.length ? (
@@ -697,20 +698,20 @@ export function OpsTodayDashboard() {
                     key={n.id}
                     className="flex items-start gap-3 px-4 py-3"
                     style={{
-                      borderBottom: i < activity.data!.length - 1 ? "1px solid rgba(11,30,63,0.06)" : undefined,
-                      borderLeft: n.priority === "EMERGENCY" ? "3px solid #DC2626" : "3px solid transparent",
+                      borderBottom: i < activity.data!.length - 1 ? `1px solid ${ERP.border}` : undefined,
+                      borderLeft: n.priority === "EMERGENCY" ? `3px solid ${ERP.destructive}` : "3px solid transparent",
                     }}
                   >
                     {(n.priority === "EMERGENCY" || n.status === "FAILED") && (
-                      <AlertTriangle size={14} className="mt-0.5 shrink-0" style={{ color: "#DC2626" }} />
+                      <AlertTriangle size={14} className="mt-0.5 shrink-0" style={{ color: ERP.destructive }} />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate" style={{ color: NAVY }}>{n.title}</div>
                       {n.body && (
-                        <div className="text-xs mt-0.5 truncate" style={{ color: "rgba(11,30,63,0.55)" }}>{n.body}</div>
+                        <div className="text-xs mt-0.5 truncate" style={{ color: ERP.muted }}>{n.body}</div>
                       )}
                     </div>
-                    <span className="text-[11px] shrink-0" style={{ color: "rgba(11,30,63,0.45)", fontFamily: "var(--font-mono)" }}>
+                    <span className="text-[11px] shrink-0" style={{ color: ERP.muted, fontFamily: "var(--font-mono)" }}>
                       {timeAgo(n.createdAt, lang)}
                     </span>
                   </div>
@@ -727,7 +728,7 @@ export function OpsTodayDashboard() {
                 {[
                   {
                     id: "a85",
-                    tone: "#DC2626",
+                    tone: ERP.destructive,
                     icon: ShieldAlert,
                     label: lang === "bn" ? "লং স্টে ডে-৮৫" : "Long Stay Day-85",
                     value: v.longStay.due,
@@ -735,7 +736,7 @@ export function OpsTodayDashboard() {
                   },
                   {
                     id: "arej",
-                    tone: "#DC2626",
+                    tone: ERP.destructive,
                     icon: AlertTriangle,
                     label: lang === "bn" ? "রিজেক্টেড ভিসা" : "Rejected Visa",
                     value: v.backlog.rejectedOpen,
@@ -743,7 +744,7 @@ export function OpsTodayDashboard() {
                   },
                   {
                     id: "apass",
-                    tone: "#D97706",
+                    tone: ERP.warning,
                     icon: Plane,
                     label: lang === "bn" ? "পাসপোর্ট রিটার্নড" : "Passport Returned",
                     value: v.pipeline.PASSPORT_RETURNED ?? 0,
@@ -755,11 +756,11 @@ export function OpsTodayDashboard() {
                     type="button"
                     onClick={() => go(a.path)}
                     className="rounded-2xl p-5 text-left flex items-start gap-3"
-                    style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.10)" }}
+                    style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}
                   >
                     <a.icon size={20} style={{ color: a.tone }} className="shrink-0 mt-0.5" />
                     <div>
-                      <div className="text-xs font-semibold" style={{ color: "rgba(11,30,63,0.65)" }}>{a.label}</div>
+                      <div className="text-xs font-semibold" style={{ color: ERP.muted }}>{a.label}</div>
                       <div className="text-2xl font-bold mt-1" style={{ color: a.tone, fontFamily: "var(--font-mono)" }}>
                         {num(lang, a.value)}
                       </div>
@@ -779,17 +780,17 @@ export function OpsTodayDashboard() {
                   {
                     label: lang === "bn" ? "কালেকশন (AR)" : "Collection (AR)",
                     value: fmtSAR(fin.data.kpis.accountsReceivable),
-                    tone: "#16A34A",
+                    tone: ERP.success,
                   },
                   {
                     label: lang === "bn" ? "খরচ (AP)" : "Expense (AP)",
                     value: fmtSAR(fin.data.kpis.accountsPayable),
-                    tone: "#EA580C",
+                    tone: CAT.orange,
                   },
                   {
                     label: lang === "bn" ? "নগদ অবস্থান" : "Cash Position",
                     value: fmtSAR(fin.data.kpis.cashPosition),
-                    tone: "#2563EB",
+                    tone: ERP.info,
                   },
                 ].map((c) => (
                   <button
@@ -797,9 +798,9 @@ export function OpsTodayDashboard() {
                     type="button"
                     onClick={() => go("/finance-erp")}
                     className="rounded-2xl p-5 text-left"
-                    style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.10)" }}
+                    style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}
                   >
-                    <div className="text-xs font-semibold mb-2" style={{ color: "rgba(11,30,63,0.65)" }}>{c.label}</div>
+                    <div className="text-xs font-semibold mb-2" style={{ color: ERP.muted }}>{c.label}</div>
                     <div className="text-2xl font-bold" style={{ color: c.tone, fontFamily: "var(--font-mono)" }}>{c.value}</div>
                   </button>
                 ))}

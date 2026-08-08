@@ -13,7 +13,9 @@ import {
 import { ERPShell, type NavItem, type IconFC } from "../components/ERPShell";
 import { EmptyState, LoadingSkeleton, ErrorState } from "../components/States";
 import {
-  ErpButton, ErpSearchBar, ErpStatusChip, type ErpStatusKind,
+  ERP, CAT, erpAlpha, ErpButton, ErpSearchBar, ErpStatusChip, type ErpStatusKind,
+  ErpStatCard, ErpSectionHeader, ErpToggle, ErpModal, ErpDataTable, type ErpColumn,
+  ErpThemeProvider,
 } from "../components/erp";
 
 /**
@@ -27,10 +29,10 @@ function failMessage(e: unknown, fallback: string): string {
   return fallback;
 }
 
-const NAVY = "#0B1E3F";
-const GOLD = "#C9A24B";
-const DARK = "#F0F2F7";
-const ADMIN = "#6D28D9";
+const NAVY = ERP.navy;
+const GOLD = ERP.accent;
+const DARK = ERP.surfaceSoft;
+const ADMIN = CAT.purple; // Super Admin module accent (categorical, themed)
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -74,19 +76,9 @@ const SA_ADVANCED_IDS = new Set([
 
 // ─── Reusable helpers ────────────────────────────────────────────────────────
 
+// Delegates to the shared ErpToggle switch.
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
-  return (
-    <button
-      onClick={onToggle}
-      className="relative w-9 h-5 rounded-full transition-colors shrink-0"
-      style={{ backgroundColor: on ? GOLD : "#EEF1F6" }}
-    >
-      <span
-        className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform"
-        style={{ transform: on ? "translateX(18px)" : "translateX(2px)" }}
-      />
-    </button>
-  );
+  return <ErpToggle on={on} onToggle={onToggle} />;
 }
 
 function saStatusKind(status: string): ErpStatusKind {
@@ -142,58 +134,21 @@ function SAAnalytics() {
   return (
     <div className="grid grid-cols-4 gap-4">
       <KPICard label="YTD Revenue"   value={saMoney(k.ytdRevenue)}   icon={TrendingUp as IconFC} color={ADMIN}     note="Season 1446H" />
-      <KPICard label="Net Profit"    value={saMoney(k.netProfit)}    icon={Activity as IconFC}   color="#16A34A"   note={`Margin ${k.netMargin.toFixed(1)}%`} />
-      <KPICard label="Active Groups" value={String(k.activeGroups)}  icon={Building as IconFC}   color="#2563EB"   note={`${k.activeAgents} active agents`} />
-      <KPICard label="AR Outstanding"value={saMoney(k.arOutstanding)}icon={Wallet as IconFC}     color="#B45309"   note={`${k.overdueInvoices} overdue`} />
+      <KPICard label="Net Profit"    value={saMoney(k.netProfit)}    icon={Activity as IconFC}   color={ERP.success}   note={`Margin ${k.netMargin.toFixed(1)}%`} />
+      <KPICard label="Active Groups" value={String(k.activeGroups)}  icon={Building as IconFC}   color={ERP.info}   note={`${k.activeAgents} active agents`} />
+      <KPICard label="AR Outstanding"value={saMoney(k.arOutstanding)}icon={Wallet as IconFC}     color={ERP.warning}   note={`${k.overdueInvoices} overdue`} />
     </div>
   );
 }
 
+// Delegates to the shared ErpStatCard (with accent + optional trend delta).
 function KPICard({ label, value, delta, icon: Icon, color, note }: KPIProps) {
-  return (
-    <div
-      className="rounded-2xl p-5"
-      style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ backgroundColor: `${color}18` }}
-        >
-          <Icon size={16} style={{ color }} />
-        </div>
-        {delta && (
-          <div
-            className="flex items-center gap-1 text-xs font-semibold"
-            style={{ color: delta.up ? "#16A34A" : "#DC2626" }}
-          >
-            {delta.up ? <ArrowUp size={11} /> : <ArrowDown size={11} />}
-            {delta.val}
-          </div>
-        )}
-      </div>
-      <div
-        className="text-2xl font-bold text-[#0B1E3F] mb-1"
-        style={{ fontFamily: "var(--font-mono)" }}
-      >
-        {value}
-      </div>
-      <div className="text-xs font-medium" style={{ color: "rgba(11,30,63,0.58)" }}>{label}</div>
-      {note && <div className="text-[10px] mt-0.5" style={{ color: "rgba(11,30,63,0.50)" }}>{note}</div>}
-    </div>
-  );
+  return <ErpStatCard label={label} value={value} accent={color} hint={note} delta={delta} icon={<Icon size={16} style={{ color }} />} />;
 }
 
+// Delegates to the shared ErpSectionHeader.
 function SectionHead({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
-  return (
-    <div className="flex items-start justify-between mb-6 gap-3 flex-wrap">
-      <div>
-        <h2 className="text-base font-bold text-[#0B1E3F]">{title}</h2>
-        {subtitle && <p className="text-xs mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>{subtitle}</p>}
-      </div>
-      {action}
-    </div>
-  );
+  return <ErpSectionHeader title={title} subtitle={subtitle} action={action} className="mb-6" />;
 }
 
 /** ESP-01 — FilterBar → ErpSearchBar + ErpButton adapter (uncontrolled search chrome). */
@@ -208,20 +163,6 @@ function FilterBar({ placeholder = "Search…", children }: { placeholder?: stri
       <ErpButton size="sm" variant="outline" icon={<Filter size={11} />}>Filter</ErpButton>
       <ErpButton size="sm" variant="outline" icon={<Download size={11} />}>Export</ErpButton>
     </div>
-  );
-}
-
-function THead({ cols }: { cols: string[] }) {
-  return (
-    <thead>
-      <tr style={{ backgroundColor: "#FBFCFD", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-        {cols.map((c) => (
-          <th key={c} className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>
-            {c}
-          </th>
-        ))}
-      </tr>
-    </thead>
   );
 }
 
@@ -260,7 +201,7 @@ function DashboardScreen() {
         title="Overview"
         subtitle="Platform summary"
         action={
-          <button onClick={load} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs" style={{ border: `1px solid ${GOLD}30`, color: GOLD }}>
+          <button onClick={load} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs" style={{ border: `1px solid ${erpAlpha(GOLD, 19)}`, color: GOLD }}>
             <RefreshCw size={11} /> Refresh
           </button>
         }
@@ -272,13 +213,13 @@ function DashboardScreen() {
       ) : (
         <div className="grid grid-cols-4 gap-4">
           <KPICard label="Agents" value={String(agents)} icon={Users as IconFC} color={ADMIN} note={`${verified} verified`} />
-          <KPICard label="Suppliers" value={String(suppliers)} icon={Building as IconFC} color="#2563EB" note="registered" />
-          <KPICard label="Pending Verification" value={String(pending)} icon={Clock as IconFC} color="#D97706" note="awaiting review" />
-          <KPICard label="Portal Users" value={userCount == null ? "\u2014" : String(userCount)} icon={Users2 as IconFC} color="#16A34A" note="staff accounts" />
+          <KPICard label="Suppliers" value={String(suppliers)} icon={Building as IconFC} color={ERP.info} note="registered" />
+          <KPICard label="Pending Verification" value={String(pending)} icon={Clock as IconFC} color={ERP.warning} note="awaiting review" />
+          <KPICard label="Portal Users" value={userCount == null ? "\u2014" : String(userCount)} icon={Users2 as IconFC} color={ERP.success} note="staff accounts" />
         </div>
       )}
-      <div className="rounded-2xl p-6" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
-        <div className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: "rgba(11,30,63,0.50)" }}>Platform Analytics — Season 1446H</div>
+      <div className="rounded-2xl p-6" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+        <div className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: ERP.muted }}>Platform Analytics — Season 1446H</div>
         <SAAnalytics />
       </div>
     </div>
@@ -452,13 +393,13 @@ function CompanyReviewModal({
   };
 
   const Row = ({ label, value }: { label: string; value: ReactNode }) => (
-    <div className="flex items-start justify-between gap-4 px-4 py-2" style={{ borderBottom: "1px solid rgba(11,30,63,0.08)" }}>
-      <span className="text-[10px] uppercase tracking-widest shrink-0 pt-0.5" style={{ color: "rgba(11,30,63,0.50)" }}>{label}</span>
+    <div className="flex items-start justify-between gap-4 px-4 py-2" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+      <span className="text-[10px] uppercase tracking-widest shrink-0 pt-0.5" style={{ color: ERP.muted }}>{label}</span>
       {/* min-w-0 + truncate: real agency/owner/guarantor names and IBANs overflow this
           fixed-width modal; the full value stays available on hover. */}
       <span
         className="text-xs font-semibold text-right min-w-0 truncate"
-        style={{ color: "rgba(11,30,63,0.86)" }}
+        style={{ color: ERP.navy }}
         title={typeof value === "string" ? value : undefined}
       >
         {value ?? "—"}
@@ -469,36 +410,20 @@ function CompanyReviewModal({
   const actions = detail ? (NEXT_TRANSITIONS[detail.verificationStatus] ?? []) : [];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-6"
-      style={{ backgroundColor: "rgba(3,8,18,0.75)" }}
-      onClick={onClose}
+    <ErpModal
+      open
+      onClose={onClose}
+      title={detail?.name ?? "Loading…"}
+      subtitle={detail?.code}
+      icon={<Building2 size={16} style={{ color: CAT.purple }} />}
+      width={640}
     >
-      <div
-        className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl"
-        style={{ backgroundColor: "#F0F3F7", border: "1px solid rgba(11,30,63,0.15)", scrollbarWidth: "thin" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="px-6 py-4 flex items-center gap-3 sticky top-0" style={{ backgroundColor: "#F0F3F7", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${ADMIN}20` }}>
-            <Building2 size={16} style={{ color: "#7C3AED" }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-[#0B1E3F] truncate" title={detail?.name}>{detail?.name ?? "Loading…"}</div>
-            <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.58)", fontFamily: "var(--font-mono)" }}>{detail?.code}</div>
-          </div>
-          {detail && <SBadge status={STATUS_TO_BADGE[detail.verificationStatus] ?? "pending"} />}
-          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: "rgba(11,30,63,0.58)" }}>
-            <X size={14} />
-          </button>
-        </div>
-
         {detail && (
-          <div className="p-6 space-y-5">
+          <div className="space-y-5">
+            {detail && <div><SBadge status={STATUS_TO_BADGE[detail.verificationStatus] ?? "pending"} /></div>}
             {/* Profile */}
-            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-              <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: `${GOLD}10`, color: GOLD }}>Submitted Profile</div>
+            <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
+              <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: `${erpAlpha(GOLD, 6)}`, color: GOLD }}>Submitted Profile</div>
               <Row label="Type" value={detail.type === "AGENT" ? "Agent" : `Supplier · ${detail.supplierProfile?.type ?? ""}`} />
               <Row label="City" value={detail.city} />
               <Row label="Email" value={detail.email} />
@@ -526,23 +451,23 @@ function CompanyReviewModal({
                 <Row key={i} label="Bank" value={`${b.bankName} · ${b.iban ?? b.accountNumber}`} />
               ))}
               <Row label="Joined" value={fmtDate(detail.joinedAt)} />
-              {detail.rejectionReason && <Row label="Rejection Reason" value={<span style={{ color: "#DC2626" }}>{detail.rejectionReason}</span>} />}
+              {detail.rejectionReason && <Row label="Rejection Reason" value={<span style={{ color: ERP.destructive }}>{detail.rejectionReason}</span>} />}
             </div>
 
             {/* Documents */}
-            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-              <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: `${GOLD}10`, color: GOLD }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
+              <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: `${erpAlpha(GOLD, 6)}`, color: GOLD }}>
                 Documents ({detail.uploadedFiles.length})
               </div>
               {detail.uploadedFiles.length === 0 && (
-                <div className="px-4 py-3 text-xs" style={{ color: "rgba(11,30,63,0.50)" }}>No documents uploaded</div>
+                <div className="px-4 py-3 text-xs" style={{ color: ERP.muted }}>No documents uploaded</div>
               )}
               {detail.uploadedFiles.map((f) => (
-                <div key={f.id} className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.08)" }}>
-                  <FileText size={13} style={{ color: "rgba(11,30,63,0.58)" }} />
+                <div key={f.id} className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                  <FileText size={13} style={{ color: ERP.muted }} />
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold text-[#0B1E3F] truncate" title={f.fileName}>{f.fileName}</div>
-                    <div className="text-[9px]" style={{ color: "rgba(11,30,63,0.50)" }}>
+                    <div className="text-xs font-semibold text-[color:var(--erp-text-strong)] truncate" title={f.fileName}>{f.fileName}</div>
+                    <div className="text-[9px]" style={{ color: ERP.muted }}>
                       {f.kind.replace(/_/g, " ")} · {(f.sizeBytes / 1024).toFixed(0)} KB
                     </div>
                   </div>
@@ -550,7 +475,7 @@ function CompanyReviewModal({
                     onClick={() => void viewDoc(f.id, f.fileName)}
                     disabled={openingDoc !== null}
                     className="text-[10px] font-bold px-2.5 py-1 rounded-lg hover:opacity-80 shrink-0 disabled:opacity-50"
-                    style={{ backgroundColor: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}30` }}
+                    style={{ backgroundColor: `${erpAlpha(GOLD, 8)}`, color: GOLD, border: `1px solid ${erpAlpha(GOLD, 19)}` }}
                   >
                     {openingDoc === f.id ? "Opening…" : "View"}
                   </button>
@@ -560,7 +485,7 @@ function CompanyReviewModal({
 
             {/* Decision */}
             {actions.length > 0 && (
-              <div className="rounded-xl p-4 space-y-3" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "#FFFFFF" }}>
+              <div className="rounded-xl p-4 space-y-3" style={{ border: `1px solid ${ERP.border}`, backgroundColor: ERP.surface }}>
                 {actions.some((a) => a.needsReason) && (
                   <textarea
                     value={reason}
@@ -568,7 +493,7 @@ function CompanyReviewModal({
                     rows={2}
                     placeholder="Reason (required when rejecting)…"
                     className="w-full px-3.5 py-2.5 text-xs rounded-xl focus:outline-none"
-                    style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.15)", color: "#0B1E3F" }}
+                    style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, color: ERP.navy }}
                   />
                 )}
                 <div className="flex gap-2">
@@ -580,7 +505,7 @@ function CompanyReviewModal({
                       className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
                       style={
                         a.danger
-                          ? { backgroundColor: "rgba(239,68,68,0.12)", color: "#DC2626", border: "1px solid rgba(239,68,68,0.3)" }
+                          ? { backgroundColor: erpAlpha(ERP.destructive, 12), color: ERP.destructive, border: `1px solid ${erpAlpha(ERP.destructive, 30)}` }
                           : { backgroundColor: GOLD, color: NAVY }
                       }
                     >
@@ -591,7 +516,7 @@ function CompanyReviewModal({
               </div>
             )}
             {error && (
-              <div className="p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>
+              <div className="p-3 rounded-xl text-xs" style={{ backgroundColor: erpAlpha(ERP.destructive, 8), border: `1px solid ${erpAlpha(ERP.destructive, 20)}`, color: ERP.destructive }}>
                 {error}
               </div>
             )}
@@ -609,8 +534,7 @@ function CompanyReviewModal({
             <LoadingSkeleton rows={6} tone="light" />
           </div>
         )}
-      </div>
-    </div>
+    </ErpModal>
   );
 }
 
@@ -716,13 +640,13 @@ function CompanyScreen() {
       />
 
       {/* Filter tabs */}
-      <div className="flex gap-1 mb-4 p-1 rounded-xl w-fit" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
+      <div className="flex gap-1 mb-4 p-1 rounded-xl w-fit" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
         {tabs.map((t) => (
           <button
             key={t}
             onClick={() => setFilter(t)}
             className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all"
-            style={filter === t ? { backgroundColor: GOLD, color: NAVY } : { color: "rgba(11,30,63,0.58)" }}
+            style={filter === t ? { backgroundColor: GOLD, color: NAVY } : { color: ERP.muted }}
           >
             {t === "all" ? "All Companies" : t === "agents" ? "Agents" : t === "suppliers" ? "Suppliers" : "Suspended"}
           </button>
@@ -732,12 +656,12 @@ function CompanyScreen() {
       <FilterBar placeholder="Search company name, ID, city…" />
 
       {rowErr && (
-        <div className="mb-3 px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>
+        <div className="mb-3 px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: erpAlpha(ERP.destructive, 8), border: `1px solid ${erpAlpha(ERP.destructive, 20)}`, color: ERP.destructive }}>
           {rowErr}
         </div>
       )}
 
-      <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
         {loading ? (
           <div className="px-4 py-3">
             <LoadingSkeleton rows={5} tone="light" />
@@ -749,7 +673,7 @@ function CompanyScreen() {
         ) : filtered.length === 0 ? (
           <EmptyState
             tone="light"
-            icon={<Building2 size={32} className="opacity-25" style={{ color: "rgba(11,30,63,0.66)" }} />}
+            icon={<Building2 size={32} className="opacity-25" style={{ color: ERP.muted }} />}
             title={filter === "all" ? "No companies registered yet" : "No companies match this filter"}
             hint={
               filter === "all"
@@ -758,69 +682,25 @@ function CompanyScreen() {
             }
           />
         ) : (
-        <table className="w-full">
-          <THead cols={["Company", "Type", "City", "Status", "Active Groups", "Joined", ""]} />
-          <tbody>
-            {filtered.map((c, i) => (
-              <tr
-                key={c.key}
-                style={{ borderBottom: i < filtered.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }}
-                className="hover:bg-white/2 transition-colors"
-              >
-                <td className="px-4 py-3">
-                  <div className="text-xs font-semibold text-[#0B1E3F]">{c.name}</div>
-                  <div className="text-[10px] mt-0.5" style={{ color: "rgba(11,30,63,0.50)", fontFamily: "var(--font-mono)" }}>{c.code}</div>
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor: c.typeLabel === "Agent" ? `${ADMIN}18` : "#2563EB18",
-                      color: c.typeLabel === "Agent" ? "#7C3AED" : "#2563EB",
-                    }}
-                  >
-                    {c.typeLabel}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-xs" style={{ color: "rgba(11,30,63,0.76)" }}>{c.city}</td>
-                <td className="px-4 py-3"><SBadge status={c.statusKey} /></td>
-                <td className="px-4 py-3 text-xs font-mono text-center" style={{ color: c.groups > 0 ? GOLD : "rgba(11,30,63,0.50)", fontFamily: "var(--font-mono)" }}>
-                  {c.groups}
-                </td>
-                <td className="px-4 py-3 text-[10px]" style={{ color: "rgba(11,30,63,0.58)" }}>{c.joined}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => c.realId && setReviewId(c.realId)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8 transition-all"
-                      style={{ color: c.realId ? "rgba(11,30,63,0.58)" : "rgba(11,30,63,0.38)" }}
-                      title={c.realId ? "View application & documents" : "Sign in as Super Admin to review"}
-                    >
-                      <Eye size={12} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        if (!c.realId) return;
-                        if (menuFor === c.key) { setMenuFor(null); return; }
-                        // Capture the button's viewport rect so the menu can be portalled to
-                        // <body> with position:fixed — escaping the table's overflow-hidden clip.
-                        const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                        setMenuPos({ top: r.bottom + 4, right: Math.max(8, window.innerWidth - r.right) });
-                        setMenuFor(c.key);
-                      }}
-                      disabled={acting === c.realId}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8 transition-all disabled:opacity-50"
-                      style={{ color: c.realId ? "rgba(11,30,63,0.58)" : "rgba(11,30,63,0.38)" }}
-                      title={c.realId ? "Approve / Reject / Suspend" : "Sign in as Super Admin"}
-                    >
-                      {acting === c.realId ? <RefreshCw size={12} className="animate-spin" /> : <MoreHorizontal size={12} />}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ErpDataTable
+          flush
+          rows={filtered}
+          rowKey={(c) => c.key}
+          columns={[
+            { id: "company", header: "Company", cell: (c) => (<div><div className="font-semibold text-[color:var(--erp-text-strong)]" style={{ fontSize: ERP.text.size[12] }}>{c.name}</div><div style={{ fontSize: ERP.text.size[10], marginTop: ERP.space[0.5], color: ERP.muted, fontFamily: ERP.font.data }}>{c.code}</div></div>) },
+            { id: "type", header: "Type", cell: (c) => <span className="inline-block px-2 py-0.5 rounded-full" style={{ fontSize: ERP.text.size[10], fontWeight: ERP.text.weight.bold, backgroundColor: c.typeLabel === "Agent" ? erpAlpha(ADMIN, 9) : erpAlpha(ERP.info, 9), color: c.typeLabel === "Agent" ? CAT.purple : ERP.info }}>{c.typeLabel}</span> },
+            { id: "city", header: "City", cell: (c) => <span style={{ fontSize: ERP.text.size[12], color: ERP.navy }}>{c.city}</span> },
+            { id: "status", header: "Status", cell: (c) => <SBadge status={c.statusKey} /> },
+            { id: "groups", header: "Active Groups", align: "center", cell: (c) => <span style={{ fontSize: ERP.text.size[12], color: c.groups > 0 ? GOLD : ERP.muted, fontFamily: ERP.font.data }}>{c.groups}</span> },
+            { id: "joined", header: "Joined", cell: (c) => <span style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>{c.joined}</span> },
+            { id: "actions", header: "", align: "right", cell: (c) => (
+              <div className="flex items-center gap-1 justify-end">
+                <button onClick={() => c.realId && setReviewId(c.realId)} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8 transition-all" style={{ color: c.realId ? ERP.muted : ERP.mutedSoft }} title={c.realId ? "View application & documents" : "Sign in as Super Admin to review"}><Eye size={12} /></button>
+                <button onClick={(e) => { if (!c.realId) return; if (menuFor === c.key) { setMenuFor(null); return; } const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setMenuPos({ top: r.bottom + 4, right: Math.max(8, window.innerWidth - r.right) }); setMenuFor(c.key); }} disabled={acting === c.realId} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8 transition-all disabled:opacity-50" style={{ color: c.realId ? ERP.muted : ERP.mutedSoft }} title={c.realId ? "Approve / Reject / Suspend" : "Sign in as Super Admin"}>{acting === c.realId ? <RefreshCw size={12} className="animate-spin" /> : <MoreHorizontal size={12} />}</button>
+              </div>
+            ) },
+          ]}
+        />
         )}
       </div>
 
@@ -838,7 +718,7 @@ function CompanyScreen() {
             <div className="fixed inset-0 z-[60]" onClick={() => setMenuFor(null)} />
             <div
               className="fixed z-[61] w-44 rounded-xl py-1 overflow-hidden"
-              style={{ top: menuPos.top, right: menuPos.right, backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.12)", boxShadow: "0 10px 30px rgba(3,8,18,0.18)" }}
+              style={{ top: menuPos.top, right: menuPos.right, backgroundColor: ERP.surface, border: `1px solid ${ERP.border}`, boxShadow: ERP.shadow.lg }}
             >
               {rowActions(active.status).map((a) => (
                 <button
@@ -852,7 +732,7 @@ function CompanyScreen() {
                     }
                   }}
                   className="w-full text-left px-3.5 py-2 text-xs font-medium flex items-center gap-2 hover:bg-black/[0.04] transition-colors"
-                  style={{ color: a.danger ? "#DC2626" : "rgba(11,30,63,0.86)" }}
+                  style={{ color: a.danger ? ERP.destructive : ERP.navy }}
                 >
                   {a.key === "view" ? (
                     <Eye size={12} />
@@ -918,20 +798,13 @@ function AddUserModal({ roles, onClose, onCreated }: { roles: ApiRole[]; onClose
     }
   };
 
-  const field = { backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.15)", color: "#0B1E3F" } as const;
+  const field = { backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, color: ERP.navy } as const;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ backgroundColor: "rgba(3,8,18,0.75)" }} onClick={onClose}>
-      <div className="w-full max-w-sm rounded-2xl p-6" style={{ backgroundColor: "#F0F3F7", border: "1px solid rgba(11,30,63,0.15)" }} onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-5">
-          <div className="text-sm font-bold text-[#0B1E3F]">Add User</div>
-          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: "rgba(11,30,63,0.58)" }}>
-            <X size={14} />
-          </button>
-        </div>
+    <ErpModal open onClose={onClose} title="Add User" width={420}>
         {created ? (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl text-xs" style={{ backgroundColor: "#16A34A10", border: "1px solid #16A34A30", color: "rgba(11,30,63,0.86)" }}>
+            <div className="p-4 rounded-xl text-xs" style={{ backgroundColor: erpAlpha(ERP.success, 6), border: `1px solid ${erpAlpha(ERP.success, 19)}`, color: ERP.navy }}>
               User <span style={{ color: GOLD }}>{created.email}</span> created.
               {created.tempPassword && (
                 <div className="mt-2">
@@ -951,14 +824,13 @@ function AddUserModal({ roles, onClose, onCreated }: { roles: ApiRole[]; onClose
                 <option key={r.key} value={r.key} style={{ color: "black" }}>{r.name}</option>
               ))}
             </select>
-            {error && <div className="p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>{error}</div>}
+            {error && <div className="p-3 rounded-xl text-xs" style={{ backgroundColor: erpAlpha(ERP.destructive, 8), border: `1px solid ${erpAlpha(ERP.destructive, 20)}`, color: ERP.destructive }}>{error}</div>}
             <button disabled={busy} onClick={() => void submit()} className="w-full py-2.5 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor: GOLD, color: NAVY }}>
               Create User
             </button>
           </div>
         )}
-      </div>
-    </div>
+    </ErpModal>
   );
 }
 
@@ -1066,13 +938,13 @@ function UserRoleScreen() {
         }
       />
 
-      <div className="flex gap-1 mb-5 p-1 rounded-xl w-fit" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
+      <div className="flex gap-1 mb-5 p-1 rounded-xl w-fit" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
         {(["users", "roles"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className="px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all"
-            style={tab === t ? { backgroundColor: GOLD, color: NAVY } : { color: "rgba(11,30,63,0.58)" }}
+            style={tab === t ? { backgroundColor: GOLD, color: NAVY } : { color: ERP.muted }}
           >
             {t === "users" ? "Users" : "Roles & Permissions"}
           </button>
@@ -1082,7 +954,7 @@ function UserRoleScreen() {
       {tab === "users" && (
         <>
           <FilterBar placeholder="Search by name, email, role…" />
-          <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
+          <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
             {loading ? (
               <div className="px-4 py-3">
                 <LoadingSkeleton rows={5} tone="light" />
@@ -1094,58 +966,23 @@ function UserRoleScreen() {
             ) : userRows.length === 0 ? (
               <EmptyState
                 tone="light"
-                icon={<Users2 size={32} className="opacity-25" style={{ color: "rgba(11,30,63,0.66)" }} />}
+                icon={<Users2 size={32} className="opacity-25" style={{ color: ERP.muted }} />}
                 title="No portal users yet"
                 hint="Use Add User to invite the first operations account."
               />
             ) : (
-            <table className="w-full">
-              <THead cols={["User", "Role", "Last Login", "Status", ""]} />
-              <tbody>
-                {userRows.map((u, i) => (
-                  <tr
-                    key={u.id}
-                    style={{ borderBottom: i < userRows.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }}
-                    className="hover:bg-white/2 transition-colors"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <div
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0"
-                          style={{ backgroundColor: `${ADMIN}20`, color: "#7C3AED" }}
-                        >
-                          {u.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-xs font-semibold text-[#0B1E3F] truncate" title={u.name}>{u.name}</div>
-                          <div className="text-[10px] truncate" style={{ color: "rgba(11,30,63,0.50)" }} title={u.email}>{u.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#F5F7FA", color: "rgba(11,30,63,0.76)" }}>
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-[10px]" style={{ color: "rgba(11,30,63,0.58)", fontFamily: "var(--font-mono)" }}>{u.last}</td>
-                    <td className="px-4 py-3"><SBadge status={u.status} /></td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: "rgba(11,30,63,0.58)" }}><Eye size={12} /></button>
-                        <button
-                          onClick={() => u.live && void deactivateUser(u.live)}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8"
-                          style={{ color: u.live ? "#DC2626" : "rgba(248,113,113,0.3)" }}
-                          title={u.live ? "Deactivate user" : "Sign in as Super Admin to manage"}
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ErpDataTable
+              flush
+              rows={userRows}
+              rowKey={(u) => u.id}
+              columns={[
+                { id: "user", header: "User", cell: (u) => (<div className="flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ fontSize: ERP.text.size[10], fontWeight: ERP.text.weight.bold, backgroundColor: erpAlpha(ADMIN, 13), color: CAT.purple }}>{u.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}</div><div className="min-w-0"><div className="font-semibold text-[color:var(--erp-text-strong)] truncate" style={{ fontSize: ERP.text.size[12] }} title={u.name}>{u.name}</div><div className="truncate" style={{ fontSize: ERP.text.size[10], color: ERP.muted }} title={u.email}>{u.email}</div></div></div>) },
+                { id: "role", header: "Role", cell: (u) => <span className="inline-block px-2 py-0.5 rounded-full" style={{ fontSize: ERP.text.size[10], fontWeight: ERP.text.weight.semibold, backgroundColor: ERP.surfaceSoft, color: ERP.navy }}>{u.role}</span> },
+                { id: "last", header: "Last Login", cell: (u) => <span style={{ fontSize: ERP.text.size[10], color: ERP.muted, fontFamily: ERP.font.data }}>{u.last}</span> },
+                { id: "status", header: "Status", cell: (u) => <SBadge status={u.status} /> },
+                { id: "actions", header: "", align: "right", cell: (u) => (<div className="flex gap-1 justify-end"><button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: ERP.muted }}><Eye size={12} /></button><button onClick={() => u.live && void deactivateUser(u.live)} className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/8" style={{ color: u.live ? ERP.destructive : erpAlpha(ERP.destructive, 30) }} title={u.live ? "Deactivate user" : "Sign in as Super Admin to manage"}><Trash2 size={12} /></button></div>) },
+              ]}
+            />
             )}
           </div>
         </>
@@ -1154,11 +991,11 @@ function UserRoleScreen() {
       {tab === "roles" && (
         <>
           {matrixError && (
-            <div className="mb-3 p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>
+            <div className="mb-3 p-3 rounded-xl text-xs" style={{ backgroundColor: erpAlpha(ERP.destructive, 8), border: `1px solid ${erpAlpha(ERP.destructive, 20)}`, color: ERP.destructive }}>
               {matrixError}
             </div>
           )}
-          <div className="rounded-2xl overflow-auto" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
+          <div className="rounded-2xl overflow-auto" style={{ border: `1px solid ${ERP.border}` }}>
             {loading ? (
               <div className="px-4 py-3">
                 <LoadingSkeleton rows={6} tone="light" />
@@ -1170,17 +1007,17 @@ function UserRoleScreen() {
             ) : isLive && (liveRoles!.length === 0 || livePerms!.length === 0) ? (
               <EmptyState
                 tone="light"
-                icon={<Shield size={32} className="opacity-25" style={{ color: "rgba(11,30,63,0.66)" }} />}
+                icon={<Shield size={32} className="opacity-25" style={{ color: ERP.muted }} />}
                 title="No roles configured"
                 hint="Roles and permissions are seeded by the platform — contact the operator."
               />
             ) : isLive ? (
               <table className="w-full">
                 <thead>
-                  <tr style={{ backgroundColor: "#FBFCFD", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-                    <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest w-52" style={{ color: "rgba(11,30,63,0.50)" }}>Permission</th>
+                  <tr style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
+                    <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest w-52" style={{ color: ERP.muted }}>Permission</th>
                     {liveRoles!.map((role) => (
-                      <th key={role.key} className="px-4 py-2.5 text-center text-[9px] font-bold uppercase tracking-widest whitespace-nowrap" style={{ color: "rgba(11,30,63,0.50)" }}>
+                      <th key={role.key} className="px-4 py-2.5 text-center text-[9px] font-bold uppercase tracking-widest whitespace-nowrap" style={{ color: ERP.muted }}>
                         {role.name}
                       </th>
                     ))}
@@ -1190,10 +1027,10 @@ function UserRoleScreen() {
                   {livePerms!.map((perm, pi) => (
                     <tr
                       key={perm.key}
-                      style={{ borderBottom: pi < livePerms!.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }}
+                      style={{ borderBottom: pi < livePerms!.length - 1 ? `1px solid ${ERP.border}` : undefined }}
                       className="hover:bg-white/2"
                     >
-                      <td className="px-4 py-2.5 text-xs text-[#0B1E3F]">{perm.name}</td>
+                      <td className="px-4 py-2.5 text-xs text-[color:var(--erp-text-strong)]">{perm.name}</td>
                       {liveRoles!.map((role) => {
                         const has = role.permissions.includes(perm.key);
                         const locked = role.key === "SUPER_ADMIN";
@@ -1204,9 +1041,9 @@ function UserRoleScreen() {
                               disabled={locked}
                               title={locked ? "SUPER_ADMIN is locked" : `Toggle ${perm.name} for ${role.name}`}
                               className="w-5 h-5 rounded-md flex items-center justify-center mx-auto transition-all disabled:cursor-not-allowed"
-                              style={{ backgroundColor: has ? "#16A34A20" : "#EEF1F6", opacity: locked ? 0.6 : 1 }}
+                              style={{ backgroundColor: has ? erpAlpha(ERP.success, 13) : ERP.surfaceSoft, opacity: locked ? 0.6 : 1 }}
                             >
-                              {has ? <Check size={10} style={{ color: "#16A34A" }} /> : <X size={9} style={{ color: "rgba(11,30,63,0.38)" }} />}
+                              {has ? <Check size={10} style={{ color: ERP.success }} /> : <X size={9} style={{ color: ERP.mutedSoft }} />}
                             </button>
                           </td>
                         );
@@ -1333,7 +1170,7 @@ function AuditLogsScreen() {
           <button
             onClick={load}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-            style={{ border: `1px solid ${GOLD}30`, color: GOLD }}
+            style={{ border: `1px solid ${erpAlpha(GOLD, 19)}`, color: GOLD }}
           >
             <RefreshCw size={11} /> Refresh
           </button>
@@ -1342,35 +1179,35 @@ function AuditLogsScreen() {
 
       <div
         className="flex flex-wrap items-end gap-2.5 mb-5 p-3 rounded-xl"
-        style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}
+        style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}
       >
-        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>
+        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: ERP.muted }}>
           From
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
             className="mt-1 block px-2 py-1.5 text-xs rounded-lg"
-            style={{ border: "1px solid rgba(11,30,63,0.15)", color: NAVY }}
+            style={{ border: `1px solid ${ERP.border}`, color: NAVY }}
           />
         </label>
-        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>
+        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: ERP.muted }}>
           To
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
             className="mt-1 block px-2 py-1.5 text-xs rounded-lg"
-            style={{ border: "1px solid rgba(11,30,63,0.15)", color: NAVY }}
+            style={{ border: `1px solid ${ERP.border}`, color: NAVY }}
           />
         </label>
-        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>
+        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: ERP.muted }}>
           Action
           <select
             value={action}
             onChange={(e) => { setPage(1); setAction(e.target.value); }}
             className="mt-1 block px-2 py-1.5 text-xs rounded-lg min-w-[8rem]"
-            style={{ border: "1px solid rgba(11,30,63,0.15)", color: NAVY }}
+            style={{ border: `1px solid ${ERP.border}`, color: NAVY }}
           >
             <option value="">All</option>
             {AUDIT_ACTIONS.map((a) => (
@@ -1378,43 +1215,43 @@ function AuditLogsScreen() {
             ))}
           </select>
         </label>
-        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>
+        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: ERP.muted }}>
           Module
           <input
             value={module}
             onChange={(e) => setModule(e.target.value)}
             placeholder="Finance, OCR…"
             className="mt-1 block px-2 py-1.5 text-xs rounded-lg"
-            style={{ border: "1px solid rgba(11,30,63,0.15)", color: NAVY }}
+            style={{ border: `1px solid ${ERP.border}`, color: NAVY }}
           />
         </label>
-        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>
+        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: ERP.muted }}>
           Entity
           <input
             value={entity}
             onChange={(e) => setEntity(e.target.value)}
             placeholder="Invoice, User…"
             className="mt-1 block px-2 py-1.5 text-xs rounded-lg"
-            style={{ border: "1px solid rgba(11,30,63,0.15)", color: NAVY }}
+            style={{ border: `1px solid ${ERP.border}`, color: NAVY }}
           />
         </label>
-        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>
+        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: ERP.muted }}>
           User id
           <input
             value={user}
             onChange={(e) => setUser(e.target.value)}
             placeholder="actor user id"
             className="mt-1 block px-2 py-1.5 text-xs rounded-lg font-mono"
-            style={{ border: "1px solid rgba(11,30,63,0.15)", color: NAVY }}
+            style={{ border: `1px solid ${ERP.border}`, color: NAVY }}
           />
         </label>
-        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>
+        <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: ERP.muted }}>
           Sort
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as "createdAt:desc" | "createdAt:asc")}
             className="mt-1 block px-2 py-1.5 text-xs rounded-lg"
-            style={{ border: "1px solid rgba(11,30,63,0.15)", color: NAVY }}
+            style={{ border: `1px solid ${ERP.border}`, color: NAVY }}
           >
             <option value="createdAt:desc">Newest first</option>
             <option value="createdAt:asc">Oldest first</option>
@@ -1429,7 +1266,7 @@ function AuditLogsScreen() {
         </button>
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
         {loading ? (
           <div className="px-4 py-3"><LoadingSkeleton rows={6} tone="light" /></div>
         ) : error ? (
@@ -1437,52 +1274,24 @@ function AuditLogsScreen() {
         ) : !data || data.items.length === 0 ? (
           <EmptyState
             tone="light"
-            icon={<ClipboardCheck size={32} className="opacity-25" style={{ color: "rgba(11,30,63,0.66)" }} />}
+            icon={<ClipboardCheck size={32} className="opacity-25" style={{ color: ERP.muted }} />}
             title="No audit events match"
             hint="Try widening the date range or clearing filters."
           />
         ) : (
-          <table className="w-full">
-            <THead cols={["When", "Actor", "Action", "Module", "Entity", "IP"]} />
-            <tbody>
-              {data.items.map((row, i) => (
-                <tr
-                  key={row.id}
-                  style={{ borderBottom: i < data.items.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }}
-                >
-                  <td className="px-4 py-3 text-[10px] whitespace-nowrap" style={{ color: "rgba(11,30,63,0.66)", fontFamily: "var(--font-mono)" }}>
-                    {new Date(row.createdAt).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="text-xs font-semibold" style={{ color: NAVY }}>
-                      {row.actorName ?? row.actorLabel ?? "—"}
-                    </div>
-                    <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)" }}>
-                      {row.actorEmail ?? row.actorUserId ?? "system"}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: `${ADMIN}18`, color: "#7C3AED" }}
-                    >
-                      {row.action}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs" style={{ color: "rgba(11,30,63,0.76)" }}>{row.module}</td>
-                  <td className="px-4 py-3">
-                    <div className="text-xs" style={{ color: NAVY }}>{row.entityType}</div>
-                    <div className="text-[10px] font-mono" style={{ color: "rgba(11,30,63,0.50)" }}>
-                      {row.entityId ?? "—"}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-[10px] font-mono" style={{ color: "rgba(11,30,63,0.58)" }}>
-                    {row.ip ?? "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ErpDataTable
+            flush
+            rows={data.items}
+            rowKey={(row) => row.id}
+            columns={[
+              { id: "when", header: "When", cell: (row) => <span className="whitespace-nowrap" style={{ fontSize: ERP.text.size[10], color: ERP.muted, fontFamily: ERP.font.data }}>{new Date(row.createdAt).toLocaleString()}</span> },
+              { id: "actor", header: "Actor", cell: (row) => (<div><div className="font-semibold" style={{ fontSize: ERP.text.size[12], color: NAVY }}>{row.actorName ?? row.actorLabel ?? "—"}</div><div style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>{row.actorEmail ?? row.actorUserId ?? "system"}</div></div>) },
+              { id: "action", header: "Action", cell: (row) => <span className="inline-block px-2 py-0.5 rounded-full" style={{ fontSize: ERP.text.size[10], fontWeight: ERP.text.weight.bold, backgroundColor: erpAlpha(ADMIN, 9), color: CAT.purple }}>{row.action}</span> },
+              { id: "module", header: "Module", cell: (row) => <span style={{ fontSize: ERP.text.size[12], color: ERP.navy }}>{row.module}</span> },
+              { id: "entity", header: "Entity", cell: (row) => (<div><div style={{ fontSize: ERP.text.size[12], color: NAVY }}>{row.entityType}</div><div style={{ fontSize: ERP.text.size[10], color: ERP.muted, fontFamily: ERP.font.data }}>{row.entityId ?? "—"}</div></div>) },
+              { id: "ip", header: "IP", cell: (row) => <span style={{ fontSize: ERP.text.size[10], color: ERP.muted, fontFamily: ERP.font.data }}>{row.ip ?? "—"}</span> },
+            ]}
+          />
         )}
       </div>
 
@@ -1492,18 +1301,18 @@ function AuditLogsScreen() {
             disabled={page <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             className="px-3 py-1.5 rounded-lg text-xs disabled:opacity-40"
-            style={{ border: "1px solid rgba(11,30,63,0.15)", color: NAVY }}
+            style={{ border: `1px solid ${ERP.border}`, color: NAVY }}
           >
             Previous
           </button>
-          <span className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>
+          <span className="text-xs" style={{ color: ERP.muted }}>
             Page {page} / {totalPages}
           </span>
           <button
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
             className="px-3 py-1.5 rounded-lg text-xs disabled:opacity-40"
-            style={{ border: "1px solid rgba(11,30,63,0.15)", color: NAVY }}
+            style={{ border: `1px solid ${ERP.border}`, color: NAVY }}
           >
             Next
           </button>
@@ -1572,21 +1381,24 @@ export default function SuperAdmin() {
     settings:      () => <SystemSettingsScreen />,
   };
 
+  // Module 4 — the whole Super Admin renders in the Design System theme.
   return (
-    <ERPShell
-      moduleId="super-admin"
-      moduleName="Super Admin"
-      moduleColor={ADMIN}
-      moduleIcon={Shield as IconFC}
-      navItems={navItems}
-      activeItem={screen}
-      onItemClick={onItemClick}
-      breadcrumb={[SCREEN_LABELS[screen] ?? screen]}
-      notificationCount={0}
-      userName={getStoredUser()?.name ?? "Super Admin"}
-      userRole={getStoredUser()?.roleName ?? "Administrator"}
-    >
-      {screenMap[screen]?.() ?? null}
-    </ERPShell>
+    <ErpThemeProvider theme="ds">
+      <ERPShell
+        moduleId="super-admin"
+        moduleName="Super Admin"
+        moduleColor={ADMIN}
+        moduleIcon={Shield as IconFC}
+        navItems={navItems}
+        activeItem={screen}
+        onItemClick={onItemClick}
+        breadcrumb={[SCREEN_LABELS[screen] ?? screen]}
+        notificationCount={0}
+        userName={getStoredUser()?.name ?? "Super Admin"}
+        userRole={getStoredUser()?.roleName ?? "Administrator"}
+      >
+        {screenMap[screen]?.() ?? null}
+      </ERPShell>
+    </ErpThemeProvider>
   );
 }

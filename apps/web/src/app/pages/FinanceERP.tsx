@@ -16,6 +16,7 @@ import {
 import { ERPShell, type NavItem, type IconFC } from "../components/ERPShell";
 import { EmptyState, LoadingSkeleton, ErrorState, SampleDataBanner } from "../components/States";
 import {
+  ERP, CAT, erpAlpha, ErpThemeProvider, ErpStatCard, ErpBadge,
   ErpPageTemplate, ErpButton, ErpSearchBar, ErpFilterPanel, ErpDataTable,
   ErpPagination, ErpDrawer, ErpDrawerFooterActions, ErpForm, ErpFormRow, ErpField,
   ErpInput, ErpSelect, ErpTextarea, ErpStatusChip, erpToast,
@@ -27,8 +28,8 @@ import { downloadCsv } from "../lib/exportCsv";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const FIN  = "#16A34A";
-const GOLD = "#C9A24B";
+const FIN  = CAT.green; // Finance module accent (categorical, themed)
+const GOLD = ERP.accent;
 const BARCODE_FIN = [3,1,2,1,1,3,2,1,1,2,3,1,2,1,1,3,1,2,3,1,1,2,1,3,2,1,1,2,1,3,1,2,1,3];
 
 type FinScreen = "dashboard"|"income"|"expenses"|"ledger"|"ar"|"ap"|"cash"|"forex"|"invoices"|"mofaBill"|"receipts"|"statements"|"pl"|"bs";
@@ -212,7 +213,7 @@ interface BSData { assets:BSLine[]; liabilities:BSLine[]; equity:BSLine[]; total
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
-const IS: CSSProperties = { backgroundColor:"#F5F7FA", border:"1px solid rgba(11,30,63,0.15)", color:"#0B1E3F" };
+const IS: CSSProperties = { backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}`, color:ERP.navy };
 
 // ─── Live-data state machine ──────────────────────────────────────────────────
 // Logged OUT → demo mode: screens keep rendering their mock data (unchanged).
@@ -284,9 +285,9 @@ function fmtMoney(n: number): string {
 function TH({ cols }: { cols:string[] }) {
   return (
     <thead>
-      <tr style={{ backgroundColor:"#FBFCFD", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+      <tr style={{ backgroundColor:ERP.surfaceSoft, borderBottom:`1px solid ${ERP.border}` }}>
         {cols.map(c => (
-          <th key={c} className="px-4 py-2.5 text-left text-[9px] font-black uppercase tracking-widest whitespace-nowrap" style={{ color:"rgba(11,30,63,0.50)" }}>{c}</th>
+          <th key={c} className="px-4 py-2.5 text-left text-[9px] font-black uppercase tracking-widest whitespace-nowrap" style={{ color:ERP.muted }}>{c}</th>
         ))}
       </tr>
     </thead>
@@ -294,17 +295,18 @@ function TH({ cols }: { cols:string[] }) {
 }
 
 function Amt({ v, type }: { v:number; type?:"cr"|"dr" }) {
-  const c = type==="cr"?"#16A34A":type==="dr"?"#DC2626":"rgba(11,30,63,0.86)";
+  const c = type==="cr"?ERP.success:type==="dr"?ERP.destructive:ERP.navy;
   const p = type==="cr"?"+":(type==="dr"?"−":"");
   return <span className="font-mono font-bold text-xs whitespace-nowrap tabular-nums" style={{ color:c, fontFamily:"var(--font-mono)" }}>{p}SAR {v.toLocaleString()}</span>;
 }
 
+// Delegates to the shared ErpButton (outline), tinted to an optional accent.
 function ActionBtn({ label, color, icon:Icon, onClick, disabled }: { label:string; color?:string; icon?:typeof Download; onClick?:()=>void; disabled?:boolean }) {
   return (
-    <button onClick={onClick} disabled={disabled} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold whitespace-nowrap disabled:opacity-60"
-      style={{ backgroundColor:color?`${color}18`:"rgba(11,30,63,0.38)", color:color??`rgba(11,30,63,0.66)`, border:`1px solid ${color?color+"30":"rgba(11,30,63,0.38)"}` }}>
-      {Icon && <Icon size={11} />}{label}
-    </button>
+    <ErpButton variant="outline" size="sm" icon={Icon ? <Icon size={11} /> : undefined} onClick={onClick} disabled={disabled}
+      style={color ? { backgroundColor: erpAlpha(color, 9), color, border: `1px solid ${erpAlpha(color, 19)}` } : undefined}>
+      {label}
+    </ErpButton>
   );
 }
 
@@ -313,31 +315,31 @@ function ActionBtn({ label, color, icon:Icon, onClick, disabled }: { label:strin
 function FinDoc({ type, docNo, date, children, noBarcode }: { type:string; docNo:string; date:string; children:ReactNode; noBarcode?:boolean }) {
   return (
     <div className="rounded-2xl overflow-hidden shadow-xl" style={{ fontFamily:"var(--font-sans)" }}>
-      <div className="h-2" style={{ background:`linear-gradient(90deg,${GOLD},#E8C87A,${GOLD})` }} />
+      <div className="h-2" style={{ background:`linear-gradient(90deg,${GOLD},${ERP.goldHov},${GOLD})` }} />
       <div className="bg-white px-8 py-6">
         <div className="flex items-start justify-between mb-6">
           <div>
             <div className="text-2xl font-black text-gray-900">TUBA AL HIJAZ</div>
-            <div className="text-[9px] font-bold tracking-[0.18em] uppercase" style={{ color:"#6B7280" }}>Enterprise Ground Handling · Financial Services</div>
-            <div className="text-[9px] mt-0.5" style={{ color:"#9CA3AF" }}>Makkah Al-Mukarramah, Kingdom of Saudi Arabia · VAT Reg: 310-XXX-XXXX</div>
+            <div className="text-[9px] font-bold tracking-[0.18em] uppercase" style={{ color:ERP.muted }}>Enterprise Ground Handling · Financial Services</div>
+            <div className="text-[9px] mt-0.5" style={{ color:ERP.muted }}>Makkah Al-Mukarramah, Kingdom of Saudi Arabia · VAT Reg: 310-XXX-XXXX</div>
           </div>
           <div className="text-right">
             <div className="text-[10px] font-black tracking-widest uppercase" style={{ color:FIN }}>{type}</div>
             <div className="text-xl font-black text-gray-900 mt-1" style={{ fontFamily:"var(--font-mono)" }}>{docNo}</div>
-            <div className="text-[10px]" style={{ color:"#9CA3AF" }}>Date: {date}</div>
+            <div className="text-[10px]" style={{ color:ERP.muted }}>Date: {date}</div>
           </div>
         </div>
         {children}
         {!noBarcode && (
           <>
             <div className="flex justify-center gap-px mt-5 pt-4 border-t border-gray-100">
-              {BARCODE_FIN.map((w, i) => <div key={i} style={{ width:w, height:28, backgroundColor:"#F5F7FA", opacity:i%5===0?0.4:1, borderRadius:1 }} />)}
+              {BARCODE_FIN.map((w, i) => <div key={i} style={{ width:w, height:28, backgroundColor:ERP.surfaceSoft, opacity:i%5===0?0.4:1, borderRadius:1 }} />)}
             </div>
-            <div className="text-center text-[9px] mt-1.5" style={{ color:"#9CA3AF", fontFamily:"var(--font-mono)" }}>{docNo} · TUBA-FIN-1446H</div>
+            <div className="text-center text-[9px] mt-1.5" style={{ color:ERP.muted, fontFamily:"var(--font-mono)" }}>{docNo} · TUBA-FIN-1446H</div>
           </>
         )}
       </div>
-      <div className="h-1.5" style={{ background:`linear-gradient(90deg,${GOLD},#E8C87A,${GOLD})` }} />
+      <div className="h-1.5" style={{ background:`linear-gradient(90deg,${GOLD},${ERP.goldHov},${GOLD})` }} />
     </div>
   );
 }
@@ -347,14 +349,14 @@ function DocTable({ cols, rows }: { cols:string[]; rows:ReactNode[][] }) {
   return (
     <table className="w-full mb-4 text-xs">
       <thead>
-        <tr style={{ backgroundColor:"#F9FAFB", borderBottom:"1px solid #E5E7EB" }}>
-          {cols.map((c, i) => <th key={c} className={`py-2 px-3 font-black text-[9px] uppercase tracking-wider text-left${i>0?" text-right":""}`} style={{ color:"#6B7280" }}>{c}</th>)}
+        <tr style={{ backgroundColor:ERP.surfaceSoft, borderBottom:`1px solid ${ERP.border}` }}>
+          {cols.map((c, i) => <th key={c} className={`py-2 px-3 font-black text-[9px] uppercase tracking-wider text-left${i>0?" text-right":""}`} style={{ color:ERP.muted }}>{c}</th>)}
         </tr>
       </thead>
       <tbody>
         {rows.map((row, ri) => (
-          <tr key={ri} style={{ backgroundColor:ri%2===0?"white":"#FAFAFA", borderBottom:"1px solid #F3F4F6" }}>
-            {row.map((cell, ci) => <td key={ci} className={`py-2.5 px-3${ci>0?" text-right":""}`} style={{ color:"#374151" }}>{cell}</td>)}
+          <tr key={ri} style={{ backgroundColor:ri%2===0?"white":ERP.surfaceSoft, borderBottom:`1px solid ${ERP.surfaceSoft}` }}>
+            {row.map((cell, ci) => <td key={ci} className={`py-2.5 px-3${ci>0?" text-right":""}`} style={{ color:ERP.muted }}>{cell}</td>)}
           </tr>
         ))}
       </tbody>
@@ -364,20 +366,20 @@ function DocTable({ cols, rows }: { cols:string[]; rows:ReactNode[][] }) {
 
 // Statement line for P&L / Balance Sheet
 // `pending` opt-in renders this document's existing "—" placeholder (same token and
-// #D1D5DB tone as the light statement table above) in the amount slot, for a line
+// light-grey tone as the light statement table above) in the amount slot, for a line
 // whose figure the backend does not carry. Left off, an amount-less row still
 // renders label-only — that is the section-heading form ("Current Assets" etc.).
 function SLine({ label, amount, indent=0, bold=false, sub=false, sep=false, color, pending=false }: { label:string; amount?:number; indent?:number; bold?:boolean; sub?:boolean; sep?:boolean; color?:string; pending?:boolean }) {
   const amtCls = `text-xs font-mono shrink-0 whitespace-nowrap tabular-nums ml-3${bold?" font-black":" font-semibold"}`;
   return (
-    <div className={`flex justify-between items-center py-1.5${sep?" border-t mt-1 pt-2":""}${sub?" opacity-60":""}`} style={sep?{borderColor:"#E5E7EB"}:{}}>
-      <span className={`text-xs min-w-0 truncate${bold?" font-black":" font-medium"}`} title={label} style={{ paddingLeft:`${indent*14}px`, color:color??(bold?"#111827":"#374151") }}>{label}</span>
+    <div className={`flex justify-between items-center py-1.5${sep?" border-t mt-1 pt-2":""}${sub?" opacity-60":""}`} style={sep?{borderColor:ERP.border}:{}}>
+      <span className={`text-xs min-w-0 truncate${bold?" font-black":" font-medium"}`} title={label} style={{ paddingLeft:`${indent*14}px`, color:color??(bold?ERP.navy:ERP.muted) }}>{label}</span>
       {amount !== undefined ? (
-        <span className={amtCls} style={{ color:color??(bold?"#111827":"#374151"), fontFamily:"var(--font-mono)" }}>
+        <span className={amtCls} style={{ color:color??(bold?ERP.navy:ERP.muted), fontFamily:"var(--font-mono)" }}>
           SAR {amount.toLocaleString()}
         </span>
       ) : pending ? (
-        <span className={amtCls} style={{ color:"#D1D5DB", fontFamily:"var(--font-mono)" }}>—</span>
+        <span className={amtCls} style={{ color:ERP.border, fontFamily:"var(--font-mono)" }}>—</span>
       ) : null}
     </div>
   );
@@ -409,11 +411,11 @@ function DashboardScreen({ onGo }: { onGo: (s: FinScreen) => void }) {
   /** Existing DashData fields only — no invented “today” collection/payment KPIs. */
   const summary = d ? [
     { id: "cash", labelBn: "নগদ অবস্থান", labelEn: "Cash Position", value: fmtMoney(d.cashPosition), tone: FIN, go: "cash" as FinScreen },
-    { id: "rev", labelBn: "রাজস্ব (YTD)", labelEn: "Revenue (YTD)", value: fmtMoney(d.totalRevenue), tone: "#06B6D4", go: "income" as FinScreen },
-    { id: "ar", labelBn: "প্রাপ্য (AR)", labelEn: "Accounts Receivable", value: fmtMoney(d.accountsReceivable), tone: "#B45309", go: "ar" as FinScreen },
-    { id: "ap", labelBn: "প্রদেয় (AP)", labelEn: "Accounts Payable", value: fmtMoney(d.accountsPayable), tone: "#DC2626", go: "ap" as FinScreen },
-    { id: "due", labelBn: "বকেয়া (৯০+)", labelEn: "Outstanding Due (90+)", value: fmtMoney(d.arAging.d90), tone: "#EF4444", go: "ar" as FinScreen },
-    { id: "profit", labelBn: "নেট লাভ (YTD)", labelEn: "YTD Net Profit", value: fmtMoney(d.ytdNetProfit), tone: "#16A34A", go: "pl" as FinScreen },
+    { id: "rev", labelBn: "রাজস্ব (YTD)", labelEn: "Revenue (YTD)", value: fmtMoney(d.totalRevenue), tone: ERP.info, go: "income" as FinScreen },
+    { id: "ar", labelBn: "প্রাপ্য (AR)", labelEn: "Accounts Receivable", value: fmtMoney(d.accountsReceivable), tone: ERP.warning, go: "ar" as FinScreen },
+    { id: "ap", labelBn: "প্রদেয় (AP)", labelEn: "Accounts Payable", value: fmtMoney(d.accountsPayable), tone: ERP.destructive, go: "ap" as FinScreen },
+    { id: "due", labelBn: "বকেয়া (৯০+)", labelEn: "Outstanding Due (90+)", value: fmtMoney(d.arAging.d90), tone: ERP.destructive, go: "ar" as FinScreen },
+    { id: "profit", labelBn: "নেট লাভ (YTD)", labelEn: "YTD Net Profit", value: fmtMoney(d.ytdNetProfit), tone: ERP.success, go: "pl" as FinScreen },
   ] : [];
 
   const recentCols: ErpColumn<FinEntry>[] = [
@@ -445,16 +447,13 @@ function DashboardScreen({ onGo }: { onGo: (s: FinScreen) => void }) {
           <div className="flex flex-col gap-3 w-full">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               {summary.map((s) => (
-                <button
+                <ErpStatCard
                   key={s.id}
-                  type="button"
+                  value={s.value}
+                  accent={s.tone}
+                  label={lang === "bn" ? s.labelBn : s.labelEn}
                   onClick={() => onGo(s.go)}
-                  className="text-left rounded-xl px-3 py-2.5"
-                  style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}
-                >
-                  <div className="text-base font-bold tabular-nums" style={{ color: s.tone, fontFamily: "var(--font-mono)" }}>{s.value}</div>
-                  <div className="text-[10px] mt-0.5" style={{ color: "rgba(11,30,63,0.55)" }}>{lang === "bn" ? s.labelBn : s.labelEn}</div>
-                </button>
+                />
               ))}
             </div>
             <div className="flex flex-wrap gap-2">
@@ -471,7 +470,7 @@ function DashboardScreen({ onGo }: { onGo: (s: FinScreen) => void }) {
                 {lang === "bn" ? "ভাউচার" : "Voucher"}
               </ErpButton>
           </div>
-            <p className="text-[10px]" style={{ color: "rgba(11,30,63,0.45)" }}>
+            <p className="text-[10px]" style={{ color: ERP.muted }}>
               {lang === "bn"
                 ? "আজকের কালেকশন/পেমেন্ট API-তে নেই — YTD রাজস্ব ও বিদ্যমান কেপিআই দেখানো হয়েছে।"
                 : "Today’s collection/payment are not on the API — showing YTD revenue and existing KPIs."}
@@ -480,17 +479,17 @@ function DashboardScreen({ onGo }: { onGo: (s: FinScreen) => void }) {
         }
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-          <div className="rounded-xl p-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-            <div className="text-xs font-bold text-[#0B1E3F] mb-3">{lang === "bn" ? "AR এজিং" : "AR Aging"}</div>
-            {([["0–30", "#16A34A", d.arAging.cur], ["31–60", "#B45309", d.arAging.d30], ["61–90", "#FB923C", d.arAging.d60], ["90+", "#DC2626", d.arAging.d90]] as const).map(([l, c, v]) => {
+          <div className="rounded-xl p-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+            <div className="text-xs font-bold text-[color:var(--erp-text-strong)] mb-3">{lang === "bn" ? "AR এজিং" : "AR Aging"}</div>
+            {([["0–30", ERP.success, d.arAging.cur], ["31–60", ERP.warning, d.arAging.d30], ["61–90", CAT.orange, d.arAging.d60], ["90+", ERP.destructive, d.arAging.d90]] as const).map(([l, c, v]) => {
               const pct = arTotal > 0 ? Math.round((v / arTotal) * 100) : 0;
             return (
                 <div key={l} className="mb-2">
                   <div className="flex justify-between text-[11px] mb-1">
-                    <span style={{ color: "rgba(11,30,63,0.66)" }}>{l}</span>
+                    <span style={{ color: ERP.muted }}>{l}</span>
                     <span className="font-mono font-bold" style={{ color: c }}>{fmtMoney(v)}</span>
                 </div>
-                  <div className="h-1.5 rounded-full" style={{ backgroundColor: "#EEF1F6" }}>
+                  <div className="h-1.5 rounded-full" style={{ backgroundColor: ERP.surfaceSoft }}>
                     <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: c }} />
                   </div>
               </div>
@@ -498,7 +497,7 @@ function DashboardScreen({ onGo }: { onGo: (s: FinScreen) => void }) {
           })}
         </div>
           <div>
-            <div className="text-xs font-bold text-[#0B1E3F] mb-2">{lang === "bn" ? "সাম্প্রতিক লেনদেন" : "Recent Transactions"}</div>
+            <div className="text-xs font-bold text-[color:var(--erp-text-strong)] mb-2">{lang === "bn" ? "সাম্প্রতিক লেনদেন" : "Recent Transactions"}</div>
             <ErpDataTable
               columns={recentCols}
               rows={recent.loading && !demo ? [] : recentRows}
@@ -529,7 +528,7 @@ function DashboardScreen({ onGo }: { onGo: (s: FinScreen) => void }) {
 function IncExpScreen({ type }: { type:"income"|"expenses" }) {
   const { lang } = useLang();
   const mock = type === "income" ? INCOME : EXPENSES;
-  const color = type === "income" ? FIN : "#EF4444";
+  const color = type === "income" ? FIN : ERP.destructive;
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -736,9 +735,9 @@ function IncExpScreen({ type }: { type:"income"|"expenses" }) {
               [lang === "bn" ? "পরিমাণ" : "Amount", fmtMoney(sel.amt)],
               [lang === "bn" ? "স্ট্যাটাস" : "Status", sel.status],
             ].map(([k, v]) => (
-              <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                <dd className="font-semibold text-[#0B1E3F]">{v}</dd>
+              <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                <dt style={{ color: ERP.muted }}>{k}</dt>
+                <dd className="font-semibold text-[color:var(--erp-text-strong)]">{v}</dd>
                 </div>
               ))}
           </dl>
@@ -829,21 +828,20 @@ function LedgerScreen() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Tab bar */}
-      <div className="flex items-center gap-1 px-6 py-3 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"#FFFFFF" }}>
+      <div className="flex items-center gap-1 px-6 py-3 shrink-0" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:ERP.surface }}>
         {(["agent","supplier","gl"] as LedTab[]).map(t=>(
           <button key={t} onClick={()=>changeTab(t)} className="px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all capitalize"
-            style={{ backgroundColor:tab===t?`${FIN}18`:"transparent", color:tab===t?FIN:"rgba(11,30,63,0.58)", border:`1px solid ${tab===t?FIN+"30":"transparent"}` }}>
+            style={{ backgroundColor:tab===t?erpAlpha(FIN, 9):"transparent", color:tab===t?FIN:ERP.muted, border:`1px solid ${tab===t?erpAlpha(FIN, 19):"transparent"}` }}>
             {t==="gl"?"General Ledger":t==="agent"?"Agent Ledger":"Supplier Ledger"}
           </button>
         ))}
         {!isGL && (
           <div className="ml-4">
-            <select value={liveEnts ? effId : entity} onChange={e=> liveEnts ? setSelId(e.target.value) : setEntity(e.target.value)}
-              className="px-3 py-1.5 rounded-xl text-[10px] focus:outline-none appearance-none" style={IS}>
+            <ErpSelect value={liveEnts ? effId : entity} onChange={e=> liveEnts ? setSelId(e.target.value) : setEntity(e.target.value)}>
               {liveEnts
                 ? liveEnts.map(x=><option key={x.companyId} value={x.companyId}>{x.name}</option>)
                 : (tab==="agent"?agentList:supplierList).map(e=><option key={e} value={e}>{e}</option>)}
-            </select>
+            </ErpSelect>
           </div>
         )}
         <div className="ml-auto flex gap-2">
@@ -873,10 +871,10 @@ function LedgerScreen() {
 
       {/* Opening balance / header */}
       {!isGL && (
-        <div className="flex items-center gap-6 px-6 py-3 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"#FFFFFF" }}>
-          <div className="min-w-0"><div className="text-[9px] uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.50)" }}>Entity</div><div className="text-xs font-bold text-[#0B1E3F] truncate" title={entityName}>{entityName}</div></div>
-          <div className="shrink-0"><div className="text-[9px] uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.50)" }}>Period</div><div className="text-xs font-bold text-[#0B1E3F] whitespace-nowrap">Jun – Jul 2025</div></div>
-          <div className="shrink-0"><div className="text-[9px] uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.50)" }}>Closing Balance</div>
+        <div className="flex items-center gap-6 px-6 py-3 shrink-0" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:ERP.surface }}>
+          <div className="min-w-0"><div className="text-[9px] uppercase tracking-widest" style={{ color:ERP.muted }}>Entity</div><div className="text-xs font-bold text-[color:var(--erp-text-strong)] truncate" title={entityName}>{entityName}</div></div>
+          <div className="shrink-0"><div className="text-[9px] uppercase tracking-widest" style={{ color:ERP.muted }}>Period</div><div className="text-xs font-bold text-[color:var(--erp-text-strong)] whitespace-nowrap">Jun – Jul 2025</div></div>
+          <div className="shrink-0"><div className="text-[9px] uppercase tracking-widest" style={{ color:ERP.muted }}>Closing Balance</div>
             <div className="text-xs font-bold whitespace-nowrap tabular-nums" style={{ color:FIN, fontFamily:"var(--font-mono)" }}>
               {ledReady ? `SAR ${closing.toLocaleString()}` : "—"}
             </div>
@@ -885,41 +883,42 @@ function LedgerScreen() {
       )}
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }}>
-        <table className="w-full">
-          {isGL
-            ? <TH cols={["Date","Account","Reference","Description","Debit","Credit"]} />
-            : <TH cols={["Date","Description","Reference","Debit","Credit","Balance"]} />
-          }
-          <tbody>
-            {isGL ? (glReady && glRows.length > 0 ? glRows.map((e,i)=>(
-              <tr key={i} style={{ borderBottom:i<glRows.length-1?"1px solid rgba(11,30,63,0.08)":undefined }} className="hover:bg-white/2">
-                <td className="px-4 py-3 text-[10px] whitespace-nowrap" style={{ color:"rgba(11,30,63,0.66)", fontFamily:"var(--font-mono)" }}>{e.date}</td>
-                <td className="px-4 py-3 text-xs text-[#0B1E3F]"><div className="truncate max-w-[16rem]" title={e.acct}>{e.acct}</div></td>
-                <td className="px-4 py-3 text-[9px] whitespace-nowrap" style={{ color:FIN, fontFamily:"var(--font-mono)" }}>{e.ref}</td>
-                <td className="px-4 py-3 text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}><div className="truncate max-w-[20rem]" title={e.desc}>{e.desc}</div></td>
-                <td className="px-4 py-3">{e.dr>0?<Amt v={e.dr} type="dr" />:<span style={{ color:"rgba(11,30,63,0.38)" }}>—</span>}</td>
-                <td className="px-4 py-3">{e.cr>0?<Amt v={e.cr} type="cr" />:<span style={{ color:"rgba(11,30,63,0.38)" }}>—</span>}</td>
-              </tr>
-            )) : (
-              <TableState cols={6} loading={baseLoad && !demo} error={baseErr && !demo} onRetry={retry}
-                title="No journal entries" hint="Posted general-ledger lines appear here." />
-            )) : (ledReady && rows.length > 0 ? rows.map((e,i)=>(
-              <tr key={i} style={{ borderBottom:i<rows.length-1?"1px solid rgba(11,30,63,0.08)":undefined }} className="hover:bg-white/2">
-                <td className="px-4 py-3 text-[10px] whitespace-nowrap" style={{ color:"rgba(11,30,63,0.66)", fontFamily:"var(--font-mono)" }}>{e.date}</td>
-                <td className="px-4 py-3 text-xs text-[#0B1E3F]"><div className="truncate max-w-[22rem]" title={e.desc}>{e.desc}</div></td>
-                <td className="px-4 py-3 text-[9px] whitespace-nowrap" style={{ color:FIN, fontFamily:"var(--font-mono)" }}>{e.ref}</td>
-                <td className="px-4 py-3">{e.dr>0?<Amt v={e.dr} type="dr" />:<span style={{ color:"rgba(11,30,63,0.38)" }}>—</span>}</td>
-                <td className="px-4 py-3">{e.cr>0?<Amt v={e.cr} type="cr" />:<span style={{ color:"rgba(11,30,63,0.38)" }}>—</span>}</td>
-                <td className="px-4 py-3"><span className="font-mono font-bold text-xs whitespace-nowrap tabular-nums" style={{ color:"rgba(11,30,63,0.86)", fontFamily:"var(--font-mono)" }}>SAR {e.bal.toLocaleString()}</span></td>
-              </tr>
-            )) : (
-              <TableState cols={6} loading={(baseLoad || ledLoad) && !demo} error={(baseErr || ledErr) && !demo} onRetry={retry}
-                title={!demo && liveEnts && liveEnts.length === 0 ? "No ledger accounts" : "No ledger entries"}
-                hint={!demo && liveEnts && liveEnts.length === 0 ? "Agents and suppliers appear here once onboarded." : "Postings against this entity appear here."} />
-            ))}
-          </tbody>
-        </table>
+      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth:"thin", scrollbarColor:`${ERP.mutedSoft} transparent` }}>
+        {isGL ? (
+          (baseErr && !demo) ? <div className="p-4"><ErrorState onRetry={retry} /></div> : (
+          <ErpDataTable
+            rows={glReady ? glRows : []}
+            rowKey={(e) => `${e.date}-${e.ref}-${e.acct}-${e.dr}-${e.cr}`}
+            loading={baseLoad && !demo}
+            emptyTitle="No journal entries"
+            emptyHint="Posted general-ledger lines appear here."
+            columns={[
+              { id:"date", header:"Date", cell:(e)=><span className="whitespace-nowrap" style={{ fontSize:ERP.text.size[10], color:ERP.muted, fontFamily:ERP.font.data }}>{e.date}</span> },
+              { id:"acct", header:"Account", cell:(e)=><div className="truncate max-w-[16rem] text-[color:var(--erp-text-strong)]" style={{ fontSize:ERP.text.size[12] }} title={e.acct}>{e.acct}</div> },
+              { id:"ref", header:"Reference", cell:(e)=><span className="whitespace-nowrap" style={{ fontSize:ERP.text.size[9], color:FIN, fontFamily:ERP.font.data }}>{e.ref}</span> },
+              { id:"desc", header:"Description", cell:(e)=><div className="truncate max-w-[20rem]" style={{ fontSize:ERP.text.size[10], color:ERP.muted }} title={e.desc}>{e.desc}</div> },
+              { id:"dr", header:"Debit", align:"right", cell:(e)=> e.dr>0?<Amt v={e.dr} type="dr" />:<span style={{ color:ERP.mutedSoft }}>—</span> },
+              { id:"cr", header:"Credit", align:"right", cell:(e)=> e.cr>0?<Amt v={e.cr} type="cr" />:<span style={{ color:ERP.mutedSoft }}>—</span> },
+            ]}
+          />)
+        ) : (
+          ((baseErr || ledErr) && !demo) ? <div className="p-4"><ErrorState onRetry={retry} /></div> : (
+          <ErpDataTable
+            rows={ledReady ? rows : []}
+            rowKey={(e) => `${e.date}-${e.ref}-${e.dr}-${e.cr}-${e.bal}`}
+            loading={(baseLoad || ledLoad) && !demo}
+            emptyTitle={!demo && liveEnts && liveEnts.length === 0 ? "No ledger accounts" : "No ledger entries"}
+            emptyHint={!demo && liveEnts && liveEnts.length === 0 ? "Agents and suppliers appear here once onboarded." : "Postings against this entity appear here."}
+            columns={[
+              { id:"date", header:"Date", cell:(e)=><span className="whitespace-nowrap" style={{ fontSize:ERP.text.size[10], color:ERP.muted, fontFamily:ERP.font.data }}>{e.date}</span> },
+              { id:"desc", header:"Description", cell:(e)=><div className="truncate max-w-[22rem] text-[color:var(--erp-text-strong)]" style={{ fontSize:ERP.text.size[12] }} title={e.desc}>{e.desc}</div> },
+              { id:"ref", header:"Reference", cell:(e)=><span className="whitespace-nowrap" style={{ fontSize:ERP.text.size[9], color:FIN, fontFamily:ERP.font.data }}>{e.ref}</span> },
+              { id:"dr", header:"Debit", align:"right", cell:(e)=> e.dr>0?<Amt v={e.dr} type="dr" />:<span style={{ color:ERP.mutedSoft }}>—</span> },
+              { id:"cr", header:"Credit", align:"right", cell:(e)=> e.cr>0?<Amt v={e.cr} type="cr" />:<span style={{ color:ERP.mutedSoft }}>—</span> },
+              { id:"bal", header:"Balance", align:"right", cell:(e)=><span style={{ fontSize:ERP.text.size[12], fontWeight:ERP.text.weight.bold, color:ERP.navy, fontFamily:ERP.font.data }}>SAR {e.bal.toLocaleString()}</span> },
+            ]}
+          />)
+        )}
       </div>
     </div>
   );
@@ -931,7 +930,7 @@ type ArApEntity = { entity: string; cur: number; d30: number; d60: number; d90: 
 
 function ARAPScreen({ type }: { type: "ar" | "ap" }) {
   const { lang } = useLang();
-  const color = type === "ar" ? "#B45309" : "#DC2626";
+  const color = type === "ar" ? ERP.warning : ERP.destructive;
   const { data: live, loading, error, demo, refetch } = useLive<ARAPData>(`/finance/${type}`);
   const [q, setQ] = useState("");
   const [bucket, setBucket] = useState<"all" | "cur" | "d30" | "d60" | "d90">("all");
@@ -947,10 +946,10 @@ function ARAPScreen({ type }: { type: "ar" | "ap" }) {
   const total = totals ? totals.total : entities.reduce((s, e) => s + e.cur + e.d30 + e.d60 + e.d90, 0);
   const pctOf = (v: number) => (total > 0 ? Math.round((v / total) * 100) : 0);
   const buckets: [string, string, "cur" | "d30" | "d60" | "d90"][] = [
-    [lang === "bn" ? "০–৩০ দিন" : "0–30 days", "#16A34A", "cur"],
-    [lang === "bn" ? "৩১–৬০" : "31–60 days", "#B45309", "d30"],
-    [lang === "bn" ? "৬১–৯০" : "61–90 days", "#FB923C", "d60"],
-    [lang === "bn" ? "৯০+" : "90+ days", "#DC2626", "d90"],
+    [lang === "bn" ? "০–৩০ দিন" : "0–30 days", ERP.success, "cur"],
+    [lang === "bn" ? "৩১–৬০" : "31–60 days", ERP.warning, "d30"],
+    [lang === "bn" ? "৬১–৯০" : "61–90 days", CAT.orange, "d60"],
+    [lang === "bn" ? "৯০+" : "90+ days", ERP.destructive, "d90"],
   ];
 
   const filtered = entities.filter((e) => {
@@ -970,7 +969,7 @@ function ARAPScreen({ type }: { type: "ar" | "ap" }) {
     { id: "cur", header: "0–30", cell: (e) => <Amt v={e.cur} /> },
     { id: "d30", header: "31–60", cell: (e) => <Amt v={e.d30} /> },
     { id: "d60", header: "61–90", cell: (e) => <Amt v={e.d60} /> },
-    { id: "d90", header: "90+", cell: (e) => (e.d90 > 0 ? <Amt v={e.d90} type="dr" /> : <span style={{ color: "rgba(11,30,63,0.38)" }}>—</span>) },
+    { id: "d90", header: "90+", cell: (e) => (e.d90 > 0 ? <Amt v={e.d90} type="dr" /> : <span style={{ color: ERP.mutedSoft }}>—</span>) },
     {
       id: "tot",
       header: lang === "bn" ? "মোট" : "Total",
@@ -998,23 +997,17 @@ function ARAPScreen({ type }: { type: "ar" | "ap" }) {
           <div className="flex flex-col gap-3 w-full">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {buckets.map(([l, c, k]) => {
-            const v = sum(k);
-            return (
-                  <button
+                const v = sum(k);
+                return (
+                  <ErpStatCard
                     key={k}
-                    type="button"
+                    value={`${pctOf(v)}%`}
+                    accent={c}
+                    label={`${l} · ${fmtMoney(v)}`}
                     onClick={() => { setBucket(k); setPage(1); }}
-                    className="text-left rounded-xl px-3 py-2.5"
-                    style={{
-                      backgroundColor: "#FFFFFF",
-                      border: `1px solid ${bucket === k ? c : "rgba(11,30,63,0.11)"}`,
-                    }}
-                  >
-                    <div className="text-sm font-bold tabular-nums" style={{ color: c, fontFamily: "var(--font-mono)" }}>{pctOf(v)}%</div>
-                    <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.55)" }}>{l} · {fmtMoney(v)}</div>
-                  </button>
-            );
-          })}
+                  />
+                );
+              })}
         </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full">
               <div className="flex-1">
@@ -1073,8 +1066,8 @@ function ARAPScreen({ type }: { type: "ar" | "ap" }) {
         {sel && (
           <dl className="space-y-2 text-sm">
             {buckets.map(([l, c, k]) => (
-              <div key={k} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                <dt style={{ color: "rgba(11,30,63,0.50)" }}>{l}</dt>
+              <div key={k} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                <dt style={{ color: ERP.muted }}>{l}</dt>
                 <dd className="font-mono font-bold" style={{ color: c }}>SAR {(sel[k] as number).toLocaleString()}</dd>
       </div>
             ))}
@@ -1153,14 +1146,14 @@ function CashBankScreen() {
             {banks.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {banks.map((b) => (
-                  <div key={b.name} className="rounded-xl px-3 py-2.5" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+                  <div key={b.name} className="rounded-xl px-3 py-2.5" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
                     <div className="flex items-center gap-2 mb-1">
                       <Building size={14} style={{ color: FIN }} />
                       <ErpStatusChip status="approved" label="ACTIVE" lang={lang} />
       </div>
                     <div className="text-sm font-bold tabular-nums" style={{ color: FIN, fontFamily: "var(--font-mono)" }}>{fmtMoney(b.balance)}</div>
-                    <div className="text-[11px] font-semibold text-[#0B1E3F] truncate" title={b.name}>{b.name}</div>
-                    <div className="text-[10px] truncate" style={{ color: "rgba(11,30,63,0.50)" }}>{b.acct}</div>
+                    <div className="text-[11px] font-semibold text-[color:var(--erp-text-strong)] truncate" title={b.name}>{b.name}</div>
+                    <div className="text-[10px] truncate" style={{ color: ERP.muted }}>{b.acct}</div>
             </div>
                 ))}
           </div>
@@ -1221,9 +1214,9 @@ function CashBankScreen() {
               [lang === "bn" ? "ধরন" : "Type", sel.type === "cr" ? "CREDIT" : "DEBIT"],
               [lang === "bn" ? "পরিমাণ" : "Amount", `SAR ${sel.amount.toLocaleString()}`],
             ].map(([k, v]) => (
-              <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                <dd className="font-semibold text-[#0B1E3F] text-right">{v}</dd>
+              <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                <dt style={{ color: ERP.muted }}>{k}</dt>
+                <dd className="font-semibold text-[color:var(--erp-text-strong)] text-right">{v}</dd>
         </div>
             ))}
           </dl>
@@ -1257,76 +1250,65 @@ function ForexScreen() {
   return (
     <div className="p-7 grid grid-cols-3 gap-6">
       <div className="col-span-2 space-y-5">
-        <div><h2 className="text-sm font-bold text-[#0B1E3F]">Multi-Currency</h2><p className="text-xs mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>Live rates · SAR, BDT, USD exposures · Season 1446H</p></div>
-        <div className="rounded-2xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
-          <table className="w-full">
-            <TH cols={["Currency","Code","Rate (to SAR)","Change","Exposure","Action"]} />
-            <tbody>
-              {ready && rates.map((r,i)=>(
-                <tr key={r.code} style={{ borderBottom:i<rates.length-1?"1px solid rgba(11,30,63,0.08)":undefined }} className="hover:bg-white/2">
-                  <td className="px-4 py-3 text-xs font-semibold text-[#0B1E3F]"><div className="truncate max-w-[14rem]" title={r.name}>{r.name}</div></td>
-                  <td className="px-4 py-3"><span className="text-[10px] font-black px-2 py-0.5 rounded" style={{ backgroundColor:`${FIN}15`, color:FIN }}>{r.code}</span></td>
-                  <td className="px-4 py-3 text-xs font-bold font-mono text-[#0B1E3F] whitespace-nowrap tabular-nums" style={{ fontFamily:"var(--font-mono)" }}>SAR {r.sar.toFixed(4)}</td>
-                  <td className="px-4 py-3">
-                    {r.change !== 0 && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold" style={{ color:r.change>0?"#16A34A":"#DC2626" }}>
-                        {r.change>0?<ArrowUp size={9}/>:<ArrowDown size={9}/>}{Math.abs(r.change).toFixed(4)}
-                      </span>
-                    )}
-                    {r.change === 0 && <span style={{ color:"rgba(11,30,63,0.38)" }}>—</span>}
-                  </td>
-                  <td className="px-4 py-3 text-[10px] whitespace-nowrap" style={{ color:"rgba(11,30,63,0.66)" }}>{r.exposure}</td>
-                  <td className="px-4 py-3">
-                    <button className="text-[9px] font-bold px-2 py-1 rounded-lg" style={{ backgroundColor:`${FIN}12`, color:FIN }}>Convert</button>
-                  </td>
-                </tr>
-              ))}
-              {(!ready || rates.length === 0) && (
-                <TableState cols={6} loading={loading && !demo} error={error && !demo} onRetry={refetch}
-                  title="No currency rates" hint="Configured currencies and their SAR rates appear here." />
-              )}
-            </tbody>
-          </table>
+        <div><h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Multi-Currency</h2><p className="text-xs mt-0.5" style={{ color:ERP.muted }}>Live rates · SAR, BDT, USD exposures · Season 1446H</p></div>
+        <div className="rounded-2xl overflow-hidden" style={{ border:`1px solid ${ERP.border}` }}>
+          {(error && !demo) ? <div className="p-4"><ErrorState onRetry={refetch} /></div> : (
+          <ErpDataTable
+            flush
+            rows={ready ? rates : []}
+            rowKey={(r) => r.code}
+            loading={loading && !demo}
+            emptyTitle="No currency rates"
+            emptyHint="Configured currencies and their SAR rates appear here."
+            columns={[
+              { id:"cur", header:"Currency", cell:(r)=><div className="truncate max-w-[14rem] font-semibold text-[color:var(--erp-text-strong)]" style={{ fontSize:ERP.text.size[12] }} title={r.name}>{r.name}</div> },
+              { id:"code", header:"Code", cell:(r)=><ErpBadge color={FIN} size="sm">{r.code}</ErpBadge> },
+              { id:"rate", header:"Rate (to SAR)", cell:(r)=><span className="whitespace-nowrap text-[color:var(--erp-text-strong)]" style={{ fontSize:ERP.text.size[12], fontWeight:ERP.text.weight.bold, fontFamily:ERP.font.data }}>SAR {r.sar.toFixed(4)}</span> },
+              { id:"change", header:"Change", cell:(r)=> r.change !== 0 ? <span className="flex items-center gap-1" style={{ fontSize:ERP.text.size[10], fontWeight:ERP.text.weight.bold, color:r.change>0?ERP.success:ERP.destructive }}>{r.change>0?<ArrowUp size={9}/>:<ArrowDown size={9}/>}{Math.abs(r.change).toFixed(4)}</span> : <span style={{ color:ERP.mutedSoft }}>—</span> },
+              { id:"exp", header:"Exposure", cell:(r)=><span className="whitespace-nowrap" style={{ fontSize:ERP.text.size[10], color:ERP.muted }}>{r.exposure}</span> },
+              { id:"act", header:"Action", cell:()=><ErpButton variant="outline" size="sm" style={{ backgroundColor:erpAlpha(FIN, 7), color:FIN, border:`1px solid ${erpAlpha(FIN, 19)}` }}>Convert</ErpButton> },
+            ]}
+          />)}
         </div>
       </div>
 
       {/* Converter */}
       <div className="space-y-4">
-        <div className="rounded-2xl p-5" style={{ backgroundColor:"#FBFCFD", border:"1px solid rgba(11,30,63,0.11)" }}>
-          <div className="text-xs font-bold text-[#0B1E3F] mb-4">Currency Converter</div>
+        <div className="rounded-2xl p-5" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}` }}>
+          <div className="text-xs font-bold text-[color:var(--erp-text-strong)] mb-4">Currency Converter</div>
           <div className="space-y-3">
             <div>
-              <label className="text-[9px] font-black uppercase tracking-widest block mb-1" style={{ color:"rgba(11,30,63,0.50)" }}>From</label>
+              <label className="text-[9px] font-black uppercase tracking-widest block mb-1" style={{ color:ERP.muted }}>From</label>
               <div className="flex gap-2">
-                <select value={fromCur} onChange={e=>setFromCur(e.target.value)} className="w-24 px-2 py-2.5 rounded-xl text-xs focus:outline-none appearance-none" style={IS}>
+                <ErpSelect value={fromCur} onChange={e=>setFromCur(e.target.value)}>
                   {rates.map(r=><option key={r.code}>{r.code}</option>)}
-                </select>
-                <input type="text" value={amount} onChange={e=>setAmount(e.target.value)} className="flex-1 px-3 py-2.5 rounded-xl text-xs font-mono text-right focus:outline-none" style={IS} />
+                </ErpSelect>
+                <ErpInput type="text" value={amount} onChange={e=>setAmount(e.target.value)} className="flex-1" style={{ textAlign:"right", fontFamily:ERP.font.data }} />
               </div>
             </div>
             <div className="flex justify-center py-1">
-              <button onClick={()=>{ setFromCur(toCur); setToCur(fromCur); }} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0B1E3F]" style={{ backgroundColor:`${FIN}20`, border:`1px solid ${FIN}40` }}>⇅</button>
+              <ErpButton variant="ghost" size="sm" onClick={()=>{ setFromCur(toCur); setToCur(fromCur); }} style={{ backgroundColor:erpAlpha(FIN, 13), color:ERP.navy }}>⇅</ErpButton>
             </div>
             <div>
-              <label className="text-[9px] font-black uppercase tracking-widest block mb-1" style={{ color:"rgba(11,30,63,0.50)" }}>To</label>
+              <label className="text-[9px] font-black uppercase tracking-widest block mb-1" style={{ color:ERP.muted }}>To</label>
               <div className="flex gap-2">
-                <select value={toCur} onChange={e=>setToCur(e.target.value)} className="w-24 px-2 py-2.5 rounded-xl text-xs focus:outline-none appearance-none" style={IS}>
+                <ErpSelect value={toCur} onChange={e=>setToCur(e.target.value)}>
                   {rates.map(r=><option key={r.code}>{r.code}</option>)}
-                </select>
-                <div className="flex-1 px-3 py-2.5 rounded-xl text-xs font-mono text-right font-bold" style={{ backgroundColor:`${FIN}10`, border:`1px solid ${FIN}30`, color:FIN, fontFamily:"var(--font-mono)" }}>
+                </ErpSelect>
+                <div className="flex-1 px-3 py-2.5 rounded-xl text-xs font-mono text-right font-bold" style={{ backgroundColor:`${erpAlpha(FIN, 6)}`, border:`1px solid ${erpAlpha(FIN, 19)}`, color:FIN, fontFamily:"var(--font-mono)" }}>
                   {converted}
                 </div>
               </div>
             </div>
-            <div className="rounded-xl px-4 py-3 text-center" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.11)" }}>
-              <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>1 {fromCur} = {(fromRate/toRate).toFixed(4)} {toCur}</div>
-              <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.38)" }}>Rate as of 16 Jul 2025</div>
+            <div className="rounded-xl px-4 py-3 text-center" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
+              <div className="text-[10px]" style={{ color:ERP.muted }}>1 {fromCur} = {(fromRate/toRate).toFixed(4)} {toCur}</div>
+              <div className="text-[9px] mt-0.5" style={{ color:ERP.mutedSoft }}>Rate as of 16 Jul 2025</div>
             </div>
           </div>
         </div>
-        <div className="rounded-2xl p-4" style={{ backgroundColor:`${FIN}08`, border:`1px solid ${FIN}20` }}>
+        <div className="rounded-2xl p-4" style={{ backgroundColor:`${erpAlpha(FIN, 3)}`, border:`1px solid ${erpAlpha(FIN, 13)}` }}>
           <div className="text-[9px] font-black uppercase tracking-widest mb-2" style={{ color:FIN }}>BDT Exposure Note</div>
-          <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}>BDT 12.4M in agent balances is the largest foreign-currency exposure. Exchange risk is partially hedged via advance booking contracts.</div>
+          <div className="text-[10px]" style={{ color:ERP.muted }}>BDT 12.4M in agent balances is the largest foreign-currency exposure. Exchange risk is partially hedged via advance booking contracts.</div>
         </div>
       </div>
     </div>
@@ -1595,7 +1577,7 @@ function InvoicesScreen() {
         {sel && (
           <div className="space-y-3">
             <FinDoc type="INVOICE" docNo={sel.id} date={sel.date}>
-              <div className="grid grid-cols-2 gap-4 mb-4 pb-4" style={{ borderBottom: "1px solid #E5E7EB" }}>
+              <div className="grid grid-cols-2 gap-4 mb-4 pb-4" style={{ borderBottom: `1px solid ${ERP.border}` }}>
                 <div>
                   <div className="text-[9px] font-black uppercase text-gray-400 mb-1">Bill To</div>
                   <div className="text-sm font-black">{sel.to}</div>
@@ -1613,7 +1595,7 @@ function InvoicesScreen() {
               <span key="d">{it.desc}</span>,
                   <span key="q" style={{ fontFamily: "var(--font-mono)" }}>{it.qty}</span>,
                   <span key="u" style={{ fontFamily: "var(--font-mono)" }}>SAR {it.unit.toLocaleString()}</span>,
-                  <span key="t" style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>SAR {it.total.toLocaleString()}</span>,
+                  <span key="t" style={{ fontFamily: "var(--font-mono)", fontWeight: ERP.text.weight.bold }}>SAR {it.total.toLocaleString()}</span>,
             ])}
           />
               <div className="flex justify-end mt-2">
@@ -1668,7 +1650,7 @@ function ReceiptsScreen() {
     { id: "id", header: "ID", cell: (r) => <span className="text-[11px] font-mono font-bold" style={{ color: FIN }}>{r.id}</span> },
     { id: "from", header: lang === "bn" ? "প্রাপ্ত" : "From", cell: (r) => <span className="text-xs font-semibold truncate max-w-[140px] block">{r.from}</span> },
     { id: "date", header: lang === "bn" ? "তারিখ" : "Date", cell: (r) => <span className="text-[11px]">{r.date}</span> },
-    { id: "amt", header: lang === "bn" ? "পরিমাণ" : "Amount", cell: (r) => <span className="text-xs font-mono font-bold" style={{ color: "#16A34A" }}>{fmtMoney(r.amount)}</span> },
+    { id: "amt", header: lang === "bn" ? "পরিমাণ" : "Amount", cell: (r) => <span className="text-xs font-mono font-bold" style={{ color: ERP.success }}>{fmtMoney(r.amount)}</span> },
     { id: "st", header: lang === "bn" ? "স্ট্যাটাস" : "Status", cell: (r) => <ErpStatusChip status={finStatusKind(r.status)} label={r.status} lang={lang} /> },
   ];
 
@@ -1732,7 +1714,7 @@ function ReceiptsScreen() {
       >
         {sel && (
           <FinDoc type="PAYMENT RECEIPT" docNo={sel.id} date={sel.date}>
-            <div className="mb-4 p-4 rounded-xl" style={{ backgroundColor: `${FIN}08`, border: `1px solid ${FIN}25` }}>
+            <div className="mb-4 p-4 rounded-xl" style={{ backgroundColor: `${erpAlpha(FIN, 3)}`, border: `1px solid ${erpAlpha(FIN, 15)}` }}>
               <div className="text-[9px] text-gray-400 mb-1">{lang === "bn" ? "প্রাপ্ত পরিমাণ" : "Amount Received"}</div>
               <div className="text-2xl font-black" style={{ color: FIN, fontFamily: "var(--font-mono)" }}>{fmtMoney(sel.amount)}</div>
             </div>
@@ -1743,9 +1725,9 @@ function ReceiptsScreen() {
                 [lang === "bn" ? "প্রয়োগ" : "Applies To", sel.applies],
                 [lang === "bn" ? "ঠিকানা" : "Address", sel.fromAddr],
               ].map(([k, v]) => (
-                <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                  <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                  <dd className="font-semibold text-[#0B1E3F] text-right">{v}</dd>
+                <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                  <dt style={{ color: ERP.muted }}>{k}</dt>
+                  <dd className="font-semibold text-[color:var(--erp-text-strong)] text-right">{v}</dd>
             </div>
           ))}
             </dl>
@@ -1841,44 +1823,44 @@ function StatementsScreen() {
 
   return (
     <div className="grid grid-cols-5 gap-0 h-full overflow-hidden">
-      <div className="col-span-2 p-5 space-y-4 overflow-y-auto" style={{ borderRight:"1px solid rgba(11,30,63,0.11)" }}>
-        <div className="text-xs font-bold text-[#0B1E3F]">Generate Statement</div>
+      <div className="col-span-2 p-5 space-y-4 overflow-y-auto" style={{ borderRight:`1px solid ${ERP.border}` }}>
+        <div className="text-xs font-bold text-[color:var(--erp-text-strong)]">Generate Statement</div>
         {[
-          { l:"Entity", el:<select value={liveOpts ? (effOpt?.companyId ?? "") : entity} onChange={e=> liveOpts ? setSelId(e.target.value) : setEntity(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}>{liveOpts ? liveOpts.map(o=><option key={o.companyId} value={o.companyId}>{o.name}</option>) : ["Rashidi Travel Co.","Al-Noor Pilgrim Svc","Zamzam Pilgrim Svc","Jabal Omar Hyatt","Al-Barakah Catering"].map(e=><option key={e} value={e}>{e}</option>)}</select> },
-          { l:"Period",  el:<select value={period} onChange={e=>setPeriod(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}>{["Jun – Jul 2025","May – Jun 2025","Q2 2025","Full Season 1446H"].map(p=><option key={p}>{p}</option>)}</select> },
-          { l:"Format",  el:<select className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}><option>Full Statement</option><option>Summary</option><option>Outstanding Only</option></select> },
+          { l:"Entity", el:<ErpSelect value={liveOpts ? (effOpt?.companyId ?? "") : entity} onChange={e=> liveOpts ? setSelId(e.target.value) : setEntity(e.target.value)}>{liveOpts ? liveOpts.map(o=><option key={o.companyId} value={o.companyId}>{o.name}</option>) : ["Rashidi Travel Co.","Al-Noor Pilgrim Svc","Zamzam Pilgrim Svc","Jabal Omar Hyatt","Al-Barakah Catering"].map(e=><option key={e} value={e}>{e}</option>)}</ErpSelect> },
+          { l:"Period",  el:<ErpSelect value={period} onChange={e=>setPeriod(e.target.value)}>{["Jun – Jul 2025","May – Jun 2025","Q2 2025","Full Season 1446H"].map(p=><option key={p}>{p}</option>)}</ErpSelect> },
+          { l:"Format",  el:<ErpSelect ><option>Full Statement</option><option>Summary</option><option>Outstanding Only</option></ErpSelect> },
         ].map(({l,el})=>(
-          <div key={l}><label className="text-[9px] font-black uppercase tracking-widest block mb-1" style={{ color:"rgba(11,30,63,0.50)" }}>{l}</label>{el}</div>
+          <div key={l}><label className="text-[9px] font-black uppercase tracking-widest block mb-1" style={{ color:ERP.muted }}>{l}</label>{el}</div>
         ))}
-        <button onClick={()=>loadStmt()} disabled={loading} className="w-full py-3 rounded-xl text-xs font-bold disabled:opacity-60" style={{ backgroundColor:FIN, color:"#0B1E3F" }}>Generate Statement</button>
+        <ErpButton variant="primary" onClick={()=>loadStmt()} loading={loading} style={{ width:"100%", backgroundColor:FIN, color:ERP.primaryFg }}>Generate Statement</ErpButton>
         <div className="mt-4 space-y-2">
           {[["Opening Balance",opening],["Total Credits",credits],["Total Debits",debits],["Closing Balance",closing]].map(([l,v])=>(
-            <div key={l as string} className="flex justify-between gap-3 px-4 py-2.5 rounded-xl" style={{ backgroundColor:"#FBFCFD", border:"1px solid rgba(11,30,63,0.11)" }}>
-              <span className="text-[10px] min-w-0 truncate" style={{ color:"rgba(11,30,63,0.66)" }}>{l}</span>
-              <span className="text-[10px] font-bold font-mono text-[#0B1E3F] shrink-0 whitespace-nowrap tabular-nums" style={{ fontFamily:"var(--font-mono)" }}>{ready ? `SAR ${(v as number).toLocaleString()}` : "—"}</span>
+            <div key={l as string} className="flex justify-between gap-3 px-4 py-2.5 rounded-xl" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}` }}>
+              <span className="text-[10px] min-w-0 truncate" style={{ color:ERP.muted }}>{l}</span>
+              <span className="text-[10px] font-bold font-mono text-[color:var(--erp-text-strong)] shrink-0 whitespace-nowrap tabular-nums" style={{ fontFamily:"var(--font-mono)" }}>{ready ? `SAR ${(v as number).toLocaleString()}` : "—"}</span>
             </div>
           ))}
         </div>
       </div>
       <div className="col-span-3 overflow-y-auto p-6">
         <FinDoc type="ACCOUNT STATEMENT" docNo={`STMT-${entityName.substring(0,4).toUpperCase()}-JUL25`} date="16 Jul 2025">
-          <div className="mb-4 pb-4" style={{ borderBottom:"1px solid #E5E7EB" }}>
+          <div className="mb-4 pb-4" style={{ borderBottom:`1px solid ${ERP.border}` }}>
             <div className="text-[9px] font-black uppercase tracking-wider text-gray-400 mb-1">Statement For</div>
             <div className="text-sm font-black text-gray-900">{entityName}</div>
             <div className="text-[10px] text-gray-500">Period: {period}</div>
           </div>
           <table className="w-full text-xs mb-4">
-            <thead><tr style={{ backgroundColor:"#F9FAFB", borderBottom:"1px solid #E5E7EB" }}>
+            <thead><tr style={{ backgroundColor:ERP.surfaceSoft, borderBottom:`1px solid ${ERP.border}` }}>
               {["Date","Description","Reference","Debit","Credit","Balance"].map(c=><th key={c} className="py-2 px-3 text-[9px] font-black uppercase tracking-wider text-left text-gray-400">{c}</th>)}
             </tr></thead>
             <tbody>
               {ready && entries.map((e,i)=>(
-                <tr key={i} style={{ backgroundColor:i%2===0?"white":"#FAFAFA", borderBottom:"1px solid #F3F4F6" }}>
+                <tr key={i} style={{ backgroundColor:i%2===0?"white":ERP.surfaceSoft, borderBottom:`1px solid ${ERP.surfaceSoft}` }}>
                   <td className="py-2 px-3 text-gray-500 whitespace-nowrap" style={{ fontFamily:"var(--font-mono)" }}>{e.date}</td>
                   <td className="py-2 px-3 text-gray-700"><div className="truncate max-w-[16rem]" title={e.desc}>{e.desc}</div></td>
                   <td className="py-2 px-3 text-gray-500 whitespace-nowrap" style={{ fontFamily:"var(--font-mono)" }}>{e.ref}</td>
-                  <td className="py-2 px-3 text-right whitespace-nowrap tabular-nums" style={{ color:e.dr>0?"#DC2626":"#D1D5DB", fontFamily:"var(--font-mono)" }}>{e.dr>0?`SAR ${e.dr.toLocaleString()}`:"—"}</td>
-                  <td className="py-2 px-3 text-right whitespace-nowrap tabular-nums" style={{ color:e.cr>0?FIN:"#D1D5DB",    fontFamily:"var(--font-mono)" }}>{e.cr>0?`SAR ${e.cr.toLocaleString()}`:"—"}</td>
+                  <td className="py-2 px-3 text-right whitespace-nowrap tabular-nums" style={{ color:e.dr>0?ERP.destructive:ERP.border, fontFamily:"var(--font-mono)" }}>{e.dr>0?`SAR ${e.dr.toLocaleString()}`:"—"}</td>
+                  <td className="py-2 px-3 text-right whitespace-nowrap tabular-nums" style={{ color:e.cr>0?FIN:ERP.border,    fontFamily:"var(--font-mono)" }}>{e.cr>0?`SAR ${e.cr.toLocaleString()}`:"—"}</td>
                   <td className="py-2 px-3 text-right font-semibold text-gray-900 whitespace-nowrap tabular-nums" style={{ fontFamily:"var(--font-mono)" }}>SAR {e.bal.toLocaleString()}</td>
                 </tr>
               ))}
@@ -1898,7 +1880,7 @@ function StatementsScreen() {
         <div className="flex gap-2 mt-4">
           <ActionBtn label="Download PDF" color={FIN} icon={Download} />
           <ActionBtn label="Print" icon={Printer} />
-          <ActionBtn label="Email to Agent" color="#2563EB" icon={Send} />
+          <ActionBtn label="Email to Agent" color={ERP.info} icon={Send} />
         </div>
       </div>
     </div>
@@ -1937,8 +1919,8 @@ function PLScreen() {
   const d = demo ? PL_FALLBACK : live;
 
   const TTip = ({ active, payload, label }: any) => active && payload?.length ? (
-    <div className="px-3 py-2 rounded-lg text-[10px]" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.15)" }}>
-      <div className="font-bold text-[#0B1E3F] mb-1">{label} 2025 (SAR K)</div>
+    <div className="px-3 py-2 rounded-lg text-[10px]" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
+      <div className="font-bold text-[color:var(--erp-text-strong)] mb-1">{label} 2025 (SAR K)</div>
       {payload.map((p: any) => <div key={p.dataKey} style={{ color:p.color }}>{p.name}: {p.value}K</div>)}
     </div>
   ) : null;
@@ -1950,33 +1932,33 @@ function PLScreen() {
     <div className="p-7 space-y-5">
       {/* Chart + KPIs */}
       <div className="grid grid-cols-3 gap-5">
-        <div className="col-span-2 rounded-2xl p-5" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.11)" }}>
+        <div className="col-span-2 rounded-2xl p-5" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
           <div className="flex items-center justify-between mb-4">
-            <div><div className="text-xs font-bold text-[#0B1E3F]">P&L Overview — Jan–Jul 2025</div><div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>Revenue · COGS · OpEx (SAR thousands)</div></div>
+            <div><div className="text-xs font-bold text-[color:var(--erp-text-strong)]">P&L Overview — Jan–Jul 2025</div><div className="text-[10px]" style={{ color:ERP.muted }}>Revenue · COGS · OpEx (SAR thousands)</div></div>
           </div>
           {!demo && <SampleDataBanner tone="light" className="mb-3" detail="This monthly trend is not yet connected to live data — the statement below is live." />}
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={PL_CHART} margin={{ top:4, right:4, bottom:0, left:0 }} barGap={2}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,30,63,0.38)" />
-              <XAxis dataKey="month" tick={{ fill:"rgba(11,30,63,0.58)", fontSize:9 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill:"rgba(11,30,63,0.58)", fontSize:9 }} axisLine={false} tickLine={false} tickFormatter={v=>`${v}K`} />
+              <CartesianGrid strokeDasharray="3 3" stroke={ERP.mutedSoft} />
+              <XAxis dataKey="month" tick={{ fill:ERP.muted, fontSize:9 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill:ERP.muted, fontSize:9 }} axisLine={false} tickLine={false} tickFormatter={v=>`${v}K`} />
               <Tooltip content={<TTip />} />
               <Bar dataKey="revenue" name="Revenue"  fill={FIN}      radius={[3,3,0,0]} />
-              <Bar dataKey="cogs"    name="COGS"     fill="#DC2626"  radius={[3,3,0,0]} />
-              <Bar dataKey="opex"    name="OpEx"     fill="#EA580C"  radius={[3,3,0,0]} opacity={0.8} />
+              <Bar dataKey="cogs"    name="COGS"     fill={ERP.destructive}  radius={[3,3,0,0]} />
+              <Bar dataKey="opex"    name="OpEx"     fill={CAT.orange}  radius={[3,3,0,0]} opacity={0.8} />
             </BarChart>
           </ResponsiveContainer>
         </div>
         <div className="space-y-3">
           {[
             { l:"Total Revenue",  v:`SAR ${d.totalRevenue.toLocaleString()}`, c:FIN        },
-            { l:"Gross Profit",   v:`SAR ${d.grossProfit.toLocaleString()}`,  c:"#16A34A"  },
-            { l:"Gross Margin",   v:`${d.grossMargin.toFixed(1)}%`,           c:"#2563EB"  },
+            { l:"Gross Profit",   v:`SAR ${d.grossProfit.toLocaleString()}`,  c:ERP.success  },
+            { l:"Gross Margin",   v:`${d.grossMargin.toFixed(1)}%`,           c:ERP.info  },
             { l:"Net Profit",     v:`SAR ${d.netProfit.toLocaleString()}`,    c:FIN        },
-            { l:"Net Margin",     v:`${d.netMargin.toFixed(1)}%`,             c:"#C9A24B"  },
+            { l:"Net Margin",     v:`${d.netMargin.toFixed(1)}%`,             c:ERP.accent  },
           ].map(k=>(
-            <div key={k.l} className="flex justify-between items-center gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor:"#FBFCFD", border:"1px solid rgba(11,30,63,0.11)" }}>
-              <span className="text-[10px] min-w-0 truncate" style={{ color:"rgba(11,30,63,0.66)" }}>{k.l}</span>
+            <div key={k.l} className="flex justify-between items-center gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}` }}>
+              <span className="text-[10px] min-w-0 truncate" style={{ color:ERP.muted }}>{k.l}</span>
               <span className="text-xs font-black font-mono shrink-0 whitespace-nowrap tabular-nums" style={{ color:k.c, fontFamily:"var(--font-mono)" }}>{k.v}</span>
             </div>
           ))}
@@ -1991,15 +1973,15 @@ function PLScreen() {
             {d.revenue.map((r,i)=><SLine key={i} label={r.name} amount={r.amount} indent={1} />)}
             <SLine label="Total Revenue"         amount={d.totalRevenue} bold sep />
 
-            <div className="mt-4 mb-2 text-[9px] font-black uppercase tracking-widest" style={{ color:"#DC2626" }}>Cost of Services</div>
+            <div className="mt-4 mb-2 text-[9px] font-black uppercase tracking-widest" style={{ color:ERP.destructive }}>Cost of Services</div>
             {d.cogs.map((r,i)=><SLine key={i} label={r.name} amount={r.amount} indent={1} />)}
-            <SLine label="Total Cost of Services" amount={d.totalCogs} bold sep color="#DC2626" />
+            <SLine label="Total Cost of Services" amount={d.totalCogs} bold sep color={ERP.destructive} />
             <SLine label="GROSS PROFIT"          amount={d.grossProfit} bold sep color={FIN} />
           </div>
           <div>
-            <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:"#EA580C" }}>Operating Expenses</div>
+            <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:CAT.orange }}>Operating Expenses</div>
             {d.opex.map((r,i)=><SLine key={i} label={r.name} amount={r.amount} indent={1} />)}
-            <SLine label="Total Operating Expenses" amount={d.totalOpex} bold sep color="#EA580C" />
+            <SLine label="Total Operating Expenses" amount={d.totalOpex} bold sep color={CAT.orange} />
             <SLine label="EBITDA"                 amount={d.ebitda} bold sep color={FIN} />
 
             {/* Below EBITDA: PLData carries no depreciation / interest / zakat, so
@@ -2013,12 +1995,12 @@ function PLScreen() {
               <SLine label="Earnings Before Tax"   amount={demo ? 2505000 : undefined} pending={!demo} bold sep />
               <SLine label="Less: Zakat (2.5%)"    amount={demo ? 875000  : undefined} pending={!demo} sub indent={1} />
             </div>
-            <div className="mt-3 px-4 py-3 rounded-xl" style={{ backgroundColor:`${FIN}10`, border:`1px solid ${FIN}30` }}>
+            <div className="mt-3 px-4 py-3 rounded-xl" style={{ backgroundColor:`${erpAlpha(FIN, 6)}`, border:`1px solid ${erpAlpha(FIN, 19)}` }}>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-black" style={{ color:FIN }}>NET PROFIT</span>
                 <span className="text-xl font-black" style={{ color:FIN, fontFamily:"var(--font-mono)" }}>SAR {d.netProfit.toLocaleString()}</span>
               </div>
-              <div className="text-[9px] mt-0.5" style={{ color:"rgba(0,150,50,0.7)" }}>Net Margin: {d.netMargin.toFixed(1)}%</div>
+              <div className="text-[9px] mt-0.5" style={{ color:"erpAlpha(ERP.success, 70)" }}>Net Margin: {d.netMargin.toFixed(1)}%</div>
             </div>
           </div>
         </div>
@@ -2067,8 +2049,8 @@ function BSScreen() {
   return (
     <div className="p-7">
       <div className="flex items-center justify-between mb-5">
-        <div><h2 className="text-sm font-bold text-[#0B1E3F]">Balance Sheet</h2><p className="text-xs mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>As at 16 July 2025 · Season 1446H</p></div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ backgroundColor:`${FIN}12`, border:`1px solid ${FIN}25` }}>
+        <div><h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Balance Sheet</h2><p className="text-xs mt-0.5" style={{ color:ERP.muted }}>As at 16 July 2025 · Season 1446H</p></div>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ backgroundColor:`${erpAlpha(FIN, 7)}`, border:`1px solid ${erpAlpha(FIN, 15)}` }}>
           <Check size={13} style={{ color:FIN }} />
           <span className="text-xs font-bold" style={{ color:FIN }}>{balanced ? "Balanced" : "Unbalanced"} — SAR {totalAssets.toLocaleString()}</span>
         </div>
@@ -2081,19 +2063,19 @@ function BSScreen() {
           <div>
             <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:FIN }}>Assets</div>
             {live.assets.map((a,i)=><SLine key={i} label={a.name} amount={a.amount} indent={1} />)}
-            <div className="mt-3 px-4 py-2.5 rounded-xl" style={{ backgroundColor:`${FIN}08`, border:`1px solid ${FIN}20` }}>
+            <div className="mt-3 px-4 py-2.5 rounded-xl" style={{ backgroundColor:`${erpAlpha(FIN, 3)}`, border:`1px solid ${erpAlpha(FIN, 13)}` }}>
               <SLine label="TOTAL ASSETS" amount={live.totalAssets} bold color={FIN} />
             </div>
           </div>
           <div>
-            <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:"#DC2626" }}>Liabilities</div>
+            <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:ERP.destructive }}>Liabilities</div>
             {live.liabilities.map((l,i)=><SLine key={i} label={l.name} amount={l.amount} indent={1} />)}
-            <SLine label="Total Liabilities" amount={live.totalLiabilities} bold sep color="#DC2626" />
-            <div className="mt-3 text-[9px] font-black uppercase tracking-widest mb-2" style={{ color:"#6366F1" }}>Equity</div>
+            <SLine label="Total Liabilities" amount={live.totalLiabilities} bold sep color={ERP.destructive} />
+            <div className="mt-3 text-[9px] font-black uppercase tracking-widest mb-2" style={{ color:ERP.info }}>Equity</div>
             {live.equity.map((eq,i)=><SLine key={i} label={eq.name} amount={eq.amount} indent={1} />)}
-            <SLine label="Total Equity" amount={live.totalEquity} bold sep color="#6366F1" />
-            <div className="mt-3 px-4 py-2.5 rounded-xl" style={{ backgroundColor:"#DC262608", border:"1px solid #DC262625" }}>
-              <SLine label="TOTAL LIABILITIES & EQUITY" amount={live.liabilitiesPlusEquity} bold color="#DC2626" />
+            <SLine label="Total Equity" amount={live.totalEquity} bold sep color={ERP.info} />
+            <div className="mt-3 px-4 py-2.5 rounded-xl" style={{ backgroundColor:erpAlpha(ERP.destructive, 3), border:`1px solid ${erpAlpha(ERP.destructive, 15)}` }}>
+              <SLine label="TOTAL LIABILITIES & EQUITY" amount={live.liabilitiesPlusEquity} bold color={ERP.destructive} />
             </div>
           </div>
         </div>
@@ -2121,31 +2103,31 @@ function BSScreen() {
               <SLine label="Vehicles & Fleet"          amount={420000}  indent={2} sub />
               <SLine label="Total Non-Current Assets"  amount={600000}  bold sep />
             </div>
-            <div className="mt-3 px-4 py-2.5 rounded-xl" style={{ backgroundColor:`${FIN}08`, border:`1px solid ${FIN}20` }}>
+            <div className="mt-3 px-4 py-2.5 rounded-xl" style={{ backgroundColor:`${erpAlpha(FIN, 3)}`, border:`1px solid ${erpAlpha(FIN, 13)}` }}>
               <SLine label="TOTAL ASSETS" amount={6060000} bold color={FIN} />
             </div>
           </div>
 
           {/* Liabilities + Equity */}
           <div>
-            <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:"#DC2626" }}>Liabilities</div>
+            <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:ERP.destructive }}>Liabilities</div>
             <SLine label="Current Liabilities" bold />
             <SLine label="Accounts Payable (Suppliers)"  amount={890000}  indent={2} sub />
             <SLine label="Agent Advance Payments"        amount={1240000} indent={2} sub />
             <SLine label="VAT Payable"                   amount={126750}  indent={2} sub />
-            <SLine label="Total Current Liabilities"     amount={2256750} bold sep color="#DC2626" />
+            <SLine label="Total Current Liabilities"     amount={2256750} bold sep color={ERP.destructive} />
             <div className="mt-3">
               <SLine label="Long-term Liabilities" bold />
               <SLine label="Bank Loan — Al Rajhi"        amount={500000}  indent={2} sub />
-              <SLine label="Total Long-term Liabilities" amount={500000}  bold sep color="#DC2626" />
+              <SLine label="Total Long-term Liabilities" amount={500000}  bold sep color={ERP.destructive} />
             </div>
-            <div className="mt-3 text-[9px] font-black uppercase tracking-widest mb-2" style={{ color:"#6366F1" }}>Equity</div>
+            <div className="mt-3 text-[9px] font-black uppercase tracking-widest mb-2" style={{ color:ERP.info }}>Equity</div>
             <SLine label="Share Capital"                 amount={1000000} indent={1} />
             <SLine label="Retained Earnings"             amount={673250}  indent={1} />
             <SLine label="Current Period Profit"         amount={1630000} indent={1} />
-            <SLine label="Total Equity"                  amount={3303250} bold sep color="#6366F1" />
-            <div className="mt-3 px-4 py-2.5 rounded-xl" style={{ backgroundColor:"#DC262608", border:"1px solid #DC262625" }}>
-              <SLine label="TOTAL LIABILITIES & EQUITY" amount={6060000} bold color="#DC2626" />
+            <SLine label="Total Equity"                  amount={3303250} bold sep color={ERP.info} />
+            <div className="mt-3 px-4 py-2.5 rounded-xl" style={{ backgroundColor:erpAlpha(ERP.destructive, 3), border:`1px solid ${erpAlpha(ERP.destructive, 15)}` }}>
+              <SLine label="TOTAL LIABILITIES & EQUITY" amount={6060000} bold color={ERP.destructive} />
             </div>
           </div>
         </div>
@@ -2220,8 +2202,8 @@ function MofaBillScreen() {
   if (!status.data?.enabled) {
     return (
       <div className="p-6 space-y-3">
-        <div className="text-sm font-bold text-[#0B1E3F]">MOFA Processing Bill Sheet</div>
-        <p className="text-[11px]" style={{ color: "rgba(11,30,63,0.60)" }}>
+        <div className="text-sm font-bold text-[color:var(--erp-text-strong)]">MOFA Processing Bill Sheet</div>
+        <p className="text-[11px]" style={{ color: ERP.muted }}>
           Disabled until Finance enables <code>ENABLE_MOFA_PROCESSING_BILL</code>.
           Mutamer <strong>MOFA Number</strong> on Visa Desk is unaffected and must stay separate.
         </p>
@@ -2266,43 +2248,35 @@ function MofaBillScreen() {
   return (
     <div className="p-6 space-y-4">
       <div>
-        <div className="text-sm font-bold text-[#0B1E3F]">MOFA Processing Bill Sheet</div>
-        <p className="text-[10px] mt-1" style={{ color: "rgba(11,30,63,0.55)" }}>
+        <div className="text-sm font-bold text-[color:var(--erp-text-strong)]">MOFA Processing Bill Sheet</div>
+        <p className="text-[10px] mt-1" style={{ color: ERP.muted }}>
           Qty × Rate account bill. Not hotel/transport cash. Not mutamer MOFA Number.
         </p>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 p-3 rounded-xl" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
-        <input value={tenantId} onChange={(e) => setTenantId(e.target.value)} placeholder="Agent tenantId" className="px-2 py-1.5 rounded-lg text-[10px]" style={IS} />
-        <input value={groupId} onChange={(e) => setGroupId(e.target.value)} placeholder="Group id" className="px-2 py-1.5 rounded-lg text-[10px]" style={IS} />
-        <input value={qty} onChange={(e) => setQty(e.target.value)} placeholder="Qty" className="px-2 py-1.5 rounded-lg text-[10px]" style={IS} />
-        <input value={rate} onChange={(e) => setRate(e.target.value)} placeholder="Rate SAR" className="px-2 py-1.5 rounded-lg text-[10px]" style={IS} />
-        <button disabled={busy} onClick={create} className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white disabled:opacity-50" style={{ backgroundColor: FIN }}>
-          {busy ? "…" : "Create bill"}
-        </button>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 p-3 rounded-xl" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+        <ErpInput value={tenantId} onChange={(e) => setTenantId(e.target.value)} placeholder="Agent tenantId" />
+        <ErpInput value={groupId} onChange={(e) => setGroupId(e.target.value)} placeholder="Group id" />
+        <ErpInput value={qty} onChange={(e) => setQty(e.target.value)} placeholder="Qty" />
+        <ErpInput value={rate} onChange={(e) => setRate(e.target.value)} placeholder="Rate SAR" />
+        <ErpButton variant="primary" size="sm" disabled={busy} onClick={create} style={{ backgroundColor: FIN, color: ERP.primaryFg }}>{busy ? "…" : "Create bill"}</ErpButton>
       </div>
-      <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-        <table className="w-full text-left">
-          <TH cols={["Code", "Group", "Tenant", "Total", "Sign", "CR Date", ""]} />
-          <tbody>
-            {rows.length === 0 ? (
-              <TableState cols={7} loading={false} error={false} onRetry={bills.refetch} title="No MOFA bills yet" hint="Create a Qty×Rate bill above." />
-            ) : rows.map((r) => (
-              <tr key={r.id} style={{ borderTop: "1px solid rgba(11,30,63,0.08)" }}>
-                <td className="px-4 py-2 text-[10px] font-mono font-bold text-[#0B1E3F]">{r.code}</td>
-                <td className="px-4 py-2 text-[10px]">{r.group ?? "—"}</td>
-                <td className="px-4 py-2 text-[10px]">{r.tenant}</td>
-                <td className="px-4 py-2 text-[10px] font-mono">SAR {r.total.toLocaleString()}</td>
-                <td className="px-4 py-2 text-[10px]">{r.approvalSign ?? "—"}</td>
-                <td className="px-4 py-2 text-[10px]">{r.crDate ? new Date(r.crDate).toLocaleDateString() : "—"}</td>
-                <td className="px-4 py-2">
-                  {!r.approvalSign && (
-                    <button onClick={() => sign(r.id)} className="text-[10px] font-bold" style={{ color: FIN }}>Sign</button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
+        <ErpDataTable
+          flush
+          rows={rows}
+          rowKey={(r) => r.id}
+          emptyTitle="No MOFA bills yet"
+          emptyHint="Create a Qty×Rate bill above."
+          columns={[
+            { id:"code", header:"Code", cell:(r)=><span className="font-bold text-[color:var(--erp-text-strong)]" style={{ fontSize:ERP.text.size[10], fontFamily:ERP.font.data }}>{r.code}</span> },
+            { id:"group", header:"Group", cell:(r)=><span style={{ fontSize:ERP.text.size[10], color:ERP.navy }}>{r.group ?? "—"}</span> },
+            { id:"tenant", header:"Tenant", cell:(r)=><span style={{ fontSize:ERP.text.size[10], color:ERP.navy }}>{r.tenant}</span> },
+            { id:"total", header:"Total", align:"right", cell:(r)=><span style={{ fontSize:ERP.text.size[10], color:ERP.navy, fontFamily:ERP.font.data }}>SAR {r.total.toLocaleString()}</span> },
+            { id:"sign", header:"Sign", cell:(r)=><span style={{ fontSize:ERP.text.size[10], color:ERP.muted }}>{r.approvalSign ?? "—"}</span> },
+            { id:"crdate", header:"CR Date", cell:(r)=><span style={{ fontSize:ERP.text.size[10], color:ERP.muted }}>{r.crDate ? new Date(r.crDate).toLocaleDateString() : "—"}</span> },
+            { id:"act", header:"", align:"right", cell:(r)=> !r.approvalSign ? <ErpButton variant="ghost" size="sm" onClick={() => sign(r.id)} style={{ color: FIN }}>Sign</ErpButton> : null },
+          ]}
+        />
       </div>
     </div>
   );
@@ -2340,7 +2314,7 @@ export default function FinanceERP() {
                                 : null;
 
   return (
-    <ERPShell
+    <ErpThemeProvider theme="ds"><ERPShell
       moduleId="finance"
       moduleName={lang === "bn" ? "ফাইন্যান্স ERP" : "Finance ERP"}
       moduleColor={FIN}
@@ -2352,10 +2326,10 @@ export default function FinanceERP() {
       notificationCount={0}
     >
       <div className="flex flex-col h-full overflow-hidden">
-        <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(11,30,63,0.38) transparent" }}>
+        <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: `${ERP.mutedSoft} transparent` }}>
           {body}
         </div>
       </div>
-    </ERPShell>
+    </ERPShell></ErpThemeProvider>
   );
 }

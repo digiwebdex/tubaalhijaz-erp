@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Query, Req } from "@nestjs/common";
 import { Request } from "express";
-import { IsIn, IsOptional, IsString, MaxLength } from "class-validator";
+import { IsArray, IsIn, IsObject, IsOptional, IsString, MaxLength } from "class-validator";
 import { CompanyType, VerificationStatus } from "@prisma/client";
 import { RequirePermissions } from "../common/decorators/require-permissions.decorator";
 import { AuthUser, CurrentUser } from "../common/decorators/current-user.decorator";
@@ -22,6 +22,16 @@ class UpdateCompanyDto {
   @IsOptional() @IsString() @MaxLength(80) city?: string;
   @IsOptional() @IsString() @MaxLength(160) email?: string;
   @IsOptional() @IsString() @MaxLength(30) phone?: string;
+  // Company Enhancements (Phase 3A) — persisted through the SAME PATCH + audit.
+  @IsOptional() @IsString() @MaxLength(16) invoicePrefix?: string;
+  @IsOptional() @IsString() @MaxLength(16) voucherPrefix?: string;
+  @IsOptional() @IsString() @MaxLength(16) bookingPrefix?: string;
+  @IsOptional() @IsString() @MaxLength(16) groupPrefix?: string;
+  @IsOptional() @IsString() @MaxLength(16) passengerPrefix?: string;
+  @IsOptional() @IsString() @MaxLength(1_500_000) logoUrl?: string;
+  @IsOptional() @IsObject() businessHours?: Record<string, unknown>;
+  @IsOptional() @IsArray() holidays?: unknown[];
+  @IsOptional() @IsObject() brandColors?: Record<string, unknown>;
 }
 
 @Controller("companies")

@@ -22,6 +22,7 @@ const AuthOnboarding = lazy(() => import("./pages/AuthOnboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AgentPortal = lazy(() => import("./pages/AgentPortal"));
 const SuperAdmin = lazy(() => import("./pages/SuperAdmin"));
+const Settings = lazy(() => import("./pages/Settings"));
 const RateCards = lazy(() => import("./pages/RateCards"));
 const OCRCenter = lazy(() => import("./pages/OCRCenter"));
 const SupplierPortal = lazy(() => import("./pages/SupplierPortal"));
@@ -102,6 +103,7 @@ export const router = createBrowserRouter([
   { path: "/automation", element: priv(<AutomationNotifications />, "/automation") },
   { path: "/dashboards", element: priv(<Dashboards />, "/dashboards") },
   { path: "/super-admin", element: priv(<SuperAdmin />, "/super-admin") },
+  { path: "/settings", element: priv(<Settings />, "/settings") },
   { path: "/admin", element: <AdminEntry /> },
   { path: "/rate-cards", element: priv(<RateCards />, "/rate-cards") },
   { path: "/workflow-map", element: priv(<WorkflowMap />, "/workflow-map") },

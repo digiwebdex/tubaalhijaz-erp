@@ -479,6 +479,8 @@ model Season {
   startDate DateTime
   endDate   DateTime
   isActive  Boolean  @default(false)
+  status    String   @default("DRAFT") // DRAFT | ACTIVE | ARCHIVED
+  isDefault Boolean  @default(false)
 
   groups       Group[]
   invoices     Invoice[]
@@ -642,6 +644,16 @@ model Company {
   email              String?
   phone              String?
   preferredLang      String             @default("bn") // notification language for this tenant
+  // Company Enhancements (Settings -> Company)
+  businessHours   Json?
+  holidays        Json?
+  invoicePrefix   String?
+  voucherPrefix   String?
+  bookingPrefix   String?
+  groupPrefix     String?
+  passengerPrefix String?
+  logoUrl         String?
+  brandColors     Json?
   verificationStatus VerificationStatus @default(PENDING)
   rejectionReason    String?
   joinedAt           DateTime           @default(now())
@@ -2159,5 +2171,39 @@ model IntegrationConfig {
   connectionStatus String?
   lastTestAt       DateTime?
   lastResponse     String?
+  smtpHost         String?
+  smtpPort         Int?
+  smtpUser         String?
+  smtpPassEnc      String?
+  smtpFrom         String?
+  smtpSecure       Boolean?
   updatedAt        DateTime  @updatedAt
 }
+
+model SystemConfig {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  value           String   @default("")
+  category        String   @default("General") // General|Security|Notification|Finance|Workflow|Integration|API|UI
+  description     String?
+  encrypted       Boolean  @default(false)
+  restartRequired Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+}
+
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  category    String   @default("General") // General|AI|Operations|Finance|Portal|Reports|Experimental|API
+  description String?
+  enabled     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+}
+

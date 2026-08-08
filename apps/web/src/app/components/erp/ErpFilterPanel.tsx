@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ChevronDown, Filter } from "lucide-react";
-import { ERP } from "./tokens";
+import { ERP, erpAlpha } from "./tokens";
 
 export interface ErpFilterPanelProps {
   open: boolean;
@@ -38,8 +38,8 @@ export function ErpFilterPanel({
         aria-expanded={open}
         className="inline-flex items-center gap-2 px-3 rounded-lg text-sm font-semibold min-h-[40px]"
         style={{
-          backgroundColor: open ? `${ERP.gold}18` : ERP.surface,
-          border: `1px solid ${open ? `${ERP.gold}55` : ERP.border}`,
+          backgroundColor: open ? erpAlpha(ERP.gold, 9) : ERP.surface,
+          border: `1px solid ${open ? erpAlpha(ERP.gold, 33) : ERP.border}`,
           color: ERP.navy,
         }}
       >
@@ -48,7 +48,7 @@ export function ErpFilterPanel({
         {typeof activeCount === "number" && activeCount > 0 && (
           <span
             className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{ backgroundColor: `${ERP.gold}28`, color: ERP.navy }}
+            style={{ backgroundColor: erpAlpha(ERP.gold, 16), color: ERP.navy }}
           >
             {activeCount}
           </span>

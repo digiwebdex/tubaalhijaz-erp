@@ -35,7 +35,7 @@ import { EmailChannel } from "./channels/email.channel";
       useFactory: () => new Queue(NOTIFY_QUEUE_NAME, { connection: makeConnection(), prefix: BULL_PREFIX }),
     },
   ],
-  exports: [NotificationsService],
+  exports: [NotificationsService, EmailChannel],
 })
 export class NotificationsModule implements OnModuleDestroy {
   constructor(@Inject(NOTIFY_QUEUE) private readonly queue: Queue) {}

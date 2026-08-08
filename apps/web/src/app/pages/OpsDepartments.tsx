@@ -14,6 +14,7 @@ import {
   ErpPagination, ErpDrawer, ErpDrawerFooterActions, ErpForm, ErpFormRow, ErpField,
   ErpInput, ErpSelect, ErpStatusChip, erpToast, type ErpColumn, type ErpStatusKind,
 } from "../components/erp";
+import { ERP, CAT, erpAlpha, ErpThemeProvider } from "../components/erp";
 import { api, isLoggedIn, getStoredUser } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
@@ -23,14 +24,14 @@ import { fontFor } from "@tuba/shared";
 type DeptId = "visa"|"hotel"|"transport"|"catering"|"finance"|"procurement"|"hr"|"crm";
 
 const C: Record<DeptId, string> = {
-  visa:        "#0D9488",
-  hotel:       "#2563EB",
-  transport:   "#EA580C",
-  catering:    "#9333EA",
-  finance:     "#16A34A",
-  procurement: "#D97706",
-  hr:          "#DB2777",
-  crm:         "#0EA5E9",
+  visa:        CAT.teal,
+  hotel:       ERP.info,
+  transport:   CAT.orange,
+  catering:    CAT.purple,
+  finance:     ERP.success,
+  procurement: ERP.warning,
+  hr:          CAT.purple,
+  crm:         CAT.sky,
 };
 
 const DEPT_ICONS: Record<DeptId, IconFC> = {
@@ -81,12 +82,12 @@ interface ApiInvoice {
 
 // Static config — service-request state machine colours (real Prisma enum).
 const SVC_STATUS_C: Record<string,string> = {
-  REQUESTED:"#2563EB", ASSIGNED:"#B45309", CONFIRMED:"#16A34A",
-  VOUCHER_ISSUED:"#0D9488", COMPLETED:"#059669", REJECTED:"#DC2626", CANCELLED:"#6B7280",
+  REQUESTED:ERP.info, ASSIGNED:ERP.warning, CONFIRMED:ERP.success,
+  VOUCHER_ISSUED:CAT.teal, COMPLETED:ERP.success, REJECTED:ERP.destructive, CANCELLED:ERP.muted,
 };
 // Static config — invoice status colours (real InvoiceStatus enum).
 const INV_STATUS_C: Record<string,string> = {
-  DRAFT:"#6B7280", OUTSTANDING:"#B45309", PAID:"#16A34A", OVERDUE:"#DC2626", CANCELLED:"#9CA3AF",
+  DRAFT:ERP.muted, OUTSTANDING:ERP.warning, PAID:ERP.success, OVERDUE:ERP.destructive, CANCELLED:ERP.muted,
 };
 
 const isActive = (s:string) => s !== "COMPLETED" && s !== "CANCELLED" && s !== "REJECTED";
@@ -129,17 +130,17 @@ function SLABar({ hoursAgo, slaHours, compact }: { hoursAgo:number; slaHours:num
   const remaining  = slaHours - hoursAgo;
   const pct        = Math.max(0, Math.min(100, (remaining / slaHours) * 100));
   const overdue    = remaining < 0;
-  const barColor   = pct > 60 ? "#16A34A" : pct > 30 ? "#B45309" : pct > 0 ? "#FB923C" : "#DC2626";
+  const barColor   = pct > 60 ? ERP.success : pct > 30 ? ERP.warning : pct > 0 ? CAT.orange : ERP.destructive;
   const label      = overdue ? `${Math.round(-remaining)}h overdue` : `${Math.round(remaining)}h left`;
   return (
     <div>
       {!compact && (
         <div className="flex justify-between text-[9px] mb-1">
-          <span style={{ color:"rgba(11,30,63,0.50)" }}>SLA · {slaHours}h target</span>
+          <span style={{ color:ERP.muted }}>SLA · {slaHours}h target</span>
           <span style={{ color:barColor }}>{label}</span>
         </div>
       )}
-      <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor:"#F5F7FA" }}>
+      <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor:ERP.surfaceSoft }}>
         <div className="h-full rounded-full" style={{ width:`${pct}%`, backgroundColor:barColor }} />
       </div>
       {compact && <div className="text-[9px] mt-0.5" style={{ color:barColor }}>{label}</div>}
@@ -150,25 +151,25 @@ function SLABar({ hoursAgo, slaHours, compact }: { hoursAgo:number; slaHours:num
 function Chip({ label, color }: { label:string; color:string }) {
   return (
     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide shrink-0"
-          style={{ backgroundColor:`${color}18`, color }}>
+          style={{ backgroundColor:`${erpAlpha(color, 9)}`, color }}>
       {label.replace("_"," ")}
     </span>
   );
 }
 
-const IS: CSSProperties = { backgroundColor:"#F5F7FA", border:"1px solid rgba(11,30,63,0.15)", color:"#0B1E3F" };
+const IS: CSSProperties = { backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}`, color:ERP.navy };
 
 function QCard({ id, title, sub, status, statusColor, hoursAgo, slaHours, selected, color, onClick }:
   { id:string; title:string; sub:string; status:string; statusColor:string; hoursAgo:number; slaHours:number; selected:boolean; color:string; onClick():void }) {
   return (
     <button onClick={onClick} className="w-full text-left p-3.5 rounded-xl transition-all"
-      style={{ border:`1px solid ${selected ? color : "rgba(11,30,63,0.38)"}`, backgroundColor: selected ? `${color}0A` : "#EEF1F6" }}>
+      style={{ border:`1px solid ${selected ? color : ERP.mutedSoft}`, backgroundColor: selected ? `${erpAlpha(color, 4)}` : ERP.surfaceSoft }}>
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <span className="text-[9px] font-black truncate min-w-0" style={{ color, fontFamily:"var(--font-mono)" }}>{id}</span>
         <Chip label={status} color={statusColor} />
       </div>
-      <div className="text-xs font-semibold text-[#0B1E3F] truncate mb-0.5">{title}</div>
-      <div className="text-[10px] mb-2.5 truncate" style={{ color:"rgba(11,30,63,0.58)" }}>{sub}</div>
+      <div className="text-xs font-semibold text-[color:var(--erp-text-strong)] truncate mb-0.5">{title}</div>
+      <div className="text-[10px] mb-2.5 truncate" style={{ color:ERP.muted }}>{sub}</div>
       <SLABar hoursAgo={hoursAgo} slaHours={slaHours} />
     </button>
   );
@@ -176,9 +177,9 @@ function QCard({ id, title, sub, status, statusColor, hoursAgo, slaHours, select
 
 function DetailRow({ label, value, mono }: { label:string; value:ReactNode; mono?:boolean }) {
   return (
-    <div className="px-4 py-3 min-w-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
-      <div className="text-[9px] font-black uppercase tracking-widest mb-0.5" style={{ color:"rgba(11,30,63,0.50)" }}>{label}</div>
-      <div className={`text-xs font-semibold text-[#0B1E3F] truncate${mono?" font-mono":""}`} style={mono?{fontFamily:"var(--font-mono)"}:{}}>{value}</div>
+    <div className="px-4 py-3 min-w-0" style={{ borderBottom:`1px solid ${ERP.border}` }}>
+      <div className="text-[9px] font-black uppercase tracking-widest mb-0.5" style={{ color:ERP.muted }}>{label}</div>
+      <div className={`text-xs font-semibold text-[color:var(--erp-text-strong)] truncate${mono?" font-mono":""}`} style={mono?{fontFamily:"var(--font-mono)"}:{}}>{value}</div>
     </div>
   );
 }
@@ -186,7 +187,7 @@ function DetailRow({ label, value, mono }: { label:string; value:ReactNode; mono
 function ActionBtn({ label, color, icon: Icon, onClick }: { label:string; color?:string; icon?:typeof Check; onClick?():void }) {
   return (
     <button onClick={onClick} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all whitespace-nowrap"
-      style={{ backgroundColor: color ? `${color}18` : "#EEF1F6", color: color ?? "rgba(11,30,63,0.66)", border:`1px solid ${color ? color+"30" : "rgba(11,30,63,0.38)"}` }}>
+      style={{ backgroundColor: color ? `${erpAlpha(color, 9)}` : ERP.surfaceSoft, color: color ?? ERP.muted, border:`1px solid ${color ? color+"30" : ERP.mutedSoft}` }}>
       {Icon && <Icon size={11} />}{label}
     </button>
   );
@@ -195,10 +196,10 @@ function ActionBtn({ label, color, icon: Icon, onClick }: { label:string; color?
 function QueuePanel({ color, children }: { color:string; children:ReactNode }) {
   const [q, setQ] = useState("");
   return (
-    <div className="col-span-2 flex flex-col overflow-hidden" style={{ borderRight:"1px solid rgba(11,30,63,0.11)" }}>
-      <div className="px-4 py-3 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+    <div className="col-span-2 flex flex-col overflow-hidden" style={{ borderRight:`1px solid ${ERP.border}` }}>
+      <div className="px-4 py-3 shrink-0" style={{ borderBottom:`1px solid ${ERP.border}` }}>
         <div className="relative">
-          <Search size={11} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color:"rgba(11,30,63,0.50)" }} />
+          <Search size={11} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color:ERP.muted }} />
           <input value={q} onChange={(e)=>setQ(e.target.value)} placeholder="Search queue…"
             className="w-full pl-8 pr-3 py-2 rounded-xl text-[10px] focus:outline-none"
             style={IS} />
@@ -213,17 +214,17 @@ function QueuePanel({ color, children }: { color:string; children:ReactNode }) {
 
 function KPIStrip({ items }: { items: { label:string; value:number|string; color:string; icon:typeof Clock }[] }) {
   return (
-    <div className="grid grid-cols-4 gap-3 px-6 py-4 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"#FFFFFF" }}>
+    <div className="grid grid-cols-4 gap-3 px-6 py-4 shrink-0" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:ERP.surface }}>
       {items.map((k) => {
         const Icon = k.icon;
         return (
-          <div key={k.label} className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.11)" }}>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor:`${k.color}18` }}>
+          <div key={k.label} className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor:`${erpAlpha(k.color, 9)}` }}>
               <Icon size={13} style={{ color:k.color }} />
             </div>
             <div>
-              <div className="text-base font-black text-[#0B1E3F]" style={{ fontFamily:"var(--font-mono)" }}>{k.value}</div>
-              <div className="text-[9px]" style={{ color:"rgba(11,30,63,0.50)" }}>{k.label}</div>
+              <div className="text-base font-black text-[color:var(--erp-text-strong)]" style={{ fontFamily:"var(--font-mono)" }}>{k.value}</div>
+              <div className="text-[9px]" style={{ color:ERP.muted }}>{k.label}</div>
             </div>
           </div>
         );
@@ -256,12 +257,12 @@ const SVC_TRANSITIONS: Record<string, SvcStatus[]> = {
 };
 
 const ACTION_META: Record<string, { label:string; color:string; icon:typeof Check }> = {
-  ASSIGNED:       { label:"Mark Assigned",  color:"#B45309", icon:ChevronRight },
-  CONFIRMED:      { label:"Confirm",        color:"#16A34A", icon:CheckCircle },
-  VOUCHER_ISSUED: { label:"Issue Voucher",  color:"#C9A24B", icon:Download },
-  COMPLETED:      { label:"Mark Completed", color:"#059669", icon:Check },
-  REJECTED:       { label:"Reject",         color:"#DC2626", icon:XCircle },
-  CANCELLED:      { label:"Cancel Request", color:"#DC2626", icon:AlertCircle },
+  ASSIGNED:       { label:"Mark Assigned",  color:ERP.warning, icon:ChevronRight },
+  CONFIRMED:      { label:"Confirm",        color:ERP.success, icon:CheckCircle },
+  VOUCHER_ISSUED: { label:"Issue Voucher",  color:ERP.accent, icon:Download },
+  COMPLETED:      { label:"Mark Completed", color:ERP.success, icon:Check },
+  REJECTED:       { label:"Reject",         color:ERP.destructive, icon:XCircle },
+  CANCELLED:      { label:"Cancel Request", color:ERP.destructive, icon:AlertCircle },
 };
 
 function TransitionActions({ service, row, onDone }: { service:string; row:SvcRow; onDone():void }) {
@@ -288,7 +289,7 @@ function TransitionActions({ service, row, onDone }: { service:string; row:SvcRo
 
   if (!next.length) {
     return (
-      <span className="text-[10px]" style={{ color:"rgba(11,30,63,0.50)" }}>
+      <span className="text-[10px]" style={{ color:ERP.muted }}>
         No further actions — request is {row.status.replace("_"," ").toLowerCase()}.
       </span>
     );
@@ -384,17 +385,17 @@ interface MutamerDeskPage {
 interface UmrahCoOpt { id: string; code: string; name: string }
 
 const VISA_STATE_C: Record<string, string> = {
-  NEW: "#2563EB",
-  MOFA: "#0EA5E9",
-  EMBASSY: "#7C3AED",
-  BIOMETRIC: "#B45309",
-  SUBMITTED: "#0891B2",
-  PROCESSING: "#CA8A04",
-  ISSUED: "#16A34A",
-  REJECTED: "#DC2626",
-  PASSPORT_RETURNED: "#059669",
-  COMPLETED: "#0F766E",
-  REJECTED_CLOSED: "#6B7280",
+  NEW: ERP.info,
+  MOFA: CAT.sky,
+  EMBASSY: CAT.purple,
+  BIOMETRIC: ERP.warning,
+  SUBMITTED: ERP.info,
+  PROCESSING: ERP.warning,
+  ISSUED: ERP.success,
+  REJECTED: ERP.destructive,
+  PASSPORT_RETURNED: ERP.success,
+  COMPLETED: CAT.teal,
+  REJECTED_CLOSED: ERP.muted,
 };
 
 function fmtWhen(iso?: string | null) {
@@ -429,7 +430,7 @@ function VisaPipelineChips({ current, lang }: { current: string; lang: "bn" | "e
         const done = !rejected && idx >= 0 && i < idx;
         return (
           <span key={step} className="inline-flex items-center gap-1">
-            {i > 0 && <ChevronRight size={10} style={{ color: "rgba(11,30,63,0.25)" }} />}
+            {i > 0 && <ChevronRight size={10} style={{ color: ERP.border }} />}
             <ErpStatusChip
               status={active ? visaStateKind(step) : done ? "completed" : "pending"}
               label={step.replace(/_/g, " ")}
@@ -453,12 +454,12 @@ function VisaDesk() {
   if (mode === "batches") {
     return (
       <div className="flex flex-col h-full overflow-hidden" style={{ fontFamily: fontFor(lang) }}>
-        <div className="flex flex-wrap items-center gap-2 px-6 py-3 shrink-0" style={{ borderBottom: "1px solid rgba(11,30,63,0.11)", backgroundColor: "#FFFFFF" }}>
+        <div className="flex flex-wrap items-center gap-2 px-6 py-3 shrink-0" style={{ borderBottom: `1px solid ${ERP.border}`, backgroundColor: ERP.surface }}>
           <ErpButton size="sm" variant="outline" onClick={() => setMode("mutamers")}>
             {lang === "bn" ? "মুতামির বোর্ড" : "Mutamer Board"}
           </ErpButton>
           <ErpButton size="sm" variant="primary">{lang === "bn" ? "ব্যাচ অনুরোধ" : "Batch Requests"}</ErpButton>
-          <span className="text-[10px] ml-1" style={{ color: "rgba(11,30,63,0.50)" }}>
+          <span className="text-[10px] ml-1" style={{ color: ERP.muted }}>
             {lang === "bn" ? "VisaRequest এনভেলপ কিউ" : "VisaRequest envelope queue (batch status only)"}
           </span>
         </div>
@@ -625,7 +626,7 @@ function MutamerVisaDrawer({
       {row && tab === "summary" && (
         <div className="space-y-4">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(11,30,63,0.50)" }}>
+            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>
               {lang === "bn" ? "যাত্রী সারাংশ" : "Passenger Summary"}
             </div>
             <dl className="space-y-2 text-sm">
@@ -638,15 +639,15 @@ function MutamerVisaDrawer({
                 [lang === "bn" ? "স্ট্যাটাস" : "State", row.visaState.replace(/_/g, " ")],
                 [lang === "bn" ? "লেবেল" : "Label", row.visaStatusLabel ?? "—"],
               ].map(([k, v]) => (
-                <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                  <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                  <dd className="font-semibold text-[#0B1E3F] text-right">{v}</dd>
+                <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                  <dt style={{ color: ERP.muted }}>{k}</dt>
+                  <dd className="font-semibold text-[color:var(--erp-text-strong)] text-right">{v}</dd>
                 </div>
               ))}
             </dl>
           </div>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(11,30,63,0.50)" }}>
+            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>
               {lang === "bn" ? "পাসপোর্ট" : "Passport"}
             </div>
             <dl className="space-y-2 text-sm">
@@ -655,9 +656,9 @@ function MutamerVisaDrawer({
                 ["Biometric", row.biometricStatus ?? "—"],
                 [lang === "bn" ? "ফেরত" : "Returned", row.passportReturnedAt ? fmtWhen(row.passportReturnedAt) : "—"],
               ].map(([k, v]) => (
-                <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                  <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                  <dd className="font-semibold font-mono text-[#0B1E3F]">{v}</dd>
+                <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                  <dt style={{ color: ERP.muted }}>{k}</dt>
+                  <dd className="font-semibold font-mono text-[color:var(--erp-text-strong)]">{v}</dd>
                 </div>
               ))}
             </dl>
@@ -686,7 +687,7 @@ function MutamerVisaDrawer({
       {row && tab === "pipeline" && (
         <div className="space-y-4">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(11,30,63,0.50)" }}>
+            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>
               {lang === "bn" ? "ভিসা পাইপলাইন" : "Visa Pipeline"}
             </div>
             <VisaPipelineChips current={row.visaState} lang={lang} />
@@ -710,13 +711,13 @@ function MutamerVisaDrawer({
               </ErpButton>
             ))}
           </div>
-          <p className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)" }}>
+          <p className="text-[10px]" style={{ color: ERP.muted }}>
             {lang === "bn"
               ? "শুধু অনুমোদিত ট্রানজিশন। অবৈধ এজ প্রত্যাখ্যাত ও অডিট হয়।"
               : "Allowed transitions only. Invalid edges are rejected and audited."}
           </p>
           {requirePassportReturn && (
-            <p className="text-[10px] px-3 py-2 rounded-lg" style={{ backgroundColor: "rgba(180,83,9,0.08)", color: "#92400E" }}>
+            <p className="text-[10px] px-3 py-2 rounded-lg" style={{ backgroundColor: "erpAlpha(ERP.warning, 8)", color: ERP.warning }}>
               SOP: passport return required before COMPLETED (VISA_REQUIRE_PASSPORT_RETURN).
             </p>
           )}
@@ -726,7 +727,7 @@ function MutamerVisaDrawer({
       {row && tab === "details" && (
         <div className="space-y-5">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(11,30,63,0.50)" }}>MOFA</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>MOFA</div>
             <ErpForm columns={1}>
               <ErpField label={lang === "bn" ? "MOFA নম্বর" : "MOFA Number"} hint={lang === "bn" ? "পরিচয় — বিল ফাইন্যান্সে" : "Identity only — bill is Finance MOFA Processing"}>
                 <ErpInput value={mofaNumber} onChange={(e) => setMofaNumber(e.target.value)} style={{ fontFamily: "var(--font-mono)" }} />
@@ -734,7 +735,7 @@ function MutamerVisaDrawer({
             </ErpForm>
           </div>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(11,30,63,0.50)" }}>
+            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>
               {lang === "bn" ? "এম্বাসি" : "Embassy"}
             </div>
             <ErpForm columns={1}>
@@ -748,35 +749,35 @@ function MutamerVisaDrawer({
                 <ErpInput value={visaNumber} onChange={(e) => setVisaNumber(e.target.value)} style={{ fontFamily: "var(--font-mono)" }} />
               </ErpField>
             </ErpForm>
-            <p className="text-[11px] mt-2" style={{ color: "rgba(11,30,63,0.50)" }}>
+            <p className="text-[11px] mt-2" style={{ color: ERP.muted }}>
               {lang === "bn" ? "জমা" : "Submitted"}: {row.embassySubmittedAt ? fmtWhen(row.embassySubmittedAt) : "—"}
             </p>
           </div>
           {row.group.visaType === "LONG_STAY" && (
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(11,30,63,0.50)" }}>
+              <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>
                 {lang === "bn" ? "লং স্টে (শুধু দেখা)" : "Long Stay (read-only)"}
               </div>
               <dl className="space-y-2 text-sm">
-                <div className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                  <dt style={{ color: "rgba(11,30,63,0.50)" }}>Host</dt>
-                  <dd className="font-semibold text-right text-[#0B1E3F]">
+                <div className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                  <dt style={{ color: ERP.muted }}>Host</dt>
+                  <dd className="font-semibold text-right text-[color:var(--erp-text-strong)]">
                     {row.longStayHost
                       ? `${row.longStayHost.hostName ?? "—"} · ${row.longStayHost.hostComplete ? "complete" : "incomplete"}`
                       : (lang === "bn" ? "রেকর্ড নেই — Ops → Long Stay" : "No LongStay record — Ops Control → Long Stay")}
                   </dd>
                 </div>
-                <div className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                  <dt style={{ color: "rgba(11,30,63,0.50)" }}>WhatsApp</dt>
-                  <dd className="font-mono text-[#0B1E3F]">{row.longStayHost?.hostWhatsapp ?? "—"}</dd>
+                <div className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                  <dt style={{ color: ERP.muted }}>WhatsApp</dt>
+                  <dd className="font-mono text-[color:var(--erp-text-strong)]">{row.longStayHost?.hostWhatsapp ?? "—"}</dd>
                 </div>
-                <div className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                  <dt style={{ color: "rgba(11,30,63,0.50)" }}>Absher</dt>
-                  <dd className="font-semibold text-[#0B1E3F]">{row.longStayHost?.absher ?? "—"}</dd>
+                <div className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                  <dt style={{ color: ERP.muted }}>Absher</dt>
+                  <dd className="font-semibold text-[color:var(--erp-text-strong)]">{row.longStayHost?.absher ?? "—"}</dd>
                 </div>
-                <div className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                  <dt style={{ color: "rgba(11,30,63,0.50)" }}>Day-85</dt>
-                  <dd className="font-semibold text-[#0B1E3F]">
+                <div className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                  <dt style={{ color: ERP.muted }}>Day-85</dt>
+                  <dd className="font-semibold text-[color:var(--erp-text-strong)]">
                     {!row.longStayHost?.day85 || row.longStayHost.day85.stage === "NOT_TRACKED"
                       ? "—"
                       : `day ${row.longStayHost.day85.dayCount ?? 0} · ${row.longStayHost.day85.stage}${row.longStayHost.day85.redCard ? " · RED" : ""}`}
@@ -784,14 +785,14 @@ function MutamerVisaDrawer({
                 </div>
               </dl>
               {row.longStayHost?.day85?.redCard && (
-                <p className="text-[10px] mt-2 px-3 py-2 rounded-lg" style={{ backgroundColor: "rgba(220,38,38,0.08)", color: "#991B1B" }}>
+                <p className="text-[10px] mt-2 px-3 py-2 rounded-lg" style={{ backgroundColor: erpAlpha(ERP.destructive, 8), color: ERP.destructive }}>
                   Day-85 red card — resolve in Ops Control → Long Stay.
                 </p>
               )}
             </div>
           )}
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "rgba(11,30,63,0.50)" }}>
+            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>
               {lang === "bn" ? "ইতিহাস" : "History"}
             </div>
             <dl className="space-y-2 text-sm">
@@ -803,9 +804,9 @@ function MutamerVisaDrawer({
                 [lang === "bn" ? "অফিসার" : "Officer", row.assignedOfficer ?? "—"],
                 ["Visa Request", row.visaRequest?.code ?? "—"],
               ].map(([k, v]) => (
-                <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                  <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                  <dd className="font-semibold text-[#0B1E3F]">{v}</dd>
+                <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                  <dt style={{ color: ERP.muted }}>{k}</dt>
+                  <dd className="font-semibold text-[color:var(--erp-text-strong)]">{v}</dd>
                 </div>
               ))}
             </dl>
@@ -912,7 +913,7 @@ function MutamerVisaBoard({ color, onShowBatches }: { color: string; onShowBatch
       cell: (r) => (
         <div>
           <div className="text-[11px] font-semibold" style={{ fontFamily: "var(--font-mono)", color }}>{r.group.code}</div>
-          <div className="text-[10px] truncate max-w-[120px]" style={{ color: "rgba(11,30,63,0.50)" }}>{r.group.name}</div>
+          <div className="text-[10px] truncate max-w-[120px]" style={{ color: ERP.muted }}>{r.group.name}</div>
         </div>
       ),
     },
@@ -921,8 +922,8 @@ function MutamerVisaBoard({ color, onShowBatches }: { color: string; onShowBatch
       header: lang === "bn" ? "যাত্রী" : "Passenger",
       cell: (r) => (
         <div>
-          <div className="text-xs font-semibold text-[#0B1E3F] truncate max-w-[140px]" title={r.name}>{r.name}</div>
-          <div className="text-[10px] font-mono" style={{ color: "rgba(11,30,63,0.50)" }}>{r.passportNo}</div>
+          <div className="text-xs font-semibold text-[color:var(--erp-text-strong)] truncate max-w-[140px]" title={r.name}>{r.name}</div>
+          <div className="text-[10px] font-mono" style={{ color: ERP.muted }}>{r.passportNo}</div>
         </div>
       ),
     },
@@ -992,21 +993,21 @@ function MutamerVisaBoard({ color, onShowBatches }: { color: string; onShowBatch
                   onClick={() => setVisaState(s.id)}
                   className="text-left rounded-xl px-3 py-2.5 transition-colors"
                   style={{
-                    backgroundColor: visaState === s.id ? `${color}12` : "#FFFFFF",
-                    border: `1px solid ${visaState === s.id ? color : "rgba(11,30,63,0.11)"}`,
+                    backgroundColor: visaState === s.id ? `${erpAlpha(color, 7)}` : ERP.surface,
+                    border: `1px solid ${visaState === s.id ? color : ERP.border}`,
                   }}
                 >
-                  <div className="text-lg font-bold tabular-nums text-[#0B1E3F]" style={{ fontFamily: "var(--font-mono)" }}>
+                  <div className="text-lg font-bold tabular-nums text-[color:var(--erp-text-strong)]" style={{ fontFamily: "var(--font-mono)" }}>
                     {s.value}
                   </div>
-                  <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.55)" }}>
+                  <div className="text-[10px]" style={{ color: ERP.muted }}>
                     {lang === "bn" ? s.labelBn : s.labelEn}
                   </div>
                 </button>
               ))}
             </div>
             {data?.mofaCompleteness && (
-              <p className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)" }}>
+              <p className="text-[10px]" style={{ color: ERP.muted }}>
                 MOFA No: {data.mofaCompleteness.issuedWithMofa}/{data.mofaCompleteness.issuedTotal} issued
                 ({data.mofaCompleteness.percent}%) — {lang === "bn" ? "বিল নয়" : "not the Finance bill"}
               </p>
@@ -1074,7 +1075,7 @@ function MutamerVisaBoard({ color, onShowBatches }: { color: string; onShowBatch
                     </ErpSelect>
                   </ErpField>
                   <ErpFormRow span={2}>
-                    <label className="flex items-center gap-2 text-xs font-semibold text-[#0B1E3F] cursor-pointer">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-[color:var(--erp-text-strong)] cursor-pointer">
                       <input type="checkbox" checked={arriving7} onChange={(e) => setArriving7(e.target.checked)} />
                       {lang === "bn" ? "আগমন ≤৭ দিন" : "Arrival ≤7 days"}
                     </label>
@@ -1149,9 +1150,9 @@ function VisaBatchDesk() {
     <div className="flex flex-col h-full overflow-hidden">
       <KPIStrip items={[
         { label:"Total Requests", value:rows.length,                                                 color,           icon:FileCheck },
-        { label:"In Progress",    value:rows.filter((r)=>isActive(r.status)).length,                 color:"#B45309", icon:Clock },
-        { label:"Overdue",        value:rows.filter((r)=>hoursSince(r.createdAt)>slaHours).length,   color:"#DC2626", icon:AlertTriangle },
-        { label:"Completed",      value:rows.filter((r)=>r.status==="COMPLETED").length,             color:"#16A34A", icon:CheckCircle },
+        { label:"In Progress",    value:rows.filter((r)=>isActive(r.status)).length,                 color:ERP.warning, icon:Clock },
+        { label:"Overdue",        value:rows.filter((r)=>hoursSince(r.createdAt)>slaHours).length,   color:ERP.destructive, icon:AlertTriangle },
+        { label:"Completed",      value:rows.filter((r)=>r.status==="COMPLETED").length,             color:ERP.success, icon:CheckCircle },
       ]} />
 
       <div className="flex-1 overflow-hidden grid grid-cols-5">
@@ -1167,19 +1168,19 @@ function VisaBatchDesk() {
         </QueuePanel>
 
         <div className="col-span-3 flex flex-col overflow-hidden">
-          <div className="flex items-start justify-between gap-3 px-5 py-4 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+          <div className="flex items-start justify-between gap-3 px-5 py-4 shrink-0" style={{ borderBottom:`1px solid ${ERP.border}` }}>
             <div className="min-w-0">
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-sm font-black" style={{ color, fontFamily:"var(--font-mono)" }}>{item.code}</span>
                 <Chip label={item.status} color={SVC_STATUS_C[item.status] ?? color} />
               </div>
-              <div className="text-xs text-[#0B1E3F] font-semibold truncate">{item.group?.paxCount ?? "—"} passengers · {item.group?.name ?? "—"}</div>
-              <div className="text-[10px] mt-0.5 truncate" style={{ color:"rgba(11,30,63,0.58)" }}>{item.group?.code ?? "—"}</div>
+              <div className="text-xs text-[color:var(--erp-text-strong)] font-semibold truncate">{item.group?.paxCount ?? "—"} passengers · {item.group?.name ?? "—"}</div>
+              <div className="text-[10px] mt-0.5 truncate" style={{ color:ERP.muted }}>{item.group?.code ?? "—"}</div>
             </div>
             <div className="w-40 shrink-0"><SLABar hoursAgo={hoursSince(item.createdAt)} slaHours={slaHours} /></div>
           </div>
 
-          <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }}>
+          <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth:"thin", scrollbarColor:`${ERP.mutedSoft} transparent` }}>
             <div className="grid grid-cols-2">
               <DetailRow label="Booking Group" value={item.group?.code ?? "—"} mono />
               <DetailRow label="Group Name"     value={item.group?.name ?? "—"} />
@@ -1190,7 +1191,7 @@ function VisaBatchDesk() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 px-5 py-3 shrink-0" style={{ borderTop:"1px solid rgba(11,30,63,0.11)" }}>
+          <div className="flex flex-wrap items-center gap-2 px-5 py-3 shrink-0" style={{ borderTop:`1px solid ${ERP.border}` }}>
             <TransitionActions service="visa" row={item} onDone={reload} />
           </div>
         </div>
@@ -1222,9 +1223,9 @@ function HotelDesk() {
     <div className="flex flex-col h-full overflow-hidden">
       <KPIStrip items={[
         { label:"Total Requests", value:rows.length,                                                 color,           icon:Building2 },
-        { label:"In Progress",    value:rows.filter((r)=>isActive(r.status)).length,                 color:"#B45309", icon:Clock },
-        { label:"Overdue",        value:rows.filter((r)=>hoursSince(r.createdAt)>slaHours).length,   color:"#DC2626", icon:AlertTriangle },
-        { label:"Confirmed",      value:rows.filter((r)=>r.status==="CONFIRMED").length,             color:"#16A34A", icon:CheckCircle },
+        { label:"In Progress",    value:rows.filter((r)=>isActive(r.status)).length,                 color:ERP.warning, icon:Clock },
+        { label:"Overdue",        value:rows.filter((r)=>hoursSince(r.createdAt)>slaHours).length,   color:ERP.destructive, icon:AlertTriangle },
+        { label:"Confirmed",      value:rows.filter((r)=>r.status==="CONFIRMED").length,             color:ERP.success, icon:CheckCircle },
       ]} />
 
       <div className="flex-1 overflow-hidden grid grid-cols-5">
@@ -1240,19 +1241,19 @@ function HotelDesk() {
         </QueuePanel>
 
         <div className="col-span-3 flex flex-col overflow-hidden">
-          <div className="flex items-start justify-between gap-3 px-5 py-4 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+          <div className="flex items-start justify-between gap-3 px-5 py-4 shrink-0" style={{ borderBottom:`1px solid ${ERP.border}` }}>
             <div className="min-w-0">
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-sm font-black" style={{ color, fontFamily:"var(--font-mono)" }}>{item.code}</span>
                 <Chip label={item.status} color={SVC_STATUS_C[item.status] ?? color} />
               </div>
-              <div className="text-sm font-bold text-[#0B1E3F] truncate">{item.hotel?.name ?? "—"}</div>
-              <div className="text-[10px] mt-0.5 truncate" style={{ color:"rgba(11,30,63,0.58)" }}>{item.group?.code ?? "—"} · {item.group?.paxCount ?? "—"} pax</div>
+              <div className="text-sm font-bold text-[color:var(--erp-text-strong)] truncate">{item.hotel?.name ?? "—"}</div>
+              <div className="text-[10px] mt-0.5 truncate" style={{ color:ERP.muted }}>{item.group?.code ?? "—"} · {item.group?.paxCount ?? "—"} pax</div>
             </div>
             <div className="w-40 shrink-0"><SLABar hoursAgo={hoursSince(item.createdAt)} slaHours={slaHours} /></div>
           </div>
 
-          <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }}>
+          <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth:"thin", scrollbarColor:`${ERP.mutedSoft} transparent` }}>
             <div className="grid grid-cols-2">
               <DetailRow label="Group"     value={item.group?.code ?? "—"} mono />
               <DetailRow label="Pax Count" value={item.group?.paxCount != null ? `${item.group.paxCount} pax` : "—"} />
@@ -1264,7 +1265,7 @@ function HotelDesk() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 px-5 py-3 shrink-0" style={{ borderTop:"1px solid rgba(11,30,63,0.11)" }}>
+          <div className="flex flex-wrap items-center gap-2 px-5 py-3 shrink-0" style={{ borderTop:`1px solid ${ERP.border}` }}>
             <TransitionActions service="hotel" row={item} onDone={reload} />
           </div>
         </div>
@@ -1302,65 +1303,65 @@ function LightDesk({ color, slaHours, cols, rows, statusColors, kpiItems }: {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <KPIStrip items={kpiItems} />
-      <div className="flex items-center gap-2 px-5 py-3 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+      <div className="flex items-center gap-2 px-5 py-3 shrink-0" style={{ borderBottom:`1px solid ${ERP.border}` }}>
         {["ALL", ...statuses].map((s) => (
           <button key={s} onClick={() => setFilter(s)} className="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all"
-            style={{ backgroundColor: filter===s ? `${color}18` : "#EEF1F6", color: filter===s ? color : "rgba(11,30,63,0.58)", border:`1px solid ${filter===s ? color+"30" : "transparent"}` }}>
+            style={{ backgroundColor: filter===s ? `${erpAlpha(color, 9)}` : ERP.surfaceSoft, color: filter===s ? color : ERP.muted, border:`1px solid ${filter===s ? color+"30" : "transparent"}` }}>
             {s.replace("_"," ")}
           </button>
         ))}
         <div className="relative ml-auto">
-          <Search size={11} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color:"rgba(11,30,63,0.50)" }} />
+          <Search size={11} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color:ERP.muted }} />
           <input value={q} onChange={(e)=>setQ(e.target.value)} placeholder="Search…"
             className="pl-8 pr-3 py-1.5 rounded-xl text-[10px] focus:outline-none w-48"
             style={IS} />
         </div>
         <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold ml-1"
-          style={{ backgroundColor:`${color}18`, color, border:`1px solid ${color}30` }}>
+          style={{ backgroundColor:`${erpAlpha(color, 9)}`, color, border:`1px solid ${erpAlpha(color, 19)}` }}>
           <Plus size={11} /> New
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }}>
+      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth:"thin", scrollbarColor:`${ERP.mutedSoft} transparent` }}>
         <table className="w-full">
           <thead>
-            <tr style={{ backgroundColor:"#FBFCFD", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+            <tr style={{ backgroundColor:ERP.surfaceSoft, borderBottom:`1px solid ${ERP.border}` }}>
               {cols.map((c) => (
                 <th key={c.key} className={`px-4 py-2.5 text-left text-[9px] font-black uppercase tracking-widest${c.center?" text-center":""}`}
-                    style={{ color:"rgba(11,30,63,0.50)" }}>{c.label}</th>
+                    style={{ color:ERP.muted }}>{c.label}</th>
               ))}
-              <th className="px-4 py-2.5 text-left text-[9px] font-black uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.50)" }}>SLA</th>
+              <th className="px-4 py-2.5 text-left text-[9px] font-black uppercase tracking-widest" style={{ color:ERP.muted }}>SLA</th>
               <th />
             </tr>
           </thead>
           <tbody>
             {filtered.map((row, i) => {
-              const sc  = statusColors[row.status] ?? "#9CA3AF";
+              const sc  = statusColors[row.status] ?? ERP.muted;
               const sla = slaHours - row.hoursAgo;
-              const slaColor = sla > slaHours * 0.6 ? "#16A34A" : sla > slaHours * 0.3 ? "#B45309" : sla > 0 ? "#FB923C" : "#DC2626";
+              const slaColor = sla > slaHours * 0.6 ? ERP.success : sla > slaHours * 0.3 ? ERP.warning : sla > 0 ? CAT.orange : ERP.destructive;
               const overdue  = sla < 0;
               return (
-                <tr key={row.id} style={{ borderBottom: i < filtered.length-1 ? "1px solid rgba(11,30,63,0.08)" : undefined }} className="hover:bg-white/2 group">
+                <tr key={row.id} style={{ borderBottom: i < filtered.length-1 ? `1px solid ${ERP.border}` : undefined }} className="hover:bg-white/2 group">
                   {cols.map((c) => (
                     <td key={c.key} className={`px-4 py-3${c.center?" text-center":""}`}>
                       {c.key === "status" ? (
                         <Chip label={row.status} color={sc} />
                       ) : c.render ? c.render(row) : (
-                        <span className={`text-xs${c.mono?" font-mono font-semibold":""} text-[#0B1E3F]`}
-                              style={c.mono ? { fontFamily:"var(--font-mono)", color } : { color:"rgba(11,30,63,0.86)" }}>
+                        <span className={`text-xs${c.mono?" font-mono font-semibold":""} text-[color:var(--erp-text-strong)]`}
+                              style={c.mono ? { fontFamily:"var(--font-mono)", color } : { color:ERP.navy }}>
                           {row[c.key]}
                         </span>
                       )}
                     </td>
                   ))}
                   <td className="px-4 py-3 w-32">
-                    <div className="h-1 rounded-full overflow-hidden mb-1" style={{ backgroundColor:"#F5F7FA" }}>
+                    <div className="h-1 rounded-full overflow-hidden mb-1" style={{ backgroundColor:ERP.surfaceSoft }}>
                       <div className="h-full rounded-full" style={{ width:`${Math.max(0,Math.min(100,((slaHours-row.hoursAgo)/slaHours)*100))}%`, backgroundColor:slaColor }} />
                     </div>
                     <div className="text-[9px]" style={{ color:slaColor }}>{overdue ? `${Math.round(-sla)}h over` : `${Math.round(sla)}h left`}</div>
                   </td>
                   <td className="px-3 py-3">
-                    <button className="opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor:"#F5F7FA" }}>
-                      <MoreHorizontal size={11} style={{ color:"rgba(11,30,63,0.66)" }} />
+                    <button className="opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor:ERP.surfaceSoft }}>
+                      <MoreHorizontal size={11} style={{ color:ERP.muted }} />
                     </button>
                   </td>
                 </tr>
@@ -1402,7 +1403,7 @@ function SvcQueueDesk({ service, color, icon, slaHours, supplierLabel }: {
     cols={[
       { key:"id",       label:"Request",  mono:true },
       { key:"group",    label:"Group",    mono:true },
-      { key:"pax",      label:"Pax",      center:true, render:(r)=><span className="text-base font-black text-[#0B1E3F]" style={{ fontFamily:"var(--font-mono)" }}>{r.pax}</span> },
+      { key:"pax",      label:"Pax",      center:true, render:(r)=><span className="text-base font-black text-[color:var(--erp-text-strong)]" style={{ fontFamily:"var(--font-mono)" }}>{r.pax}</span> },
       { key:"supplier", label:supplierLabel },
       { key:"status",   label:"Status" },
     ]}
@@ -1410,9 +1411,9 @@ function SvcQueueDesk({ service, color, icon, slaHours, supplierLabel }: {
     statusColors={SVC_STATUS_C}
     kpiItems={[
       { label:"Total Orders", value:svc.length,                                                color,           icon },
-      { label:"In Progress",  value:svc.filter((r)=>isActive(r.status)).length,                color:"#B45309", icon:Clock },
-      { label:"Overdue",      value:svc.filter((r)=>hoursSince(r.createdAt)>slaHours).length,  color:"#DC2626", icon:AlertTriangle },
-      { label:"Completed",    value:svc.filter((r)=>r.status==="COMPLETED").length,            color:"#16A34A", icon:CheckCircle },
+      { label:"In Progress",  value:svc.filter((r)=>isActive(r.status)).length,                color:ERP.warning, icon:Clock },
+      { label:"Overdue",      value:svc.filter((r)=>hoursSince(r.createdAt)>slaHours).length,  color:ERP.destructive, icon:AlertTriangle },
+      { label:"Completed",    value:svc.filter((r)=>r.status==="COMPLETED").length,            color:ERP.success, icon:CheckCircle },
     ]}
   />;
 }
@@ -1455,7 +1456,7 @@ function FinanceDesk() {
       { key:"id",     label:"Invoice",  mono:true },
       { key:"group",  label:"Group",    mono:true },
       { key:"entity", label:"Bill To" },
-      { key:"amount", label:"Amount",   render:(r)=><span className="text-xs font-bold font-mono" style={{ color:"#16A34A", fontFamily:"var(--font-mono)" }}>SAR {Number(r.amount).toLocaleString()}</span> },
+      { key:"amount", label:"Amount",   render:(r)=><span className="text-xs font-bold font-mono" style={{ color:ERP.success, fontFamily:"var(--font-mono)" }}>SAR {Number(r.amount).toLocaleString()}</span> },
       { key:"issued", label:"Issued",   mono:true },
       { key:"due",    label:"Due",      mono:true },
       { key:"status", label:"Status" },
@@ -1464,9 +1465,9 @@ function FinanceDesk() {
     statusColors={INV_STATUS_C}
     kpiItems={[
       { label:"Total Invoices", value:inv.length,                                       color,           icon:DollarSign },
-      { label:"Outstanding",    value:inv.filter((v)=>v.status==="OUTSTANDING").length, color:"#B45309", icon:Clock },
-      { label:"Overdue",        value:inv.filter((v)=>v.status==="OVERDUE").length,     color:"#DC2626", icon:AlertTriangle },
-      { label:"Paid",           value:inv.filter((v)=>v.status==="PAID").length,        color:"#16A34A", icon:CheckCircle },
+      { label:"Outstanding",    value:inv.filter((v)=>v.status==="OUTSTANDING").length, color:ERP.warning, icon:Clock },
+      { label:"Overdue",        value:inv.filter((v)=>v.status==="OVERDUE").length,     color:ERP.destructive, icon:AlertTriangle },
+      { label:"Paid",           value:inv.filter((v)=>v.status==="PAID").length,        color:ERP.success, icon:CheckCircle },
     ]}
   />;
 }
@@ -1479,7 +1480,7 @@ function ProcurementDesk() {
   return (
     <DeskFrame>
       <EmptyState tone="light" title="ক্রয় ডেস্ক" hint="এই মডিউল এখনও কনফিগার করা হয়নি।"
-        icon={<ShoppingCart size={32} className="opacity-20" style={{ color:"#0B1E3F" }} />} />
+        icon={<ShoppingCart size={32} className="opacity-20" style={{ color:ERP.navy }} />} />
     </DeskFrame>
   );
 }
@@ -1487,7 +1488,7 @@ function HRDesk() {
   return (
     <DeskFrame>
       <EmptyState tone="light" title="এইচআর ডেস্ক" hint="এই মডিউল এখনও কনফিগার করা হয়নি।"
-        icon={<Users size={32} className="opacity-20" style={{ color:"#0B1E3F" }} />} />
+        icon={<Users size={32} className="opacity-20" style={{ color:ERP.navy }} />} />
     </DeskFrame>
   );
 }
@@ -1495,7 +1496,7 @@ function CRMDesk() {
   return (
     <DeskFrame>
       <EmptyState tone="light" title="সিআরএম ডেস্ক" hint="এই মডিউল এখনও কনফিগার করা হয়নি।"
-        icon={<MessageCircle size={32} className="opacity-20" style={{ color:"#0B1E3F" }} />} />
+        icon={<MessageCircle size={32} className="opacity-20" style={{ color:ERP.navy }} />} />
     </DeskFrame>
   );
 }
@@ -1524,7 +1525,7 @@ export default function OpsDepartments() {
   const Icon  = DEPT_ICONS[dept];
 
   return (
-    <ERPShell
+    <ErpThemeProvider theme="ds"><ERPShell
       moduleId="departments"
       moduleName="Departments"
       moduleColor={color}
@@ -1540,6 +1541,6 @@ export default function OpsDepartments() {
       <div className="flex flex-col h-full overflow-hidden">
         {DEPT_SCREENS[dept]()}
       </div>
-    </ERPShell>
+    </ERPShell></ErpThemeProvider>
   );
 }

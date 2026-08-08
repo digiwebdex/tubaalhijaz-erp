@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, Building2, UserRound, FileCheck, CalendarDays,
   Wallet, BarChart3, ScanLine, Zap, ClipboardCheck,
   Bell, Truck, Navigation, Building, Bus, UtensilsCrossed, Shield,
-  FileText, LayoutGrid, Plane, UserCog, ScrollText, ShieldCheck, Gauge, MessageCircle, BellRing, FileCode, Inbox, Workflow, type LucideIcon,
+  FileText, LayoutGrid, Plane, UserCog, ScrollText, ShieldCheck, Gauge, MessageCircle, BellRing, FileCode, Inbox, Workflow, SlidersHorizontal, type LucideIcon,
 } from "lucide-react";
 import {
   canAccessPath,
@@ -224,6 +224,14 @@ export const STAFF_NAV_GROUPS: GlobalNavGroup[] = [
     labelBn: "সেটিংস",
     labelEn: "Settings",
     items: [
+      {
+        id: "settings-hub",
+        labelBn: "সিস্টেম প্রশাসন",
+        labelEn: "System Administration",
+        icon: asIcon(SlidersHorizontal),
+        path: "/settings",
+        anyOf: [P.MANAGE_SYSTEM_SETTINGS, P.APPROVE_COMPANIES, P.MANAGE_USERS],
+      },
       {
         id: "users",
         labelBn: "ব্যবহারকারী",

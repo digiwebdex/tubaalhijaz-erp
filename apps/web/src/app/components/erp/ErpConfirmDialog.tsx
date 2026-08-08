@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
-import { ERP } from "./tokens";
+import { ERP, erpAlpha } from "./tokens";
 import { ErpButton } from "./ErpButton";
 
 export interface ErpConfirmDialogProps {
@@ -59,7 +59,7 @@ export function ErpConfirmDialog({
       <button
         type="button"
         className="absolute inset-0"
-        style={{ backgroundColor: "rgba(11,30,63,0.45)" }}
+        style={{ backgroundColor: ERP.scrim }}
         aria-label={cancel}
         onClick={onClose}
       />
@@ -71,7 +71,7 @@ export function ErpConfirmDialog({
           {variant === "danger" && (
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-              style={{ backgroundColor: `${ERP.destructive}15` }}
+              style={{ backgroundColor: erpAlpha(ERP.destructive, 8) }}
             >
               <AlertTriangle size={18} style={{ color: ERP.destructive }} aria-hidden />
             </div>

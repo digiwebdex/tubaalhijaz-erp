@@ -6,6 +6,9 @@
   --font-arabic: 'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif;
   --font-bengali: 'Noto Sans Bengali', 'Noto Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-heading: 'Instrument Sans', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-data: 'JetBrains Mono', ui-monospace, monospace;
 
   --background: #F4F1EC;
   --foreground: #0B1E3F;
@@ -153,3 +156,5 @@
   button { font-size: var(--text-base); font-weight: var(--font-weight-medium); line-height: 1.5; }
   input { font-size: var(--text-base); font-weight: var(--font-weight-normal); line-height: 1.5; }
 }
+
+@keyframes ds-shimmer { 0% { background-position: 100% 0 } 100% { background-position: -100% 0 } }

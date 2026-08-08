@@ -11,11 +11,17 @@ import {
   SEARCH_PLACEHOLDER_EN,
 } from "./tokens";
 
-assert.equal(ERP.navy, "#0B1E3F");
-assert.equal(ERP.gold, "#C9A24B");
-assert.equal(ERP.destructive, "#DC2626");
-assert.equal(ERP.success, "#16A34A");
-assert.equal(ERP.warning, "#D97706");
+// Theme-aware (2026-08-07): colours are CSS custom-property refs resolved per
+// theme scope at runtime (Legacy on :root, DS on .erp-theme-ds). The token layer
+// only guarantees each slot points at its var; concrete palettes live in
+// styles/erp-theme.css.
+assert.equal(ERP.navy, "var(--erp-text-strong)");
+assert.equal(ERP.gold, "var(--erp-accent)");
+assert.equal(ERP.primaryBg, "var(--erp-primary-bg)");
+assert.equal(ERP.primaryFg, "var(--erp-primary-fg)");
+assert.equal(ERP.destructive, "var(--erp-destructive)");
+assert.equal(ERP.success, "var(--erp-success)");
+assert.equal(ERP.warning, "var(--erp-warning)");
 assert.equal(ERP.drawerMaxWidth, 720);
 assert.equal(ERP.touchMin, 44);
 
@@ -29,8 +35,9 @@ for (const k of kinds) {
 assert.ok(SEARCH_PLACEHOLDER_BN.includes("পাসপোর্ট"));
 assert.ok(SEARCH_PLACEHOLDER_EN.toLowerCase().includes("passport"));
 
-// Variant contract — buttons / table rules documented in tokens
-assert.ok(ERP.radius.sm >= 6);
-assert.ok(ERP.radius.md >= ERP.radius.sm);
+// Variant contract — radii are now themeable CSS-var refs.
+assert.equal(ERP.radius.sm, "var(--erp-radius-sm)");
+assert.equal(ERP.radius.md, "var(--erp-radius-md)");
+assert.equal(ERP.radius.lg, "var(--erp-radius-lg)");
 
 console.log("erp.selftest: OK");

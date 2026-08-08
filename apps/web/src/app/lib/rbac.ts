@@ -39,6 +39,7 @@ const PATH_ANY_OF: Record<string, readonly string[]> = {
   "/ocr-center": [P.REVIEW_OCR_QUEUE],
   "/finance-erp": [P.FINANCIAL_REPORTS],
   "/automation": [P.CONFIGURE_WORKFLOWS],
+  "/settings": [P.MANAGE_SYSTEM_SETTINGS, P.APPROVE_COMPANIES, P.MANAGE_USERS],
   "/workflow-map": [P.VIEW_DASHBOARD],
   "/rate-cards": [P.MANAGE_SYSTEM_SETTINGS],
   "/flight-management": [P.MANAGE_OPS],

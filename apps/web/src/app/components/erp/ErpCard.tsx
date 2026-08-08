@@ -30,7 +30,7 @@ export function ErpCard({
         backgroundColor: ERP.surface,
         border: `1px solid ${ERP.border}`,
         borderRadius: ERP.radius.md,
-        boxShadow: "0 1px 2px rgba(11,30,63,0.04)",
+        boxShadow: ERP.shadow.xs,
         ...style,
       }}
     >

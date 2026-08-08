@@ -8,15 +8,19 @@ import {
   Search,
 } from "lucide-react";
 import { ERPShell, type NavItem, type IconFC } from "../components/ERPShell";
-import { EmptyState, LoadingSkeleton, ErrorState } from "../components/States";
 import { RouteFallback } from "../components/RouteFallback";
 import { api, ApiError, isLoggedIn, getStoredUser, type UploadKind } from "../lib/api";
 import {
-  ErpPageTemplate, ErpButton, ErpDataTable, ErpStatusChip,
+  ErpThemeProvider, ERP, CAT, erpAlpha, ErpButton, ErpBadge, ErpDataTable,
   type ErpColumn, type ErpStatusKind,
 } from "../components/erp";
+import { EmptyState, LoadingSkeleton, ErrorState } from "../components/States";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
+
+type AccentName = "gold" | "success" | "warning" | "danger" | "info" | "purple";
+const DS_ACCENT: Record<AccentName, string> = { gold: ERP.accent, success: ERP.success, warning: ERP.warning, danger: ERP.destructive, info: ERP.info, purple: ERP.purple };
+function dsStatusColor(s: string): AccentName { const u=(s||"").toUpperCase(); if(/APPROV|VERIFIED|ISSUED|CREDIT|ACTIVE|DELIVER|PAID|COMPLET/.test(u))return"success"; if(/REJECT|FAIL|OVERDUE|CANCEL|SUSPEND/.test(u))return"danger"; if(/PENDING|REQUEST|REVIEW|DEBIT|ASSIGN|RETURN/.test(u))return"warning"; return"info"; }
 
 /** ESP-03 — load heavy agent desks only when selected (same modules / props). */
 const GroupsModule = lazy(() =>
@@ -29,8 +33,7 @@ const ServicesModule = lazy(() =>
   import("./AgentPortalServices").then((m) => ({ default: m.ServicesModule })),
 );
 
-const AGENT = "#0EA5E9"; // sky-500 — agent portal accent
-const GOLD = "#C9A24B";
+const AGENT = CAT.sky; // agent portal accent (categorical, themed)
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 
@@ -71,53 +74,45 @@ function ExpiryTag({ expiry, severity, daysLeft }: { expiry: string | null; seve
   // Live vault rows carry the backend-computed severity/daysLeft (evaluated against
   // the real "today"); mock rows omit them and fall back to the pinned date math
   // below. Both paths render byte-identical markup — only the values differ.
+  // DS re-theme: colors mapped to Design-System danger/warning/success tokens.
   if (severity !== undefined) {
     if (severity === null || daysLeft == null)
-      return <span className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)" }}>No Expiry</span>;
-    const color = severity === "EXPIRED" || severity === "CRITICAL" ? "#DC2626" : severity === "WARNING" ? "#B45309" : "#16A34A";
+      return <span style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>No Expiry</span>;
+    const color = severity === "EXPIRED" || severity === "CRITICAL" ? ERP.destructive : severity === "WARNING" ? ERP.warning : ERP.success;
     const label = severity === "EXPIRED" ? "Expired" : severity === "CRITICAL" ? `Expires in ${daysLeft}d` : severity === "WARNING" ? `${daysLeft}d remaining` : `Valid · ${daysLeft}d`;
     return (
-      <span
-        className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-        style={{ backgroundColor: `${color}18`, color }}
-      >
+      <span className="inline-flex items-center gap-1" style={{ fontSize: ERP.text.size[10], fontWeight: ERP.text.weight.semibold, padding: `${ERP.space[0.5]}px ${ERP.space[2]}px`, borderRadius: ERP.radius.full, background: `${erpAlpha(color, 13)}`, color }}>
         <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
         {label}
       </span>
     );
   }
-  if (!expiry) return <span className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)" }}>No Expiry</span>;
+  if (!expiry) return <span style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>No Expiry</span>;
   const d = daysUntil(expiry);
-  const color = d < 0 ? "#DC2626" : d < 30 ? "#DC2626" : d < 90 ? "#B45309" : "#16A34A";
+  const color = d < 0 ? ERP.destructive : d < 30 ? ERP.destructive : d < 90 ? ERP.warning : ERP.success;
   const label = d < 0 ? "Expired" : d < 30 ? `Expires in ${d}d` : d < 90 ? `${d}d remaining` : `Valid · ${d}d`;
   return (
-    <span
-      className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-      style={{ backgroundColor: `${color}18`, color }}
-    >
+    <span className="inline-flex items-center gap-1" style={{ fontSize: ERP.text.size[10], fontWeight: ERP.text.weight.semibold, padding: `${ERP.space[0.5]}px ${ERP.space[2]}px`, borderRadius: ERP.radius.full, background: `${erpAlpha(color, 13)}`, color }}>
       <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
       {label}
     </span>
   );
 }
 
+// DS badge for vault scan/document status — maps the legacy status keys onto the
+// Design-System Badge component (dot variant), preserving the exact labels.
 function SBadge({ status }: { status: string }) {
-  const MAP: Record<string, { bg: string; color: string; label: string }> = {
-    verified:    { bg: "#16A34A15", color: "#16A34A",               label: "Verified" },
-    pending:     { bg: "#D9770618", color: "#B45309",               label: "Pending" },
-    review:      { bg: "#2563EB15", color: "#2563EB",               label: "Under Review" },
-    rejected:    { bg: "#DC262615", color: "#DC2626",               label: "Rejected" },
-    in_progress: { bg: "#2563EB15", color: "#2563EB",               label: "In Progress" },
-    completed:   { bg: "#0D988815", color: "#0D9488",               label: "Completed" },
-    inactive:    { bg: "rgba(11,30,63,0.38)", color: "rgba(11,30,63,0.50)", label: "Inactive" },
+  const MAP: Record<string, { color: AccentName; label: string }> = {
+    verified:    { color: "success", label: "Verified" },
+    pending:     { color: "warning", label: "Pending" },
+    review:      { color: "info",    label: "Under Review" },
+    rejected:    { color: "danger",  label: "Rejected" },
+    in_progress: { color: "info",    label: "In Progress" },
+    completed:   { color: "success", label: "Completed" },
+    inactive:    { color: "info",    label: "Inactive" },
   };
   const s = MAP[status] ?? MAP.pending;
-  return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: s.bg, color: s.color }}>
-      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.color }} />
-      {s.label}
-    </span>
-  );
+  return <ErpBadge color={DS_ACCENT[s.color]} size="sm" dot>{s.label}</ErpBadge>;
 }
 
 // ─── Screen 1: Dashboard ─────────────────────────────────────────────────────
@@ -126,15 +121,6 @@ type DashGroup = { id: string; code: string; name: string; status?: string; paxC
 type DashVisa = { id: string; code: string; status: string; createdAt: string; group?: { code: string; name: string } };
 type DashWallet = { balance: number; pendingCharges: number; afterPending: number; currency: string };
 type DashTxn = { id: string; direction: string; amount: number; description: string; createdAt: string };
-
-function agentStatusKind(s?: string): ErpStatusKind {
-  const u = (s ?? "").toUpperCase();
-  if (u === "COMPLETED" || u === "CONFIRMED" || u === "APPROVED" || u === "VOUCHER_ISSUED" || u === "ACTIVE") return "approved";
-  if (u === "REJECTED" || u === "CANCELLED") return "rejected";
-  if (u === "REQUESTED" || u === "PENDING" || u === "ASSIGNED") return "warning";
-  if (u === "DRAFT") return "pending";
-  return "info";
-}
 
 function fmtSar(n: number): string {
   if (Math.abs(n) >= 1e6) return `SAR ${(n / 1e6).toFixed(2)}M`;
@@ -148,8 +134,6 @@ function DashboardScreen({ onGo }: { onGo: (id: string) => void }) {
   const name = user?.name ?? (lang === "bn" ? "এজেন্ট" : "Agent");
   const company = user?.company?.name ?? null;
   const code = user?.company?.code ?? null;
-  const initials =
-    name.trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "AG";
 
   const [groups, setGroups] = useState<DashGroup[]>([]);
   const [visas, setVisas] = useState<DashVisa[]>([]);
@@ -187,7 +171,7 @@ function DashboardScreen({ onGo }: { onGo: (id: string) => void }) {
     return () => clearTimeout(t);
   }, []);
 
-  /** Counts from existing list payloads only — no new aggregations. */
+  /** Counts from existing list payloads only — no new aggregations, no invented stats. */
   const pendingVisa = visas.filter((v) => {
     const u = v.status.toUpperCase();
     return u === "REQUESTED" || u === "ASSIGNED" || u === "PENDING";
@@ -222,94 +206,96 @@ function DashboardScreen({ onGo }: { onGo: (id: string) => void }) {
   ].slice(0, 8);
 
   const activityCols: ErpColumn<ActivityRow>[] = [
-    { id: "when", header: lang === "bn" ? "তারিখ" : "Date", cell: (r) => <span className="text-[11px] font-mono">{r.when}</span> },
-    { id: "kind", header: lang === "bn" ? "ধরন" : "Type", cell: (r) => <span className="text-[11px]">{r.kind}</span> },
-    { id: "label", header: lang === "bn" ? "বিবরণ" : "Detail", cell: (r) => <span className="text-xs font-semibold truncate max-w-[200px] block">{r.label}</span> },
-    { id: "st", header: lang === "bn" ? "স্ট্যাটাস" : "Status", cell: (r) => <ErpStatusChip status={agentStatusKind(r.status)} label={r.status} lang={lang} /> },
+    { id: "when", header: lang === "bn" ? "তারিখ" : "Date", cell: (r) => <span style={{ fontFamily: ERP.font.data, fontSize: ERP.text.size[11], color: ERP.muted }}>{r.when}</span> },
+    { id: "kind", header: lang === "bn" ? "ধরন" : "Type", cell: (r) => <span style={{ fontSize: ERP.text.size[11], color: ERP.fgDim }}>{r.kind}</span> },
+    { id: "label", header: lang === "bn" ? "বিবরণ" : "Detail", cell: (r) => <span style={{ fontSize: ERP.text.size[12], fontWeight: ERP.text.weight.semibold, color: ERP.navy }} className="truncate max-w-[220px] block">{r.label}</span> },
+    { id: "st", header: lang === "bn" ? "স্ট্যাটাস" : "Status", cell: (r) => <ErpBadge color={DS_ACCENT[dsStatusColor(r.status)]} size="sm" dot>{r.status}</ErpBadge> },
   ];
 
-  const tiles = [
-    { id: "work", labelBn: "আজকের কাজ", labelEn: "Today's Work", value: String(pendingVisa + (pendingPay > 0 ? 1 : 0)), tone: AGENT, go: "visas" },
-    { id: "groups", labelBn: "আমার গ্রুপ", labelEn: "My Groups", value: String(activeGroups), tone: "#0D9488", go: "groups" },
-    { id: "visa", labelBn: "পেন্ডিং ভিসা", labelEn: "Pending Visa", value: String(pendingVisa), tone: "#B45309", go: "visas" },
-    { id: "pay", labelBn: "পেমেন্ট / ওয়ালেট", labelEn: "Payments", value: wallet ? fmtSar(balance) : "—", tone: "#16A34A", go: "finance" },
+  // KPI tiles — every value derived from real API payloads above (never hardcoded).
+  const tiles: { id: string; labelBn: string; labelEn: string; value: string; color: AccentName; icon: string; go: string }[] = [
+    { id: "work", labelBn: "আজকের কাজ", labelEn: "Today's Work", value: String(pendingVisa + (pendingPay > 0 ? 1 : 0)), color: "info", icon: "📋", go: "visas" },
+    { id: "groups", labelBn: "আমার গ্রুপ", labelEn: "My Groups", value: String(activeGroups), color: "success", icon: "📦", go: "groups" },
+    { id: "visa", labelBn: "পেন্ডিং ভিসা", labelEn: "Pending Visa", value: String(pendingVisa), color: "warning", icon: "🛂", go: "visas" },
+    { id: "pay", labelBn: "পেমেন্ট / ওয়ালেট", labelEn: "Payments", value: wallet ? fmtSar(balance) : "—", color: "success", icon: "💰", go: "finance" },
+  ];
+
+  const quick: { label: string; labelBn: string; go: string }[] = [
+    { label: "My Groups", labelBn: "গ্রুপ", go: "groups" },
+    { label: "Visa Status", labelBn: "ভিসা স্ট্যাটাস", go: "visas" },
+    { label: "Payments", labelBn: "পেমেন্ট", go: "finance" },
+    { label: "Profile", labelBn: "প্রোফাইল", go: "profile" },
   ];
 
   return (
-    <div style={{ fontFamily: fontFor(lang) }}>
-      <ErpPageTemplate
-        title={lang === "bn" ? `স্বাগতম, ${name}` : `Welcome, ${name}`}
-        subtitle={[company, code].filter(Boolean).join(" · ") || (lang === "bn" ? "এজেন্ট অ্যাকাউন্ট" : "Agent account")}
-        primaryAction={
-          <ErpButton variant="secondary" icon={<RefreshCw size={14} />} onClick={refresh}>
-            {lang === "bn" ? "রিফ্রেশ" : "Refresh"}
-          </ErpButton>
-        }
-        toolbar={
-          <div className="flex flex-col gap-3 w-full">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
-                style={{ backgroundColor: `${AGENT}20`, color: AGENT }}
-                aria-hidden
-              >
-                {initials}
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 flex-1 w-full">
-                {tiles.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => onGo(t.go)}
-                    className="text-left rounded-xl px-3 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                    style={{
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid rgba(11,30,63,0.11)",
-                      outlineColor: GOLD,
-                    }}
-                  >
-                    <div className="text-base font-bold tabular-nums" style={{ color: t.tone, fontFamily: "var(--font-mono)" }}>{t.value}</div>
-                    <div className="text-[10px] mt-0.5" style={{ color: "rgba(11,30,63,0.55)" }}>{lang === "bn" ? t.labelBn : t.labelEn}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <ErpButton size="sm" variant="primary" icon={<Users size={14} />} onClick={() => onGo("groups")}>
-                {lang === "bn" ? "গ্রুপ" : "Groups"}
-              </ErpButton>
-              <ErpButton size="sm" variant="secondary" icon={<FileCheck size={14} />} onClick={() => onGo("visas")}>
-                {lang === "bn" ? "ভিসা স্ট্যাটাস" : "Visa Status"}
-              </ErpButton>
-              <ErpButton size="sm" variant="outline" icon={<Wallet size={14} />} onClick={() => onGo("finance")}>
-                {lang === "bn" ? "পেমেন্ট" : "Payments"}
-              </ErpButton>
-              <ErpButton size="sm" variant="outline" icon={<Building2 size={14} />} onClick={() => onGo("profile")}>
-                {lang === "bn" ? "প্রোফাইল" : "Profile"}
-              </ErpButton>
-            </div>
+    <div style={{ padding: `${ERP.space[5]}px ${ERP.space[6]}px ${ERP.space[14]}px`, fontFamily: fontFor(lang) }}>
+      {/* Welcome */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: ERP.space[4], marginBottom: ERP.space[5] }}>
+        <div>
+          <div style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[20], fontWeight: ERP.text.weight.bold, color: ERP.navy, marginBottom: ERP.space[0.5] }}>
+            {lang === "bn" ? `স্বাগতম, ${name}` : `Welcome, ${name}`}
           </div>
-        }
-      >
-        {error && !loading ? (
-          <ErrorState tone="light" lang={lang} onRetry={refresh} />
-        ) : (
-          <ErpDataTable
-            columns={activityCols}
-            rows={loading ? [] : activity}
-            rowKey={(r) => r.id}
-            loading={loading}
-            lang={lang}
-            emptyTitle={lang === "bn" ? "কোনো সাম্প্রতিক কাজ নেই" : "No recent activity"}
-            emptyHint={lang === "bn" ? "গ্রুপ, ভিসা ও পেমেন্ট এখানে দেখা যাবে।" : "Groups, visas, and payments appear here."}
-            emptyAction={
-              <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => onGo("groups")}>
-                {lang === "bn" ? "গ্রুপ খুলুন" : "Open Groups"}
-              </ErpButton>
-            }
-          />
-        )}
-      </ErpPageTemplate>
+          <div style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[12], color: ERP.muted }}>
+            {[company, code].filter(Boolean).join(" · ") || (lang === "bn" ? "এজেন্ট অ্যাকাউন্ট" : "Agent account")}
+          </div>
+        </div>
+        <ErpButton variant="secondary" size="sm" icon={<RefreshCw size={13} />} onClick={refresh}>
+          {lang === "bn" ? "রিফ্রেশ" : "Refresh"}
+        </ErpButton>
+      </div>
+
+      {/* KPI stats — real API data */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: ERP.space[3], marginBottom: ERP.space[5] }}>
+        {tiles.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => onGo(t.go)}
+            style={{ textAlign: "left", background: ERP.surface, border: `1px solid ${ERP.border}`, borderTop: `2px solid ${DS_ACCENT[t.color]}`, borderRadius: ERP.radius.md, padding: `${ERP.space[3.5]}px ${ERP.space[4]}px`, cursor: "pointer" }}
+          >
+            <div style={{ fontSize: ERP.text.size[18], marginBottom: ERP.space[1.5] }}>{t.icon}</div>
+            <div style={{ fontFamily: ERP.font.data, fontSize: ERP.text.size[20], fontWeight: ERP.text.weight.bold, color: DS_ACCENT[t.color], lineHeight: ERP.text.leading.none }}>
+              {loading ? "…" : t.value}
+            </div>
+            <div style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[9], color: ERP.muted, marginTop: ERP.space[1.5], letterSpacing: "0.02em" }}>{lang === "bn" ? t.labelBn : t.labelEn}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Quick actions */}
+      <div style={{ marginBottom: ERP.space[5] }}>
+        <div style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[10], fontWeight: ERP.text.weight.bold, color: ERP.muted, letterSpacing: "0.1em", marginBottom: ERP.space[3] }}>
+          {lang === "bn" ? "দ্রুত কাজ" : "QUICK ACTIONS"}
+        </div>
+        <div style={{ display: "flex", gap: ERP.space[2.5], flexWrap: "wrap" }}>
+          {quick.map((q) => (
+            <ErpButton key={q.go} variant="outline" size="md" onClick={() => onGo(q.go)}>
+              {lang === "bn" ? q.labelBn : q.label}
+            </ErpButton>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent activity — real data / states */}
+      <div style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[10], fontWeight: ERP.text.weight.bold, color: ERP.muted, letterSpacing: "0.1em", marginBottom: ERP.space[3] }}>
+        {lang === "bn" ? "সাম্প্রতিক কার্যকলাপ" : "RECENT ACTIVITY"}
+      </div>
+      {error && !loading ? (
+        <ErrorState
+          message={lang === "bn" ? "ডেটা আনা যায়নি। আবার চেষ্টা করুন।" : "The data could not be loaded. Please try again."}
+          onRetry={refresh}
+          lang={lang}
+        />
+      ) : loading ? (
+        <LoadingSkeleton rows={5} variant="table" />
+      ) : (
+        <ErpDataTable
+          columns={activityCols}
+          rows={activity}
+          rowKey={(r) => r.id}
+          emptyTitle={lang === "bn" ? "কোনো সাম্প্রতিক কাজ নেই" : "No recent activity"}
+        />
+      )}
     </div>
   );
 }
@@ -326,49 +312,48 @@ function CompanyProfileScreen() {
     SUSPENDED: { labelBn: "স্থগিত", labelEn: "Suspended", kind: "cancelled" },
   };
   const st = c?.verificationStatus ? STATUS[c.verificationStatus] : null;
+  const stColor: AccentName = st ? (st.kind === "approved" ? "success" : st.kind === "rejected" || st.kind === "cancelled" ? "danger" : st.kind === "info" ? "info" : "warning") : "info";
 
   return (
-    <div style={{ fontFamily: fontFor(lang) }}>
-      <ErpPageTemplate
-        title={c?.name ?? (lang === "bn" ? "কোম্পানি প্রোফাইল" : "Company Profile")}
-        subtitle={lang === "bn" ? "সেশন থেকে পরিচয় · বিদ্যমান অ্যাকাউন্ট" : "Identity from session · existing account"}
-      >
-        <div className="rounded-xl p-5 mb-4 flex items-start gap-4" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${AGENT}18` }}>
-            <Building2 size={20} style={{ color: AGENT }} />
+    <div style={{ padding: `${ERP.space[5]}px ${ERP.space[6]}px ${ERP.space[14]}px`, fontFamily: fontFor(lang) }}>
+      <div style={{ marginBottom: ERP.space[5] }}>
+        <div style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[20], fontWeight: ERP.text.weight.bold, color: ERP.navy, marginBottom: ERP.space[0.5] }}>
+          {c?.name ?? (lang === "bn" ? "কোম্পানি প্রোফাইল" : "Company Profile")}
+        </div>
+        <div style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[12], color: ERP.muted }}>
+          {lang === "bn" ? "সেশন থেকে পরিচয় · বিদ্যমান অ্যাকাউন্ট" : "Identity from session · existing account"}
+        </div>
+      </div>
+      <div>
+        <div className="flex items-start gap-4" style={{ background: ERP.surface, border: `1px solid ${ERP.border}`, borderRadius: ERP.radius.lg, padding: ERP.space[5], marginBottom: ERP.space[4] }}>
+          <div className="flex items-center justify-center shrink-0" style={{ width: 48, height: 48, borderRadius: ERP.radius.md, background: ERP.goldDim, border: `1px solid ${ERP.goldBrd}` }}>
+            <Building2 size={20} style={{ color: ERP.accent }} />
           </div>
-          <div className="flex-1 min-w-0 space-y-2">
+          <div className="flex-1 min-w-0" style={{ display: "flex", flexDirection: "column", gap: ERP.space[2.5] }}>
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-sm font-bold text-[#0B1E3F] truncate">{c?.name ?? (lang === "bn" ? "আপনার এজেন্সি" : "Your agency")}</h2>
-              {st && (
-                <ErpStatusChip
-                  status={st.kind}
-                  label={lang === "bn" ? st.labelBn : st.labelEn}
-                  lang={lang}
-                />
-              )}
+              <h2 className="truncate" style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[14], fontWeight: ERP.text.weight.bold, color: ERP.navy }}>{c?.name ?? (lang === "bn" ? "আপনার এজেন্সি" : "Your agency")}</h2>
+              {st && <ErpBadge color={DS_ACCENT[stColor]} size="sm" dot>{lang === "bn" ? st.labelBn : st.labelEn}</ErpBadge>}
             </div>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
                 [lang === "bn" ? "কোড" : "Code", c?.code ?? "—"],
                 [lang === "bn" ? "ধরন" : "Type", c?.type === "AGENT" ? (lang === "bn" ? "ট্রাভেল এজেন্ট" : "Travel Agent") : (c?.type ?? "—")],
                 [lang === "bn" ? "ইমেইল" : "Email", user?.email ?? "—"],
                 [lang === "bn" ? "নাম" : "User", user?.name ?? "—"],
               ].map(([k, v]) => (
-                <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                  <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                  <dd className="font-semibold text-[#0B1E3F] text-right truncate">{v}</dd>
+                <div key={String(k)} className="flex justify-between gap-3" style={{ padding: "6px 0", borderBottom: `1px solid ${ERP.border}` }}>
+                  <dt style={{ fontSize: ERP.text.size[13], color: ERP.muted }}>{k}</dt>
+                  <dd className="text-right truncate" style={{ fontSize: ERP.text.size[13], fontWeight: ERP.text.weight.semibold, color: ERP.navy }}>{v}</dd>
                 </div>
               ))}
             </dl>
           </div>
         </div>
         <EmptyState
-          tone="light"
-          title={lang === "bn" ? "পূর্ণ প্রোফাইল" : "Full company profile"}
+          title={lang === "bn" ?"পূর্ণ প্রোফাইল" : "Full company profile"}
           hint="এই মডিউল এখনও কনফিগার করা হয়নি। উপরের পরিচয় লাইভ।"
         />
-      </ErpPageTemplate>
+      </div>
     </div>
   );
 }
@@ -382,10 +367,10 @@ const CAT_LABELS: Record<string, string> = {
   operations: "Operations",
 };
 const DOC_TYPE_COLORS: Record<string, string> = {
-  identity:   "#7C3AED",
-  business:   AGENT,
-  financial:  "#16A34A",
-  operations: GOLD,
+  identity:   ERP.purple,
+  business:   ERP.info,
+  financial:  ERP.success,
+  operations: ERP.accent,
 };
 
 // ── Phase-13 Documents backend wiring ────────────────────────────────────────
@@ -512,11 +497,10 @@ function DocumentsVaultScreen() {
   // Canonical loading / error / empty state for the vault list (signed-in only —
   // the signed-out prototype always has rows and keeps its designed appearance).
   const vaultState = !authed ? null
-    : loading ? <LoadingSkeleton tone="light" rows={5} />
-    : error ? <ErrorState tone="light" onRetry={refresh} />
+    : loading ? <LoadingSkeleton rows={5} variant="table" />
+    : error ? <ErrorState onRetry={refresh} />
     : filtered.length === 0 ? (
         <EmptyState
-          tone="light"
           title={cat === "all" ? "No documents yet" : `No ${CAT_LABELS[cat] ?? cat} documents`}
           hint="Upload a document to start building your vault."
         />
@@ -556,57 +540,49 @@ function DocumentsVaultScreen() {
   };
 
   return (
-    <div className="p-7">
+    <div style={{ padding: `${ERP.space[5]}px ${ERP.space[6]}px ${ERP.space[14]}px` }}>
       <input ref={fileRef} type="file" className="hidden" onChange={onFileChosen} />
       {/* Alert banner for expiring docs */}
       {expiring.length > 0 && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl mb-5" style={{ backgroundColor: "#EF444410", border: "1px solid #EF444430" }}>
-          <AlertCircle size={14} className="shrink-0" style={{ color: "#DC2626" }} />
+        <div className="flex items-center gap-3" style={{ padding: `${ERP.space[2.5]}px ${ERP.space[4]}px`, borderRadius: ERP.radius.md, marginBottom: ERP.space[5], background: ERP.destructiveDim, border: `1px solid ${erpAlpha(ERP.destructive, 33)}` }}>
+          <AlertCircle size={14} className="shrink-0" style={{ color: ERP.destructive }} />
           <div className="flex-1 min-w-0 truncate" title={expiring.map((d) => d.type).join(", ")}>
-            <span className="text-xs font-bold" style={{ color: "#DC2626" }}>
+            <span style={{ fontSize: ERP.text.size[12], fontWeight: ERP.text.weight.bold, color: ERP.destructive }}>
               {expiring.length} document{expiring.length > 1 ? "s" : ""} expiring soon:
             </span>
-            <span className="text-xs ml-2" style={{ color: "rgba(11,30,63,0.66)" }}>
+            <span style={{ fontSize: ERP.text.size[12], marginLeft: ERP.space[2], color: ERP.fgDim }}>
               {expiring.map((d) => d.type).join(", ")}
             </span>
           </div>
-          <button className="text-xs font-semibold shrink-0" style={{ color: "#DC2626" }}>Review →</button>
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between" style={{ marginBottom: ERP.space[5] }}>
         <div>
-          <h2 className="text-base font-bold text-[#0B1E3F]">Documents Vault</h2>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>
+          <h2 style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[18], fontWeight: ERP.text.weight.bold, color: ERP.navy }}>Documents Vault</h2>
+          <p style={{ fontSize: ERP.text.size[12], marginTop: ERP.space[0.5], color: ERP.muted }}>
             {rows.length} documents · {rows.filter((d) => d.status === "verified").length} verified
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => triggerUpload(CAT_DEFAULT_KIND[cat] ?? "OTHER")}
-            disabled={uploading}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold disabled:opacity-50"
-            style={{ backgroundColor: AGENT, color: "#0B1E3F" }}
-          >
-            <Plus size={12} /> Upload Document
-          </button>
-        </div>
+        <ErpButton variant="primary" size="sm" icon={<Plus size={13} />} disabled={uploading} onClick={() => triggerUpload(CAT_DEFAULT_KIND[cat] ?? "OTHER")}>
+          Upload Document
+        </ErpButton>
       </div>
 
       {/* Controls row */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3" style={{ marginBottom: ERP.space[4] }}>
         {/* Category filter tabs */}
-        <div className="flex gap-1 p-1 rounded-xl" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
+        <div className="flex gap-1" style={{ padding: ERP.space[1], borderRadius: ERP.radius.md, background: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
           {Object.entries(CAT_LABELS).map(([k, label]) => (
             <button
               key={k}
               onClick={() => setCat(k)}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={cat === k ? { backgroundColor: AGENT, color: "#0B1E3F" } : { color: "rgba(11,30,63,0.58)" }}
+              style={{ padding: `${ERP.space[1.5]}px ${ERP.space[3]}px`, borderRadius: ERP.radius.sm, fontSize: ERP.text.size[12], fontWeight: ERP.text.weight.semibold, border: "none", cursor: "pointer",
+                background: cat === k ? ERP.accent : "transparent", color: cat === k ? ERP.canvas : ERP.muted, transition: "background 0.15s, color 0.15s" }}
             >
               {label}
               {k !== "all" && (
-                <span className="ml-1.5 text-[9px]" style={{ color: cat === k ? "rgba(11,30,63,0.86)" : "rgba(11,30,63,0.50)" }}>
+                <span style={{ marginLeft: ERP.space[1.5], fontSize: ERP.text.size[9], color: cat === k ? erpAlpha(ERP.primaryFg, 70) : ERP.muted }}>
                   {rows.filter((d) => d.cat === k).length}
                 </span>
               )}
@@ -615,146 +591,72 @@ function DocumentsVaultScreen() {
         </div>
 
         <div className="flex-1 relative">
-          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(11,30,63,0.50)" }} />
+          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: ERP.muted }} />
           <input
             placeholder="Search documents…"
-            className="w-full pl-8 pr-4 py-2 text-xs rounded-xl focus:outline-none"
-            style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)", color: "#0B1E3F" }}
+            style={{ width: "100%", padding: `${ERP.space[2]}px ${ERP.space[4]}px ${ERP.space[2]}px ${ERP.space[8]}px`, fontSize: ERP.text.size[12], borderRadius: ERP.radius.md, outline: "none", background: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, color: ERP.navy }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = ERP.accent)}
+            onBlur={(e) => (e.currentTarget.style.borderColor = ERP.border)}
           />
         </div>
 
         {/* View toggle */}
-        <div className="flex gap-0.5 p-1 rounded-lg" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
-          <button
-            onClick={() => setView("list")}
-            className="w-7 h-7 rounded-md flex items-center justify-center transition-all"
-            style={{ backgroundColor: view === "list" ? AGENT : "transparent" }}
-          >
-            <List size={13} style={{ color: view === "list" ? "white" : "rgba(11,30,63,0.58)" }} />
+        <div className="flex gap-0.5" style={{ padding: ERP.space[1], borderRadius: ERP.radius.sm, background: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+          <button onClick={() => setView("list")} className="flex items-center justify-center"
+            style={{ width: 28, height: 28, borderRadius: ERP.radius.xs, border: "none", cursor: "pointer", background: view === "list" ? ERP.accent : "transparent" }}>
+            <List size={13} style={{ color: view === "list" ? ERP.canvas : ERP.muted }} />
           </button>
-          <button
-            onClick={() => setView("grid")}
-            className="w-7 h-7 rounded-md flex items-center justify-center transition-all"
-            style={{ backgroundColor: view === "grid" ? AGENT : "transparent" }}
-          >
-            <LayoutGrid size={13} style={{ color: view === "grid" ? "white" : "rgba(11,30,63,0.58)" }} />
+          <button onClick={() => setView("grid")} className="flex items-center justify-center"
+            style={{ width: 28, height: 28, borderRadius: ERP.radius.xs, border: "none", cursor: "pointer", background: view === "grid" ? ERP.accent : "transparent" }}>
+            <LayoutGrid size={13} style={{ color: view === "grid" ? ERP.canvas : ERP.muted }} />
           </button>
         </div>
       </div>
 
       {/* List view */}
-      {view === "list" && (
-        <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-          <table className="w-full">
-            <thead>
-              <tr style={{ backgroundColor: "#FBFCFD", borderBottom: "1px solid rgba(11,30,63,0.11)" }}>
-                {["Document", "Category", "Reference", "Uploaded", "Expiry", "Status", ""].map((h) => (
-                  <th key={h} className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.50)" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {vaultState ? (
-                <tr><td colSpan={7} className="px-4">{vaultState}</td></tr>
-              ) : filtered.map((doc, i) => {
-                const catColor = DOC_TYPE_COLORS[doc.cat] ?? AGENT;
-                return (
-                  <tr
-                    key={doc.id}
-                    style={{ borderBottom: i < filtered.length - 1 ? "1px solid rgba(11,30,63,0.08)" : undefined }}
-                    className="hover:bg-white/2 transition-colors"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${catColor}18` }}>
-                          <FileText size={12} style={{ color: catColor }} />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-xs font-semibold text-[#0B1E3F] truncate" title={doc.type}>{doc.type}</div>
-                          <div className="text-[10px] truncate max-w-[180px]" style={{ color: "rgba(11,30,63,0.50)" }} title={doc.filename}>{doc.filename}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                        style={{ backgroundColor: `${catColor}18`, color: catColor }}
-                      >
-                        {doc.cat}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-[10px]" style={{ color: "rgba(11,30,63,0.66)", fontFamily: "var(--font-mono)" }}>{doc.ref}</td>
-                    <td className="px-4 py-3 text-[10px]" style={{ color: "rgba(11,30,63,0.58)" }}>{doc.uploaded}</td>
-                    <td className="px-4 py-3"><ExpiryTag expiry={doc.expiry} severity={doc.severity} daysLeft={doc.daysLeft} /></td>
-                    <td className="px-4 py-3"><SBadge status={doc.status} /></td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => openDoc(doc)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all"
-                          style={{ backgroundColor: `${AGENT}18`, color: AGENT }}
-                        >
-                          <Eye size={10} /> Preview
-                        </button>
-                        <button
-                          onClick={() => triggerUpload(doc.kind ?? CAT_DEFAULT_KIND[doc.cat] ?? "OTHER")}
-                          disabled={uploading}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] transition-all disabled:opacity-50"
-                          style={{ border: "1px solid rgba(11,30,63,0.15)", color: "rgba(11,30,63,0.58)" }}
-                        >
-                          <Upload size={10} /> Replace
-                        </button>
-                        <button
-                          onClick={() => openDoc(doc)}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-                          style={{ color: "rgba(11,30,63,0.50)" }}
-                        >
-                          <Download size={11} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {view === "list" && (vaultState ?? (
+        <ErpDataTable
+          rows={filtered}
+          rowKey={(doc) => doc.id}
+          columns={[
+            { id: "doc", header: "Document", cell: (doc) => { const catColor = DOC_TYPE_COLORS[doc.cat] ?? ERP.accent; return (<div className="flex items-center gap-2.5"><div className="flex items-center justify-center shrink-0" style={{ width: 28, height: 28, borderRadius: ERP.radius.sm, background: erpAlpha(catColor, 13) }}><FileText size={12} style={{ color: catColor }} /></div><div className="min-w-0"><div className="truncate" style={{ fontSize: ERP.text.size[12], fontWeight: ERP.text.weight.semibold, color: ERP.navy }} title={doc.type}>{doc.type}</div><div className="truncate max-w-[180px]" style={{ fontSize: ERP.text.size[10], color: ERP.muted }} title={doc.filename}>{doc.filename}</div></div></div>); } },
+            { id: "cat", header: "Category", cell: (doc) => { const catColor = DOC_TYPE_COLORS[doc.cat] ?? ERP.accent; return <span className="uppercase inline-block px-1.5 py-0.5 rounded-full" style={{ fontSize: ERP.text.size[9], fontWeight: ERP.text.weight.bold, letterSpacing: "0.04em", background: erpAlpha(catColor, 13), color: catColor }}>{doc.cat}</span>; } },
+            { id: "ref", header: "Reference", cell: (doc) => <span style={{ fontSize: ERP.text.size[10], color: ERP.fgDim, fontFamily: ERP.font.data }}>{doc.ref}</span> },
+            { id: "uploaded", header: "Uploaded", cell: (doc) => <span style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>{doc.uploaded}</span> },
+            { id: "expiry", header: "Expiry", cell: (doc) => <ExpiryTag expiry={doc.expiry} severity={doc.severity} daysLeft={doc.daysLeft} /> },
+            { id: "status", header: "Status", cell: (doc) => <SBadge status={doc.status} /> },
+            { id: "actions", header: "", align: "right", cell: (doc) => <div className="flex items-center gap-1 justify-end"><ErpButton variant="outline" size="sm" icon={<Eye size={10} />} onClick={() => openDoc(doc)}>Preview</ErpButton><ErpButton variant="ghost" size="sm" icon={<Upload size={10} />} disabled={uploading} onClick={() => triggerUpload(doc.kind ?? CAT_DEFAULT_KIND[doc.cat] ?? "OTHER")}>Replace</ErpButton><button onClick={() => openDoc(doc)} className="flex items-center justify-center" style={{ width: 28, height: 28, borderRadius: ERP.radius.sm, border: "none", background: "transparent", cursor: "pointer", color: ERP.muted }}><Download size={11} /></button></div> },
+          ]}
+        />
+      ))}
 
       {/* Grid view */}
       {view === "grid" && (vaultState ?? (
         <div className="grid grid-cols-4 gap-4">
           {filtered.map((doc) => {
-            const catColor = DOC_TYPE_COLORS[doc.cat] ?? AGENT;
+            const catColor = DOC_TYPE_COLORS[doc.cat] ?? ERP.accent;
             const expDays = doc.daysLeft !== undefined ? doc.daysLeft : doc.expiry ? daysUntil(doc.expiry) : null;
-            const expColor = expDays === null ? null : expDays < 0 ? "#DC2626" : expDays < 30 ? "#DC2626" : expDays < 90 ? "#B45309" : "#16A34A";
+            const expColor = expDays === null ? null : expDays < 0 ? ERP.destructive : expDays < 30 ? ERP.destructive : expDays < 90 ? ERP.warning : ERP.success;
             return (
-              <div
-                key={doc.id}
-                className="rounded-2xl p-4 flex flex-col gap-3 transition-all hover:scale-[1.01]"
-                style={{ backgroundColor: "#FBFCFD", border: `1px solid ${expColor && expDays! < 30 ? expColor + "35" : "rgba(11,30,63,0.38)"}` }}
-              >
+              <div key={doc.id} className="flex flex-col gap-3"
+                style={{ borderRadius: ERP.radius.lg, padding: ERP.space[4], background: ERP.surface, border: `1px solid ${expColor && expDays! < 30 ? expColor + "55" : ERP.border}` }}>
                 <div className="flex items-start justify-between">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${catColor}18` }}>
+                  <div className="flex items-center justify-center" style={{ width: 40, height: 40, borderRadius: ERP.radius.md, background: `${erpAlpha(catColor, 13)}` }}>
                     <FileText size={18} style={{ color: catColor }} />
                   </div>
                   <SBadge status={doc.status} />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-[#0B1E3F] mb-0.5 truncate" title={doc.type}>{doc.type}</div>
-                  <div className="text-[10px] truncate" style={{ color: "rgba(11,30,63,0.50)" }} title={doc.filename}>{doc.filename}</div>
+                  <div className="truncate" style={{ fontSize: ERP.text.size[12], fontWeight: ERP.text.weight.bold, marginBottom: ERP.space[0.5], color: ERP.navy }} title={doc.type}>{doc.type}</div>
+                  <div className="truncate" style={{ fontSize: ERP.text.size[10], color: ERP.muted }} title={doc.filename}>{doc.filename}</div>
                 </div>
                 <div className="flex items-center justify-between mt-auto">
                   <ExpiryTag expiry={doc.expiry} severity={doc.severity} daysLeft={doc.daysLeft} />
-                  <span className="text-[9px]" style={{ color: "rgba(11,30,63,0.50)" }}>{doc.size}</span>
+                  <span style={{ fontSize: ERP.text.size[9], color: ERP.muted }}>{doc.size}</span>
                 </div>
-                <div className="flex gap-1.5 pt-2" style={{ borderTop: "1px solid rgba(11,30,63,0.11)" }}>
-                  <button onClick={() => openDoc(doc)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-semibold" style={{ backgroundColor: `${AGENT}18`, color: AGENT }}>
-                    <Eye size={10} /> View
-                  </button>
-                  <button onClick={() => triggerUpload(doc.kind ?? CAT_DEFAULT_KIND[doc.cat] ?? "OTHER")} disabled={uploading} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] disabled:opacity-50" style={{ border: "1px solid rgba(11,30,63,0.15)", color: "rgba(11,30,63,0.58)" }}>
-                    <Upload size={10} /> Replace
-                  </button>
+                <div className="flex gap-1.5" style={{ paddingTop: ERP.space[2], borderTop: `1px solid ${ERP.border}` }}>
+                  <div className="flex-1"><ErpButton variant="outline" size="sm" icon={<Eye size={10} />} onClick={() => openDoc(doc)}>View</ErpButton></div>
+                  <div className="flex-1"><ErpButton variant="ghost" size="sm" icon={<Upload size={10} />} disabled={uploading} onClick={() => triggerUpload(doc.kind ?? CAT_DEFAULT_KIND[doc.cat] ?? "OTHER")}>Replace</ErpButton></div>
                 </div>
               </div>
             );
@@ -769,15 +671,12 @@ function DocumentsVaultScreen() {
 
 function SupportNotConfigured({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center px-6">
-      <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-        style={{ backgroundColor: `${AGENT}12`, border: `1px solid ${AGENT}25` }}
-      >
-        <Clock size={22} style={{ color: AGENT }} />
+    <div className="flex flex-col items-center justify-center text-center" style={{ padding: `${ERP.space[24]}px ${ERP.space[6]}px` }}>
+      <div className="flex items-center justify-center" style={{ width: 56, height: 56, borderRadius: ERP.radius.lg, marginBottom: ERP.space[4], background: ERP.goldDim, border: `1px solid ${ERP.goldBrd}` }}>
+        <Clock size={22} style={{ color: ERP.accent }} />
       </div>
-      <h3 className="text-sm font-bold text-[#0B1E3F] mb-1.5">{label}</h3>
-      <p className="text-xs max-w-xs" style={{ color: "rgba(11,30,63,0.58)" }}>
+      <h3 style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[14], fontWeight: ERP.text.weight.bold, marginBottom: ERP.space[1.5], color: ERP.navy }}>{label}</h3>
+      <p className="max-w-xs" style={{ fontSize: ERP.text.size[12], color: ERP.muted }}>
         এই মডিউল এখনও কনফিগার করা হয়নি।
       </p>
     </div>
@@ -821,21 +720,25 @@ export default function AgentPortal() {
     screen === "transport" ||
     screen === "finance";
 
+  // The whole Agent Portal — shell + body — renders in the Design System theme.
+  // Every other module stays on the Legacy theme (root default) until approved.
   return (
-    <ERPShell
-      moduleId="agent-portal"
-      moduleName={lang === "bn" ? "এজেন্ট পোর্টাল" : "Agent Portal"}
-      moduleColor={AGENT}
-      moduleIcon={Building2 as IconFC}
-      navItems={AGENT_NAV}
-      activeItem={screen}
-      onItemClick={setScreen}
-      breadcrumb={[lang === "bn" ? (labelsBn[screen] ?? screen) : (SCREEN_LABELS[screen] ?? screen)]}
-      notificationCount={0}
-      userName={getStoredUser()?.name ?? "Agent"}
-      userRole={getStoredUser()?.company?.code ? `Travel Agent · ${getStoredUser()?.company?.code}` : "Travel Agent"}
-    >
-      {lazyDesk ? <Suspense fallback={<RouteFallback />}>{body}</Suspense> : body}
-    </ERPShell>
+    <ErpThemeProvider theme="ds">
+      <ERPShell
+        moduleId="agent-portal"
+        moduleName={lang === "bn" ? "এজেন্ট পোর্টাল" : "Agent Portal"}
+        moduleColor={AGENT}
+        moduleIcon={Building2 as IconFC}
+        navItems={AGENT_NAV}
+        activeItem={screen}
+        onItemClick={setScreen}
+        breadcrumb={[lang === "bn" ? (labelsBn[screen] ?? screen) : (SCREEN_LABELS[screen] ?? screen)]}
+        notificationCount={0}
+        userName={getStoredUser()?.name ?? "Agent"}
+        userRole={getStoredUser()?.company?.code ? `Travel Agent · ${getStoredUser()?.company?.code}` : "Travel Agent"}
+      >
+        {lazyDesk ? <Suspense fallback={<RouteFallback />}>{body}</Suspense> : body}
+      </ERPShell>
+    </ErpThemeProvider>
   );
 }

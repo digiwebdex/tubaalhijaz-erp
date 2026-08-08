@@ -9,6 +9,7 @@ import {
 import { ERPShell, type NavItem, type IconFC } from "../components/ERPShell";
 import { EmptyState, LoadingSkeleton, ErrorState } from "../components/States";
 import {
+  ERP, CAT, erpAlpha, ErpThemeProvider, ErpStatCard, ErpModal, ErpBadge,
   ErpPageTemplate, ErpButton, ErpSearchBar, ErpFilterPanel, ErpDataTable,
   ErpPagination, ErpDrawer, ErpDrawerFooterActions, ErpForm, ErpFormRow, ErpField,
   ErpInput, ErpSelect, ErpTextarea, ErpStatusChip, erpToast, type ErpColumn, type ErpStatusKind,
@@ -35,9 +36,9 @@ import { GroupCreateWizard } from "./AgentPortalGroups";
 
 // ─── Module constants ─────────────────────────────────────────────────────────
 
-const OPS = "#DC4E2A";
-const CR_BG = "#F5F7FA";      // control-room near-black
-const CR_SURFACE = "#F5F7FA"; // slightly lighter surface
+const OPS = CAT.orange; // Operations module accent (categorical, themed)
+const CR_BG = ERP.canvas;      // control-room background
+const CR_SURFACE = ERP.surfaceSoft; // control-room surface
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -134,12 +135,12 @@ interface Day85View {
   notifiedAt: string | null;
 }
 const DAY85_C: Record<string, string> = {
-  NOT_TRACKED: "rgba(11,30,63,0.40)",
-  TRACKING: "rgba(11,30,63,0.55)",
-  APPROACHING: "#B45309",
-  DUE: "#DC2626",
-  ESCALATED: "#991B1B",
-  RESOLVED: "#16A34A",
+  NOT_TRACKED: ERP.mutedSoft,
+  TRACKING: ERP.muted,
+  APPROACHING: ERP.warning,
+  DUE: ERP.destructive,
+  ESCALATED: ERP.destructive,
+  RESOLVED: ERP.success,
 };
 const day85Label = (d?: Day85View | null) => {
   if (!d || d.stage === "NOT_TRACKED") return "—";
@@ -275,38 +276,39 @@ const SCREEN_LABELS: Record<string, string> = {
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
 // Traffic-light status maps
-const ARR_STAT: Record<ArrivalStatus,{ bg:string; color:string; label:string }> = {
-  SCHEDULED:  { bg:"#1F293780", color:"#9CA3AF", label:"SCHEDULED"   },
-  DELAYED:    { bg:"#78350F",   color:"#B45309", label:"⚠  DELAYED"  },
-  LANDING:    { bg:"#164E63",   color:"#22D3EE", label:"LANDING"     },
-  AT_GATE:    { bg:"#7C2D12",   color:"#FB923C", label:"AT GATE"     },
-  IMMIGRATION:{ bg:"#3B0764",   color:"#C084FC", label:"IMMIGRATION" },
-  BAGGAGE:    { bg:"#1E1B4B",   color:"#818CF8", label:"BAGGAGE"     },
-  EN_ROUTE:   { bg:"#14532D",   color:"#16A34A", label:"▶ EN ROUTE"  },
-  DELIVERED:  { bg:"#064E3B40", color:"#059669", label:"✓ DELIVERED" },
+// Board status → semantic theme colour (BStat derives the tint bg via erpAlpha).
+const ARR_STAT: Record<ArrivalStatus,{ color:string; label:string }> = {
+  SCHEDULED:  { color: ERP.muted,   label:"SCHEDULED"   },
+  DELAYED:    { color: ERP.warning, label:"⚠  DELAYED"  },
+  LANDING:    { color: ERP.info,    label:"LANDING"     },
+  AT_GATE:    { color: CAT.orange,  label:"AT GATE"     },
+  IMMIGRATION:{ color: CAT.purple,  label:"IMMIGRATION" },
+  BAGGAGE:    { color: ERP.info,    label:"BAGGAGE"     },
+  EN_ROUTE:   { color: ERP.success, label:"▶ EN ROUTE"  },
+  DELIVERED:  { color: ERP.success, label:"✓ DELIVERED" },
 };
 
-const DEP_STAT: Record<DepartureStatus,{ bg:string; color:string; label:string }> = {
-  SCHEDULED:{ bg:"#1F293780", color:"#9CA3AF", label:"SCHEDULED"    },
-  DELAYED:  { bg:"#78350F",   color:"#B45309", label:"⚠  DELAYED"  },
-  STANDBY:  { bg:"#1E3A5F",   color:"#2563EB", label:"STANDBY"     },
-  CHECK_IN: { bg:"#065F46",   color:"#34D399", label:"CHECK-IN"    },
-  BOARDING: { bg:"#7C3AED",   color:"#C084FC", label:"BOARDING"    },
-  DEPARTED: { bg:"#064E3B40", color:"#059669", label:"✓ DEPARTED"  },
+const DEP_STAT: Record<DepartureStatus,{ color:string; label:string }> = {
+  SCHEDULED:{ color: ERP.muted,   label:"SCHEDULED"  },
+  DELAYED:  { color: ERP.warning, label:"⚠  DELAYED" },
+  STANDBY:  { color: ERP.info,    label:"STANDBY"    },
+  CHECK_IN: { color: ERP.success, label:"CHECK-IN"   },
+  BOARDING: { color: CAT.purple,  label:"BOARDING"   },
+  DEPARTED: { color: ERP.success, label:"✓ DEPARTED" },
 };
 
-const DSP_STAT: Record<DispatchStatus,{ bg:string; color:string; header:string }> = {
-  ASSIGNED:  { bg:"#1E3A5F", color:"#2563EB", header:"ASSIGNED"  },
-  EN_ROUTE:  { bg:"#14532D", color:"#16A34A", header:"EN ROUTE"  },
-  COMPLETED: { bg:"#064E3B", color:"#059669", header:"COMPLETED" },
-  DELAYED:   { bg:"#78350F", color:"#B45309", header:"DELAYED"   },
+const DSP_STAT: Record<DispatchStatus,{ color:string; header:string }> = {
+  ASSIGNED:  { color: ERP.info,    header:"ASSIGNED"  },
+  EN_ROUTE:  { color: ERP.success, header:"EN ROUTE"  },
+  COMPLETED: { color: ERP.success, header:"COMPLETED" },
+  DELAYED:   { color: ERP.warning, header:"DELAYED"   },
 };
 
-const BRN_STAT: Record<BRNStatus,{ bg:string; color:string }> = {
-  OPEN:       { bg:"#1E3A5F18", color:"#2563EB" },
-  PROCESSING: { bg:"#D9770618", color:"#B45309" },
-  FULFILLED:  { bg:"#14532D18", color:"#16A34A" },
-  CANCELLED:  { bg:"#7F1D1D18", color:"#DC2626" },
+const BRN_STAT: Record<BRNStatus,{ color:string }> = {
+  OPEN:       { color: ERP.info },
+  PROCESSING: { color: ERP.warning },
+  FULFILLED:  { color: ERP.success },
+  CANCELLED:  { color: ERP.destructive },
 };
 
 // ─── Live-feed state ──────────────────────────────────────────────────────────
@@ -330,29 +332,21 @@ function BoardState({ cols, demo, state, onRetry, title, hint }: {
   );
 }
 
-function BStat({ s, map }: { s: string; map: Record<string, { bg:string; color:string; label?:string }> }) {
-  const v = map[s] ?? map.SCHEDULED;
+// Specialized control-room board status pill (larger than ErpBadge) — reads only
+// from theme tokens; tint bg derived from the semantic status colour.
+function BStat({ s, map }: { s: string; map: Record<string, { color:string; label?:string }> }) {
+  const v = map[s] ?? map.SCHEDULED ?? { color: ERP.muted };
   return (
     <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-[11px] font-black tracking-[0.14em] uppercase whitespace-nowrap"
-          style={{ backgroundColor: v.bg, color: v.color }}>
+          style={{ backgroundColor: erpAlpha(v.color, 13), color: v.color }}>
       {"label" in v ? v.label as string : s}
     </span>
   );
 }
 
+// Delegates to the shared ErpStatCard.
 function OpsKPI({ label, value, color, icon: Icon, sub }: { label:string; value:string|number; color:string; icon:typeof Users; sub?:string }) {
-  return (
-    <div className="rounded-2xl p-5" style={{ backgroundColor: "#FBFCFD", border:"1px solid rgba(11,30,63,0.11)" }}>
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor:`${color}18` }}>
-          <Icon size={16} style={{ color }} />
-        </div>
-      </div>
-      <div className="text-2xl font-black text-[#0B1E3F] mb-1" style={{ fontFamily:"var(--font-mono)" }}>{value}</div>
-      <div className="text-xs font-semibold" style={{ color:"rgba(11,30,63,0.66)" }}>{label}</div>
-      {sub && <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.50)" }}>{sub}</div>}
-    </div>
-  );
+  return <ErpStatCard label={label} value={value} accent={color} hint={sub} icon={<Icon size={16} style={{ color }} />} />;
 }
 
 function LiveBadge({ time, live = true }: { time: string; live?: boolean }) {
@@ -362,10 +356,10 @@ function LiveBadge({ time, live = true }: { time: string; live?: boolean }) {
     return () => clearInterval(t);
   }, []);
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.25)", opacity: live ? 1 : 0.4 }}>
-      <span className="w-2 h-2 rounded-full transition-opacity duration-500" style={{ backgroundColor:"#22C55E", opacity: live ? (pulse ? 1 : 0.3) : 0.3 }} />
-      <span className="text-[10px] font-black tracking-widest uppercase" style={{ color:"#22C55E" }}>LIVE</span>
-      <span className="text-[10px] font-mono" style={{ color:"rgba(11,30,63,0.58)", fontFamily:"var(--font-mono)" }}>{time}</span>
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor:erpAlpha(ERP.success, 10), border:`1px solid ${erpAlpha(ERP.success, 25)}`, opacity: live ? 1 : 0.4 }}>
+      <span className="w-2 h-2 rounded-full transition-opacity duration-500" style={{ backgroundColor:ERP.success, opacity: live ? (pulse ? 1 : 0.3) : 0.3 }} />
+      <span className="text-[10px] font-black tracking-widest uppercase" style={{ color:ERP.success }}>LIVE</span>
+      <span className="text-[10px] font-mono" style={{ color:ERP.muted, fontFamily:"var(--font-mono)" }}>{time}</span>
     </div>
   );
 }
@@ -395,18 +389,18 @@ function GateBoardCell({
       className="inline-flex flex-col items-center justify-center gap-0.5 w-9 h-9 rounded-lg cursor-pointer"
       title={`${col.title} — ${checked ? "Ready" : "Open"} · ${gateSummary(group.gates ?? gatesFromApi(null))}`}
       style={{
-        backgroundColor: checked ? "#16A34A18" : "#EEF1F6",
+        backgroundColor: checked ? erpAlpha(ERP.success, 9) : ERP.surfaceSoft,
         opacity: busy ? 0.5 : 1,
       }}
     >
       {compactLabel && (
-        <span className="text-[8px] font-bold leading-none" style={{ color: checked ? "#16A34A" : "rgba(11,30,63,0.45)" }}>
+        <span className="text-[8px] font-bold leading-none" style={{ color: checked ? ERP.success : ERP.muted }}>
           {compactLabel}
         </span>
       )}
       <input
         type="checkbox"
-        className="w-3.5 h-3.5 accent-[#16A34A]"
+        className="w-3.5 h-3.5 accent-[color:var(--erp-success)]"
         checked={checked}
         disabled={busy || (!group.apiId && !!isLoggedIn())}
         onChange={(e) => onToggle(group, gateKey, e.target.checked)}
@@ -517,7 +511,7 @@ function OpsGroupFoundationDrawer({
         <ErpField label={lang === "bn" ? "প্রস্তুতি গেট" : "Readiness"}>
           <div className="grid grid-cols-2 gap-2">
             {GATE_LABELS.map(({ key, label }) => (
-              <label key={key} className="flex items-center gap-2 text-xs text-[#0B1E3F]">
+              <label key={key} className="flex items-center gap-2 text-xs text-[color:var(--erp-text-strong)]">
                 <input
                   type="checkbox"
                   checked={gates[key]}
@@ -612,7 +606,7 @@ function GroupMaster({ apiGroups, demo, state, onRetry }: { apiGroups: ApiGroup[
       cell: (g) => (
         <div>
           <div className="text-[11px] font-bold" style={{ color: OPS, fontFamily: "var(--font-mono)" }}>{g.id}</div>
-          <div className="text-[10px]" style={{ fontFamily: "var(--font-mono)", color: "rgba(11,30,63,0.50)" }}>{formatNusuk(g.nusukGroupNumber)}</div>
+          <div className="text-[10px]" style={{ fontFamily: "var(--font-mono)", color: ERP.muted }}>{formatNusuk(g.nusukGroupNumber)}</div>
         </div>
       ),
     },
@@ -622,7 +616,7 @@ function GroupMaster({ apiGroups, demo, state, onRetry }: { apiGroups: ApiGroup[
       cell: (g) => (
         <div>
           <div className="text-xs font-semibold truncate max-w-[140px]" title={g.name ?? ""}>{g.name?.trim() || "—"}</div>
-          <div className="text-[10px] truncate max-w-[140px]" style={{ color: "rgba(11,30,63,0.50)" }} title={g.agent}>{g.agent}</div>
+          <div className="text-[10px] truncate max-w-[140px]" style={{ color: ERP.muted }} title={g.agent}>{g.agent}</div>
         </div>
       ),
     },
@@ -632,7 +626,7 @@ function GroupMaster({ apiGroups, demo, state, onRetry }: { apiGroups: ApiGroup[
       cell: (g) => (
         <div className="text-[11px]">
           <div>{VISA_TYPE_LABEL[g.visaType ?? ""] ?? g.visaType ?? "—"}</div>
-          <div style={{ color: "rgba(11,30,63,0.50)" }}>{PKG_LABEL[g.packageType ?? ""] ?? g.packageType ?? "—"}</div>
+          <div style={{ color: ERP.muted }}>{PKG_LABEL[g.packageType ?? ""] ?? g.packageType ?? "—"}</div>
         </div>
       ),
     },
@@ -801,27 +795,27 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
   return (
     <div style={{ backgroundColor:CR_BG, minHeight:"100%" }}>
       {/* Board header */}
-      <div className="flex items-center justify-between px-8 py-4" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:CR_SURFACE }}>
+      <div className="flex items-center justify-between px-8 py-4" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:CR_SURFACE }}>
         <div className="flex items-center gap-4">
           <PlaneLanding size={20} style={{ color:OPS }} />
           <div>
-            <div className="text-lg font-black text-[#0B1E3F] tracking-wide">ARRIVALS</div>
-            <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.58)" }}>Season 1446H · Ground Handling</div>
+            <div className="text-lg font-black text-[color:var(--erp-text-strong)] tracking-wide">ARRIVALS</div>
+            <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color:ERP.muted }}>Season 1446H · Ground Handling</div>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex gap-3 text-[10px] font-bold">
-            {[["ACTIVE",data.filter((a)=>active(a.status)).length,"#FB923C"],
-              ["DELAYED",data.filter((a)=>a.status==="DELAYED").length,"#B45309"],
-              ["DELIVERED",data.filter((a)=>a.status==="DELIVERED").length,"#16A34A"]].map(([l,n,c])=>(
-              <span key={l as string} className="px-3 py-1 rounded-lg whitespace-nowrap" style={{ backgroundColor:`${c as string}18`, color:c as string }}>
+            {[["ACTIVE",data.filter((a)=>active(a.status)).length,CAT.orange],
+              ["DELAYED",data.filter((a)=>a.status==="DELAYED").length,ERP.warning],
+              ["DELIVERED",data.filter((a)=>a.status==="DELIVERED").length,ERP.success]].map(([l,n,c])=>(
+              <span key={l as string} className="px-3 py-1 rounded-lg whitespace-nowrap" style={{ backgroundColor:`${erpAlpha(c as string, 9)}`, color:c as string }}>
                 {l} <span className="font-black tabular-nums" style={{ fontFamily:"var(--font-mono)" }}>{ready ? (n as number) : "—"}</span>
               </span>
             ))}
           </div>
           <LiveBadge time={time} live={connected} />
-          <button onClick={onRefresh} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor:"#F5F7FA" }}>
-            <RefreshCw size={13} style={{ color:"rgba(11,30,63,0.66)" }} />
+          <button onClick={onRefresh} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor:ERP.surfaceSoft }}>
+            <RefreshCw size={13} style={{ color:ERP.muted }} />
           </button>
         </div>
       </div>
@@ -829,10 +823,10 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
       {/* Board table */}
       <table className="w-full">
         <thead>
-          <tr style={{ backgroundColor:"#FFFFFF", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+          <tr style={{ backgroundColor:ERP.surface, borderBottom:`1px solid ${ERP.border}` }}>
             {["FLIGHT","AIRLINE","ROUTE","ETA","PAX","GROUP / AGENT","VEHICLE · DRIVER","STATUS"].map((c,i) => (
               <th key={c} className={`px-5 py-3 text-left text-[9px] font-black tracking-[0.15em] uppercase ${i===3||i===4?"text-center":""}`}
-                  style={{ color:"rgba(11,30,63,0.50)" }}>{c}</th>
+                  style={{ color:ERP.muted }}>{c}</th>
             ))}
           </tr>
         </thead>
@@ -844,32 +838,32 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
             const isDone   = a.status === "DELIVERED";
             return (
               <tr key={a.id}
-                  style={{ borderBottom:"1px solid rgba(11,30,63,0.08)", borderLeft:`3px solid ${isActive ? s.color : isDelay ? "#B45309" : "transparent"}`, opacity: isDone ? 0.55 : 1 }}
+                  style={{ borderBottom:`1px solid ${ERP.border}`, borderLeft:`3px solid ${isActive ? s.color : isDelay ? ERP.warning : "transparent"}`, opacity: isDone ? 0.55 : 1 }}
                   className="hover:bg-white/2">
                 <td className="px-5 py-4">
-                  <span className="text-xl font-black tracking-wide whitespace-nowrap" style={{ color:"#0B1E3F", fontFamily:"var(--font-mono)" }}>{a.flight}</span>
+                  <span className="text-xl font-black tracking-wide whitespace-nowrap" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{a.flight}</span>
                 </td>
-                <td className="px-5 py-4 text-xs font-bold" style={{ color:"rgba(11,30,63,0.76)" }}><div className="truncate max-w-[10rem]" title={a.airline}>{a.airline}</div></td>
-                <td className="px-5 py-4 text-sm font-bold text-[#0B1E3F] whitespace-nowrap">{a.route}</td>
+                <td className="px-5 py-4 text-xs font-bold" style={{ color:ERP.navy }}><div className="truncate max-w-[10rem]" title={a.airline}>{a.airline}</div></td>
+                <td className="px-5 py-4 text-sm font-bold text-[color:var(--erp-text-strong)] whitespace-nowrap">{a.route}</td>
                 <td className="px-5 py-4 text-center">
-                  <span className="text-xl font-black whitespace-nowrap tabular-nums" style={{ color: isDelay ? "#B45309" : "#0B1E3F", fontFamily:"var(--font-mono)" }}>{a.eta}</span>
-                  {isDelay && <div className="text-[9px] font-bold mt-0.5" style={{ color:"#B45309" }}>DELAYED</div>}
+                  <span className="text-xl font-black whitespace-nowrap tabular-nums" style={{ color: isDelay ? ERP.warning : ERP.navy, fontFamily:"var(--font-mono)" }}>{a.eta}</span>
+                  {isDelay && <div className="text-[9px] font-bold mt-0.5" style={{ color:ERP.warning }}>DELAYED</div>}
                 </td>
                 <td className="px-5 py-4 text-center">
-                  <span className="text-3xl font-black tabular-nums" style={{ color:"#0B1E3F", fontFamily:"var(--font-mono)" }}>{a.pax}</span>
+                  <span className="text-3xl font-black tabular-nums" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{a.pax}</span>
                 </td>
                 <td className="px-5 py-4">
                   <div className="text-[10px] font-black truncate max-w-[13rem]" title={a.group} style={{ color:OPS, fontFamily:"var(--font-mono)" }}>{a.group}</div>
-                  <div className="text-xs text-[#0B1E3F] mt-0.5 truncate max-w-[13rem]" title={a.agent}>{a.agent}</div>
+                  <div className="text-xs text-[color:var(--erp-text-strong)] mt-0.5 truncate max-w-[13rem]" title={a.agent}>{a.agent}</div>
                 </td>
                 <td className="px-5 py-4">
                   {a.vehicle !== "—" ? (
                     <>
-                      <div className="text-xs font-black text-[#0B1E3F] truncate max-w-[11rem]" title={a.vehicle}>{a.vehicle}</div>
-                      <div className="text-[10px] mt-0.5 truncate max-w-[11rem]" title={a.driver} style={{ color:"rgba(11,30,63,0.66)" }}>{a.driver}</div>
+                      <div className="text-xs font-black text-[color:var(--erp-text-strong)] truncate max-w-[11rem]" title={a.vehicle}>{a.vehicle}</div>
+                      <div className="text-[10px] mt-0.5 truncate max-w-[11rem]" title={a.driver} style={{ color:ERP.muted }}>{a.driver}</div>
                     </>
                   ) : (
-                    <span className="text-xs whitespace-nowrap" style={{ color:"rgba(11,30,63,0.38)" }}>Not Assigned</span>
+                    <span className="text-xs whitespace-nowrap" style={{ color:ERP.mutedSoft }}>Not Assigned</span>
                   )}
                 </td>
                 <td className="px-5 py-4">
@@ -881,7 +875,7 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
                       disabled={busyId === a.id}
                       onChange={(e) => void setFlightStatus(a.id, e.target.value as ArrivalStatus)}
                       className="px-2 py-1.5 rounded-lg text-[10px] font-bold focus:outline-none"
-                      style={{ backgroundColor: ARR_STAT[a.status]?.bg ?? "#F5F7FA", color: ARR_STAT[a.status]?.color ?? "#0B1E3F", border: "1px solid rgba(11,30,63,0.15)" }}
+                      style={{ backgroundColor: erpAlpha(ARR_STAT[a.status]?.color ?? ERP.muted, 13), color: ARR_STAT[a.status]?.color ?? ERP.navy, border: `1px solid ${ERP.border}` }}
                     >
                       {ARRIVAL_OPTS.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
@@ -929,20 +923,20 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
   };
   return (
     <div style={{ backgroundColor:CR_BG, minHeight:"100%" }}>
-      <div className="flex items-center justify-between px-8 py-4" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:CR_SURFACE }}>
+      <div className="flex items-center justify-between px-8 py-4" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:CR_SURFACE }}>
         <div className="flex items-center gap-4">
-          <PlaneTakeoff size={20} style={{ color:"#2563EB" }} />
+          <PlaneTakeoff size={20} style={{ color:ERP.info }} />
           <div>
-            <div className="text-lg font-black text-[#0B1E3F] tracking-wide">DEPARTURES</div>
-            <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.58)" }}>Season 1446H · Outbound Transfer</div>
+            <div className="text-lg font-black text-[color:var(--erp-text-strong)] tracking-wide">DEPARTURES</div>
+            <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color:ERP.muted }}>Season 1446H · Outbound Transfer</div>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex gap-3 text-[10px] font-bold">
-            {[["CHECK-IN", data.filter(d=>d.status==="CHECK_IN").length,"#34D399"],
-              ["DELAYED",  data.filter(d=>d.status==="DELAYED").length, "#B45309"],
-              ["SCHEDULED",data.filter(d=>d.status==="SCHEDULED").length,"#9CA3AF"]].map(([l,n,c])=>(
-              <span key={l as string} className="px-3 py-1 rounded-lg whitespace-nowrap" style={{ backgroundColor:`${c as string}18`, color:c as string }}>
+            {[["CHECK-IN", data.filter(d=>d.status==="CHECK_IN").length,ERP.success],
+              ["DELAYED",  data.filter(d=>d.status==="DELAYED").length, ERP.warning],
+              ["SCHEDULED",data.filter(d=>d.status==="SCHEDULED").length,ERP.muted]].map(([l,n,c])=>(
+              <span key={l as string} className="px-3 py-1 rounded-lg whitespace-nowrap" style={{ backgroundColor:`${erpAlpha(c as string, 9)}`, color:c as string }}>
                 {l} <span className="font-black tabular-nums" style={{ fontFamily:"var(--font-mono)" }}>{ready ? (n as number) : "—"}</span>
               </span>
             ))}
@@ -953,10 +947,10 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
 
       <table className="w-full">
         <thead>
-          <tr style={{ backgroundColor:"#FFFFFF", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+          <tr style={{ backgroundColor:ERP.surface, borderBottom:`1px solid ${ERP.border}` }}>
             {["FLIGHT","AIRLINE","ROUTE","DEP","PAX","GROUP / AGENT","VEHICLE · DRIVER","STATUS"].map((c,i) => (
               <th key={c} className={`px-5 py-3 text-left text-[9px] font-black tracking-[0.15em] uppercase ${i===3||i===4?"text-center":""}`}
-                  style={{ color:"rgba(11,30,63,0.50)" }}>{c}</th>
+                  style={{ color:ERP.muted }}>{c}</th>
             ))}
           </tr>
         </thead>
@@ -968,29 +962,29 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
             const isDone   = d.status === "DEPARTED";
             return (
               <tr key={d.id}
-                  style={{ borderBottom:"1px solid rgba(11,30,63,0.08)", borderLeft:`3px solid ${isActive ? s.color : isDelay ? "#B45309" : "transparent"}`, opacity: isDone ? 0.55 : 1 }}
+                  style={{ borderBottom:`1px solid ${ERP.border}`, borderLeft:`3px solid ${isActive ? s.color : isDelay ? ERP.warning : "transparent"}`, opacity: isDone ? 0.55 : 1 }}
                   className="hover:bg-white/2">
                 <td className="px-5 py-4">
-                  <span className="text-xl font-black tracking-wide whitespace-nowrap" style={{ color:"#0B1E3F", fontFamily:"var(--font-mono)" }}>{d.flight}</span>
+                  <span className="text-xl font-black tracking-wide whitespace-nowrap" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{d.flight}</span>
                 </td>
-                <td className="px-5 py-4 text-xs font-bold" style={{ color:"rgba(11,30,63,0.76)" }}><div className="truncate max-w-[10rem]" title={d.airline}>{d.airline}</div></td>
-                <td className="px-5 py-4 text-sm font-bold text-[#0B1E3F] whitespace-nowrap">{d.route}</td>
+                <td className="px-5 py-4 text-xs font-bold" style={{ color:ERP.navy }}><div className="truncate max-w-[10rem]" title={d.airline}>{d.airline}</div></td>
+                <td className="px-5 py-4 text-sm font-bold text-[color:var(--erp-text-strong)] whitespace-nowrap">{d.route}</td>
                 <td className="px-5 py-4 text-center">
-                  <span className="text-xl font-black whitespace-nowrap tabular-nums" style={{ color: isDelay ? "#B45309" : "#0B1E3F", fontFamily:"var(--font-mono)" }}>{d.dep}</span>
+                  <span className="text-xl font-black whitespace-nowrap tabular-nums" style={{ color: isDelay ? ERP.warning : ERP.navy, fontFamily:"var(--font-mono)" }}>{d.dep}</span>
                 </td>
                 <td className="px-5 py-4 text-center">
-                  <span className="text-3xl font-black tabular-nums" style={{ color:"#0B1E3F", fontFamily:"var(--font-mono)" }}>{d.pax}</span>
+                  <span className="text-3xl font-black tabular-nums" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{d.pax}</span>
                 </td>
                 <td className="px-5 py-4">
                   <div className="text-[10px] font-black truncate max-w-[13rem]" title={d.group} style={{ color:OPS, fontFamily:"var(--font-mono)" }}>{d.group}</div>
-                  <div className="text-xs text-[#0B1E3F] mt-0.5 truncate max-w-[13rem]" title={d.agent}>{d.agent}</div>
+                  <div className="text-xs text-[color:var(--erp-text-strong)] mt-0.5 truncate max-w-[13rem]" title={d.agent}>{d.agent}</div>
                 </td>
                 <td className="px-5 py-4">
                   {d.vehicle !== "—" ? (
-                    <><div className="text-xs font-black text-[#0B1E3F] truncate max-w-[11rem]" title={d.vehicle}>{d.vehicle}</div>
-                    <div className="text-[10px] mt-0.5 truncate max-w-[11rem]" title={d.driver} style={{ color:"rgba(11,30,63,0.66)" }}>{d.driver}</div></>
+                    <><div className="text-xs font-black text-[color:var(--erp-text-strong)] truncate max-w-[11rem]" title={d.vehicle}>{d.vehicle}</div>
+                    <div className="text-[10px] mt-0.5 truncate max-w-[11rem]" title={d.driver} style={{ color:ERP.muted }}>{d.driver}</div></>
                   ) : (
-                    <span className="text-xs whitespace-nowrap" style={{ color:"rgba(11,30,63,0.38)" }}>Not Assigned</span>
+                    <span className="text-xs whitespace-nowrap" style={{ color:ERP.mutedSoft }}>Not Assigned</span>
                   )}
                 </td>
                 <td className="px-5 py-4">
@@ -1002,7 +996,7 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
                       disabled={busyId === d.id}
                       onChange={(e) => void setFlightStatus(d.id, e.target.value as DepartureStatus)}
                       className="px-2 py-1.5 rounded-lg text-[10px] font-bold focus:outline-none"
-                      style={{ backgroundColor: DEP_STAT[d.status]?.bg ?? "#F5F7FA", color: DEP_STAT[d.status]?.color ?? "#0B1E3F", border: "1px solid rgba(11,30,63,0.15)" }}
+                      style={{ backgroundColor: erpAlpha(DEP_STAT[d.status]?.color ?? ERP.muted, 13), color: DEP_STAT[d.status]?.color ?? ERP.navy, border: `1px solid ${ERP.border}` }}
                     >
                       {DEP_OPTS.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
@@ -1032,7 +1026,7 @@ function NewDispatchModal({ apiGroups, onClose, onCreated }: { apiGroups: ApiGro
   const [pax, setPax] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [busy, setBusy] = useState(false);
-  const IS = { backgroundColor:"#F5F7FA", border:"1px solid rgba(11,30,63,0.15)", color:"#0B1E3F" } as CSSProperties;
+  const IS = { backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}`, color:ERP.navy } as CSSProperties;
 
   const submit = async () => {
     if (!groupId || !routeFrom.trim() || !routeTo.trim() || !scheduledAt) { toast.error("Group, route and scheduled time are required."); return; }
@@ -1053,45 +1047,39 @@ function NewDispatchModal({ apiGroups, onClose, onCreated }: { apiGroups: ApiGro
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ backgroundColor:"rgba(3,4,10,0.8)" }} onClick={onClose}>
-      <div className="w-full max-w-md rounded-2xl p-6" style={{ backgroundColor:CR_SURFACE, border:`1px solid ${OPS}30` }} onClick={(e)=>e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-5">
-          <div className="text-sm font-bold text-[#0B1E3F]">New Dispatch</div>
-          <button onClick={onClose} className="text-xs font-bold" style={{ color:"rgba(11,30,63,0.58)" }}>✕</button>
-        </div>
+    <ErpModal open onClose={onClose} title="New Dispatch" width={440}>
         <div className="space-y-3">
           <div>
-            <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>Group</label>
+            <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>Group</label>
             <select value={groupId} onChange={(e)=>setGroupId(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}>
               {opts.map((o)=><option key={o.value} value={o.value} style={{ color:"black" }}>{o.label}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>Route From</label>
+              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>Route From</label>
               <input value={routeFrom} onChange={(e)=>setRouteFrom(e.target.value)} placeholder="KAIA Terminal 1" className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} />
             </div>
             <div>
-              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>Route To</label>
+              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>Route To</label>
               <input value={routeTo} onChange={(e)=>setRouteTo(e.target.value)} placeholder="Jabal Omar Hyatt" className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>Pax</label>
+              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>Pax</label>
               <input type="number" value={pax} onChange={(e)=>setPax(e.target.value)} placeholder="0" className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} />
             </div>
             <div>
-              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>Scheduled At</label>
+              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>Scheduled At</label>
               <input type="datetime-local" value={scheduledAt} onChange={(e)=>setScheduledAt(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} />
             </div>
           </div>
-          <button disabled={busy} onClick={() => void submit()} className="w-full py-3 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor:OPS, color:"#0B1E3F" }}>
+          <button disabled={busy} onClick={() => void submit()} className="w-full py-3 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor:OPS, color:ERP.navy }}>
             Create Dispatch
           </button>
         </div>
-      </div>
-    </div>
+    </ErpModal>
   );
 }
 
@@ -1118,16 +1106,16 @@ function DispatchBoard({ rows, connected, apiGroups, onRefresh, demo, state }: {
 
   return (
     <div style={{ backgroundColor:CR_BG, minHeight:"100%" }}>
-      <div className="flex items-center justify-between px-8 py-4" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:CR_SURFACE }}>
+      <div className="flex items-center justify-between px-8 py-4" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:CR_SURFACE }}>
         <div className="flex items-center gap-4">
           <Navigation size={20} style={{ color:OPS }} />
           <div>
-            <div className="text-lg font-black text-[#0B1E3F] tracking-wide">DISPATCH BOARD</div>
-            <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.58)" }}>Live · {ready ? data.length : "—"} active orders</div>
+            <div className="text-lg font-black text-[color:var(--erp-text-strong)] tracking-wide">DISPATCH BOARD</div>
+            <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color:ERP.muted }}>Live · {ready ? data.length : "—"} active orders</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ backgroundColor:`${OPS}18`, color:OPS, border:`1px solid ${OPS}30` }}>
+          <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ backgroundColor:`${erpAlpha(OPS, 9)}`, color:OPS, border:`1px solid ${erpAlpha(OPS, 19)}` }}>
             <Plus size={12} /> New Dispatch
           </button>
           <LiveBadge time={new Date().toLocaleTimeString("en-GB",{hour12:false})} live={connected} />
@@ -1152,10 +1140,10 @@ function DispatchBoard({ rows, connected, apiGroups, onRefresh, demo, state }: {
           const colOrders = data.filter((d) => d.status === col);
           const colStyle  = DSP_STAT[col];
           return (
-            <div key={col} className="flex flex-col overflow-hidden" style={{ backgroundColor:"#FFFFFF" }}>
+            <div key={col} className="flex flex-col overflow-hidden" style={{ backgroundColor:ERP.surface }}>
               {/* column header */}
               <div className="flex items-center justify-between px-4 py-3 shrink-0"
-                   style={{ backgroundColor: colStyle.bg+"30", borderBottom:`2px solid ${colStyle.color}40` }}>
+                   style={{ backgroundColor: erpAlpha(colStyle.color, 19), borderBottom:`2px solid ${erpAlpha(colStyle.color, 25)}` }}>
                 <span className="text-xs font-black uppercase tracking-widest" style={{ color:colStyle.color }}>{colStyle.header}</span>
                 <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black" style={{ backgroundColor:colStyle.color+"25", color:colStyle.color }}>
                   {colOrders.length}
@@ -1164,27 +1152,27 @@ function DispatchBoard({ rows, connected, apiGroups, onRefresh, demo, state }: {
               {/* cards */}
               <div className="flex-1 overflow-y-auto p-3 space-y-2.5" style={{ scrollbarWidth:"none" }}>
                 {colOrders.map((o) => (
-                  <div key={o.id} className="p-4 rounded-xl" style={{ backgroundColor:"#FBFCFD", border:`1px solid rgba(11,30,63,0.11)`, borderLeft:`3px solid ${colStyle.color}60` }}>
+                  <div key={o.id} className="p-4 rounded-xl" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}`, borderLeft:`3px solid ${erpAlpha(colStyle.color, 38)}` }}>
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <span className="text-[9px] font-black truncate" title={o.code ?? o.id} style={{ color:colStyle.color, fontFamily:"var(--font-mono)" }}>{o.code ?? o.id}</span>
-                      <span className="text-[9px] font-mono shrink-0 whitespace-nowrap" style={{ color:"rgba(11,30,63,0.50)", fontFamily:"var(--font-mono)" }}>{o.time}</span>
+                      <span className="text-[9px] font-mono shrink-0 whitespace-nowrap" style={{ color:ERP.muted, fontFamily:"var(--font-mono)" }}>{o.time}</span>
                     </div>
-                    <div className="text-xs font-black text-[#0B1E3F] mb-1 truncate" title={o.vehicle}>{o.vehicle}</div>
-                    <div className="text-[10px] font-semibold mb-2 truncate" title={o.route} style={{ color:"rgba(11,30,63,0.76)" }}>{o.route}</div>
+                    <div className="text-xs font-black text-[color:var(--erp-text-strong)] mb-1 truncate" title={o.vehicle}>{o.vehicle}</div>
+                    <div className="text-[10px] font-semibold mb-2 truncate" title={o.route} style={{ color:ERP.navy }}>{o.route}</div>
                     <div className="flex items-center justify-between gap-2">
                       <div className="shrink-0">
-                        <span className="text-lg font-black tabular-nums" style={{ color:"#0B1E3F", fontFamily:"var(--font-mono)" }}>{o.pax}</span>
-                        <span className="text-[10px] ml-1" style={{ color:"rgba(11,30,63,0.58)" }}>pax</span>
+                        <span className="text-lg font-black tabular-nums" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{o.pax}</span>
+                        <span className="text-[10px] ml-1" style={{ color:ERP.muted }}>pax</span>
                       </div>
                       <div className="text-right min-w-0">
-                        <div className="text-[10px] text-[#0B1E3F] truncate" title={o.driver}>{o.driver}</div>
-                        <div className="text-[9px] truncate" title={o.group} style={{ color:"rgba(11,30,63,0.58)", fontFamily:"var(--font-mono)" }}>{o.group}</div>
+                        <div className="text-[10px] text-[color:var(--erp-text-strong)] truncate" title={o.driver}>{o.driver}</div>
+                        <div className="text-[9px] truncate" title={o.group} style={{ color:ERP.muted, fontFamily:"var(--font-mono)" }}>{o.group}</div>
                       </div>
                     </div>
                     {o.note && (
-                      <div className="flex items-start gap-1.5 mt-2 pt-2" style={{ borderTop:`1px solid ${colStyle.color}25` }}>
-                        <AlertTriangle size={10} style={{ color:"#B45309", flexShrink:0, marginTop:1 }} />
-                        <span className="text-[9px]" style={{ color:"#B45309" }}>{o.note}</span>
+                      <div className="flex items-start gap-1.5 mt-2 pt-2" style={{ borderTop:`1px solid ${erpAlpha(colStyle.color, 15)}` }}>
+                        <AlertTriangle size={10} style={{ color:ERP.warning, flexShrink:0, marginTop:1 }} />
+                        <span className="text-[9px]" style={{ color:ERP.warning }}>{o.note}</span>
                       </div>
                     )}
                     {!demo && (
@@ -1193,7 +1181,7 @@ function DispatchBoard({ rows, connected, apiGroups, onRefresh, demo, state }: {
                         disabled={busyId === o.id}
                         onChange={(e) => void setDispatchStatus(o.id, e.target.value as DispatchStatus)}
                         className="mt-2 w-full px-2 py-1.5 rounded-lg text-[10px] font-bold focus:outline-none"
-                        style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.12)", color: "#0B1E3F" }}
+                        style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}`, color: ERP.navy }}
                       >
                         {COLS.map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
@@ -1276,7 +1264,7 @@ function MeetAssist({ arrivals, maUpdate, demo, state, onRetry }: { arrivals: Fl
     <div className="p-7 grid grid-cols-5 gap-5 h-full">
       {/* Left: flight list */}
       <div className="col-span-2 space-y-2 overflow-y-auto" style={{ scrollbarWidth:"none" }}>
-        <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:"rgba(11,30,63,0.50)" }}>Active Arrivals</div>
+        <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:ERP.muted }}>Active Arrivals</div>
         {!ready ? (
           state === "loading"
             ? <LoadingSkeleton tone="light" rows={4} />
@@ -1291,17 +1279,17 @@ function MeetAssist({ arrivals, maUpdate, demo, state, onRetry }: { arrivals: Fl
           return (
             <button key={a.id} onClick={() => setSelId(a.id)}
               className="w-full text-left p-4 rounded-2xl transition-all"
-              style={{ border:`1px solid ${selId === a.id ? OPS : "rgba(11,30,63,0.38)"}`, backgroundColor: selId === a.id ? `${OPS}0A` : "rgba(11,30,63,0.38)" }}>
+              style={{ border:`1px solid ${selId === a.id ? OPS : ERP.mutedSoft}`, backgroundColor: selId === a.id ? `${erpAlpha(OPS, 4)}` : ERP.mutedSoft }}>
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-base font-black truncate" style={{ color:"#0B1E3F", fontFamily:"var(--font-mono)" }}>{a.flight}</span>
+                <span className="text-base font-black truncate" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{a.flight}</span>
                 <BStat s={a.status} map={ARR_STAT} />
               </div>
-              <div className="text-xs text-[#0B1E3F] mb-1 truncate" title={a.group}>{a.group}</div>
-              <div className="text-[10px] mb-2 truncate" title={`${a.pax} pax · ${a.agent}`} style={{ color:"rgba(11,30,63,0.58)" }}>{a.pax} pax · {a.agent}</div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor:"#F5F7FA" }}>
-                <div className="h-full rounded-full transition-all" style={{ width:`${pct}%`, backgroundColor: pct === 100 ? "#16A34A" : OPS }} />
+              <div className="text-xs text-[color:var(--erp-text-strong)] mb-1 truncate" title={a.group}>{a.group}</div>
+              <div className="text-[10px] mb-2 truncate" title={`${a.pax} pax · ${a.agent}`} style={{ color:ERP.muted }}>{a.pax} pax · {a.agent}</div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor:ERP.surfaceSoft }}>
+                <div className="h-full rounded-full transition-all" style={{ width:`${pct}%`, backgroundColor: pct === 100 ? ERP.success : OPS }} />
               </div>
-              <div className="text-[9px] mt-1" style={{ color:"rgba(11,30,63,0.50)" }}>{done}/{MA_STEPS.length} steps · {pct}%</div>
+              <div className="text-[9px] mt-1" style={{ color:ERP.muted }}>{done}/{MA_STEPS.length} steps · {pct}%</div>
             </button>
           );
         })}
@@ -1317,37 +1305,37 @@ function MeetAssist({ arrivals, maUpdate, demo, state, onRetry }: { arrivals: Fl
           }
           const steps = stepsById[selId] ?? new Set<number>();
           return (
-            <div className="rounded-2xl overflow-hidden" style={{ border:`1px solid ${OPS}25` }}>
-              <div className="px-5 py-4" style={{ backgroundColor:`${OPS}0D`, borderBottom:`1px solid ${OPS}20` }}>
+            <div className="rounded-2xl overflow-hidden" style={{ border:`1px solid ${erpAlpha(OPS, 15)}` }}>
+              <div className="px-5 py-4" style={{ backgroundColor:`${erpAlpha(OPS, 5)}`, borderBottom:`1px solid ${erpAlpha(OPS, 13)}` }}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-lg font-black text-[#0B1E3F] truncate" style={{ fontFamily:"var(--font-mono)" }}>{a.flight}</div>
-                    <div className="text-xs mt-0.5 truncate" title={`${a.group} · ${a.agent} · ${a.pax} pax`} style={{ color:"rgba(11,30,63,0.66)" }}>{a.group} · {a.agent} · {a.pax} pax</div>
+                    <div className="text-lg font-black text-[color:var(--erp-text-strong)] truncate" style={{ fontFamily:"var(--font-mono)" }}>{a.flight}</div>
+                    <div className="text-xs mt-0.5 truncate" title={`${a.group} · ${a.agent} · ${a.pax} pax`} style={{ color:ERP.muted }}>{a.group} · {a.agent} · {a.pax} pax</div>
                   </div>
                   <BStat s={a.status} map={ARR_STAT} />
                 </div>
                 <div className="grid grid-cols-3 gap-3 mt-4">
                   {[["Route", a.route],["ETA", a.eta],["Vehicle + Driver", `${a.vehicle} · ${a.driver}`]].map(([l,v]) => (
                     <div key={l as string} className="min-w-0">
-                      <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.50)" }}>{l}</div>
-                      <div className="text-xs font-bold text-[#0B1E3F] mt-0.5 truncate" title={v as string}>{v}</div>
+                      <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color:ERP.muted }}>{l}</div>
+                      <div className="text-xs font-bold text-[color:var(--erp-text-strong)] mt-0.5 truncate" title={v as string}>{v}</div>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="p-5 space-y-1">
-                <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:"rgba(11,30,63,0.50)" }}>Meet & Assist Checklist</div>
+                <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:ERP.muted }}>Meet & Assist Checklist</div>
                 {MA_STEPS.map((step, idx) => {
                   const done = steps.has(idx + 1);
                   return (
                     <button key={idx} onClick={() => toggle(selId, idx + 1)}
                       className="w-full flex items-center gap-4 p-3.5 rounded-xl transition-all hover:bg-white/3"
-                      style={{ backgroundColor: done ? "#4ADE8008" : "transparent", border:`1px solid ${done ? "#4ADE8025" : "rgba(11,30,63,0.38)"}` }}>
+                      style={{ backgroundColor: done ? erpAlpha(ERP.success, 3) : "transparent", border:`1px solid ${done ? erpAlpha(ERP.success, 15) : ERP.mutedSoft}` }}>
                       <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all`}
-                           style={{ backgroundColor: done ? "#16A34A" : "#EEF1F6", border: done ? "none" : "1px solid rgba(11,30,63,0.15)" }}>
+                           style={{ backgroundColor: done ? ERP.success : ERP.surfaceSoft, border: done ? "none" : `1px solid ${ERP.border}` }}>
                         {done && <Check size={12} style={{ color:"black", strokeWidth:3 }} />}
                       </div>
-                      <span className="text-xs font-semibold text-left" style={{ color: done ? "#16A34A" : "rgba(11,30,63,0.76)", textDecoration: done ? "line-through" : undefined }}>
+                      <span className="text-xs font-semibold text-left" style={{ color: done ? ERP.success : ERP.navy, textDecoration: done ? "line-through" : undefined }}>
                         {String(idx + 1).padStart(2,"0")}. {step}
                       </span>
                     </button>
@@ -1380,7 +1368,7 @@ function ScheduleZiyarahModal({ apiGroups, onClose, onCreated }: { apiGroups: Ap
   const [guideName, setGuideName] = useState("");
   const [pax, setPax] = useState("");
   const [busy, setBusy] = useState(false);
-  const IS = { backgroundColor:"#F5F7FA", border:"1px solid rgba(11,30,63,0.15)", color:"#0B1E3F" } as CSSProperties;
+  const IS = { backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}`, color:ERP.navy } as CSSProperties;
 
   const submit = async () => {
     if (!groupId || !date || !sites.trim()) { toast.error("Group, date and sites are required."); return; }
@@ -1401,43 +1389,37 @@ function ScheduleZiyarahModal({ apiGroups, onClose, onCreated }: { apiGroups: Ap
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ backgroundColor:"rgba(3,4,10,0.8)" }} onClick={onClose}>
-      <div className="w-full max-w-md rounded-2xl p-6" style={{ backgroundColor:CR_SURFACE, border:`1px solid ${OPS}30` }} onClick={(e)=>e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-5">
-          <div className="text-sm font-bold text-[#0B1E3F]">Schedule Ziyarah</div>
-          <button onClick={onClose} className="text-xs font-bold" style={{ color:"rgba(11,30,63,0.58)" }}>✕</button>
-        </div>
+    <ErpModal open onClose={onClose} title="Schedule Ziyarah" width={440}>
         <div className="space-y-3">
           <div>
-            <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>Group</label>
+            <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>Group</label>
             <select value={groupId} onChange={(e)=>setGroupId(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}>
               {opts.map((o)=><option key={o.value} value={o.value} style={{ color:"black" }}>{o.label}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>Date</label>
+              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>Date</label>
               <input type="date" value={date} onChange={(e)=>setDate(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} />
             </div>
             <div>
-              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>Pax</label>
+              <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>Pax</label>
               <input type="number" value={pax} onChange={(e)=>setPax(e.target.value)} placeholder="0" className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} />
             </div>
           </div>
           <div>
-            <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>Sites</label>
+            <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>Sites</label>
             <input value={sites} onChange={(e)=>setSites(e.target.value)} placeholder="Masjid al-Haram, Zamzam…" className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} />
           </div>
           <div>
-            <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>Guide (optional)</label>
+            <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>Guide (optional)</label>
             <input value={guideName} onChange={(e)=>setGuideName(e.target.value)} placeholder="Sheikh…" className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} />
           </div>
-          <button disabled={busy} onClick={() => void submit()} className="w-full py-3 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor:OPS, color:"#0B1E3F" }}>
+          <button disabled={busy} onClick={() => void submit()} className="w-full py-3 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor:OPS, color:ERP.navy }}>
             Schedule Ziyarah
           </button>
         </div>
-      </div>
-    </div>
+    </ErpModal>
   );
 }
 
@@ -1468,10 +1450,10 @@ function ZiyarahScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
     <div className="p-7">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-sm font-bold text-[#0B1E3F]">Ziyarah Scheduling & Tracking</h2>
-          <p className="text-xs mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>Holy site visit programs for all active groups</p>
+          <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Ziyarah Scheduling & Tracking</h2>
+          <p className="text-xs mt-0.5" style={{ color:ERP.muted }}>Holy site visit programs for all active groups</p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ backgroundColor:`${OPS}18`, color:OPS }}>
+        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ backgroundColor:`${erpAlpha(OPS, 9)}`, color:OPS }}>
           <Plus size={12} /> Schedule Ziyarah
         </button>
       </div>
@@ -1486,28 +1468,28 @@ function ZiyarahScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
         ) : rows.length === 0 ? (
           <EmptyState tone="light" title="No ziyarah scheduled" hint="Holy-site visit programs appear here once scheduled." />
         ) : rows.map((z) => {
-          const statusColor = z.status === "COMPLETED" ? "#059669" : z.status === "CONFIRMED" ? "#16A34A" : "#2563EB";
+          const statusColor = z.status === "COMPLETED" ? ERP.success : z.status === "CONFIRMED" ? ERP.success : ERP.info;
           return (
-            <div key={z.id} className="rounded-2xl p-5" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.11)", opacity: z.status === "COMPLETED" ? 0.6 : 1 }}>
+            <div key={z.id} className="rounded-2xl p-5" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}`, opacity: z.status === "COMPLETED" ? 0.6 : 1 }}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-xs font-black whitespace-nowrap" style={{ color:OPS, fontFamily:"var(--font-mono)" }}>{z.id}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ backgroundColor:`${statusColor}18`, color:statusColor }}>{z.status}</span>
-                    <span className="text-xs font-bold text-[#0B1E3F] whitespace-nowrap">{z.date}</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ backgroundColor:`${erpAlpha(statusColor, 9)}`, color:statusColor }}>{z.status}</span>
+                    <span className="text-xs font-bold text-[color:var(--erp-text-strong)] whitespace-nowrap">{z.date}</span>
                   </div>
-                  <div className="text-sm font-semibold text-[#0B1E3F] mb-1 truncate" title={z.sites}>{z.sites}</div>
+                  <div className="text-sm font-semibold text-[color:var(--erp-text-strong)] mb-1 truncate" title={z.sites}>{z.sites}</div>
                   <div className="grid grid-cols-4 gap-4 mt-3">
                     {[["Group",z.group],["Guide",z.guide],["Vehicle",z.vehicle],["Pax",String(z.pax)]].map(([l,v]) => (
                       <div key={l as string} className="min-w-0">
-                        <div className="text-[9px] font-bold uppercase tracking-wider" style={{ color:"rgba(11,30,63,0.50)" }}>{l}</div>
-                        <div className="text-xs font-semibold text-[#0B1E3F] mt-0.5 truncate" title={v as string}>{v}</div>
+                        <div className="text-[9px] font-bold uppercase tracking-wider" style={{ color:ERP.muted }}>{l}</div>
+                        <div className="text-xs font-semibold text-[color:var(--erp-text-strong)] mt-0.5 truncate" title={v as string}>{v}</div>
                       </div>
                     ))}
                   </div>
                 </div>
-                <button className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor:"#F5F7FA" }}>
-                  <Eye size={13} style={{ color:"rgba(11,30,63,0.58)" }} />
+                <button className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor:ERP.surfaceSoft }}>
+                  <Eye size={13} style={{ color:ERP.muted }} />
                 </button>
               </div>
             </div>
@@ -1689,14 +1671,14 @@ function LongStayDrawer({
               [lang === "bn" ? "হোস্ট সম্পূর্ণ" : "Host complete", row.hostComplete ? "YES" : "NO"],
               ["Day-85", day85Label(row.day85)],
             ].map(([k, v]) => (
-              <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                <dd className="font-semibold text-[#0B1E3F] text-right">{v}</dd>
+              <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                <dt style={{ color: ERP.muted }}>{k}</dt>
+                <dd className="font-semibold text-[color:var(--erp-text-strong)] text-right">{v}</dd>
               </div>
             ))}
           </dl>
           <ErpStatusChip status={day85StatusKind(row.day85?.stage, row.day85?.redCard)} label={day85Label(row.day85)} lang={lang} />
-          <p className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)" }}>
+          <p className="text-[10px]" style={{ color: ERP.muted }}>
             {lang === "bn"
               ? "হোস্ট লগইন ইউজার নয়। Day-85 মার্কার অটোমেশন সেট করে — হাতে সম্পাদনা নয়।"
               : "Host is not a login user. Day-85 markers are set by the daily automation sweep — they cannot be edited by hand."}
@@ -1756,9 +1738,9 @@ function LongStayDrawer({
               [lang === "bn" ? "প্রস্থান" : "Exit", row.exitDate ? fmtDay(row.exitDate) : "—"],
               [lang === "bn" ? "নোটিফাই" : "Notified", row.day85?.notifiedAt ? fmtDay(row.day85.notifiedAt) : (lang === "bn" ? "এখনো নয়" : "not yet")],
             ].map(([k, v]) => (
-              <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-                <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-                <dd className="font-semibold text-[#0B1E3F]">{v}</dd>
+              <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+                <dt style={{ color: ERP.muted }}>{k}</dt>
+                <dd className="font-semibold text-[color:var(--erp-text-strong)]">{v}</dd>
               </div>
             ))}
           </dl>
@@ -1773,7 +1755,7 @@ function LongStayDrawer({
             </ErpForm>
           )}
           {row.day85?.resolved && (
-            <p className="text-xs font-semibold" style={{ color: "#16A34A" }}>
+            <p className="text-xs font-semibold" style={{ color: ERP.success }}>
               {lang === "bn" ? "সমাধান" : "Resolved"} via {row.day85.resolvedBy ?? "—"}
             </p>
           )}
@@ -1791,9 +1773,9 @@ function LongStayDrawer({
             [lang === "bn" ? "নোটিফাই" : "Notified", row.day85?.notifiedAt ? fmtDay(row.day85.notifiedAt) : "—"],
             [lang === "bn" ? "সমাধানকারী" : "Resolved by", row.day85?.resolvedBy ?? "—"],
           ].map(([k, v]) => (
-            <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: "1px solid rgba(11,30,63,0.06)" }}>
-              <dt style={{ color: "rgba(11,30,63,0.50)" }}>{k}</dt>
-              <dd className="font-semibold text-[#0B1E3F]">{v}</dd>
+            <div key={String(k)} className="flex justify-between gap-3 py-1.5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
+              <dt style={{ color: ERP.muted }}>{k}</dt>
+              <dd className="font-semibold text-[color:var(--erp-text-strong)]">{v}</dd>
             </div>
           ))}
         </dl>
@@ -2004,7 +1986,7 @@ function LongStayScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiG
       cell: (l) => (
         <div>
           <div className="text-[11px] font-bold" style={{ color: OPS, fontFamily: "var(--font-mono)" }}>{l.group ?? "—"}</div>
-          <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.45)", fontFamily: "var(--font-mono)" }}>{l.code}</div>
+          <div className="text-[10px]" style={{ color: ERP.muted, fontFamily: "var(--font-mono)" }}>{l.code}</div>
         </div>
       ),
     },
@@ -2014,7 +1996,7 @@ function LongStayScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiG
       cell: (l) => (
         <div>
           <div className="text-xs font-semibold truncate max-w-[140px]" title={l.hotel}>{l.hotel}</div>
-          <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)" }}>{l.city}</div>
+          <div className="text-[10px]" style={{ color: ERP.muted }}>{l.city}</div>
         </div>
       ),
     },
@@ -2105,12 +2087,12 @@ function LongStayScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiG
                   onClick={() => setQuick(s.id)}
                   className="text-left rounded-xl px-3 py-2.5 transition-colors"
                   style={{
-                    backgroundColor: quick === s.id ? `${OPS}12` : "#FFFFFF",
-                    border: `1px solid ${quick === s.id ? OPS : "rgba(11,30,63,0.11)"}`,
+                    backgroundColor: quick === s.id ? `${erpAlpha(OPS, 7)}` : ERP.surface,
+                    border: `1px solid ${quick === s.id ? OPS : ERP.border}`,
                   }}
                 >
-                  <div className="text-lg font-bold tabular-nums text-[#0B1E3F]" style={{ fontFamily: "var(--font-mono)" }}>{s.value}</div>
-                  <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.55)" }}>{lang === "bn" ? s.labelBn : s.labelEn}</div>
+                  <div className="text-lg font-bold tabular-nums text-[color:var(--erp-text-strong)]" style={{ fontFamily: "var(--font-mono)" }}>{s.value}</div>
+                  <div className="text-[10px]" style={{ color: ERP.muted }}>{lang === "bn" ? s.labelBn : s.labelEn}</div>
                 </button>
               ))}
             </div>
@@ -2163,7 +2145,7 @@ function LongStayScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiG
                     </ErpSelect>
                   </ErpField>
                   <ErpFormRow span={2}>
-                    <p className="text-[11px]" style={{ color: "rgba(11,30,63,0.50)" }}>
+                    <p className="text-[11px]" style={{ color: ERP.muted }}>
                       {lang === "bn"
                         ? "Day-85 / Day-90 / Resolved — উপরের কুইক ফিল্টার ব্যবহার করুন (একই বোর্ড ফিল্ড)।"
                         : "Day-85 / Day-90 / Resolved — use quick filters above (same board fields)."}
@@ -2297,21 +2279,21 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
   };
 
   if (view === "create") {
-    const IS = { backgroundColor:"#F5F7FA", border:"1px solid rgba(11,30,63,0.15)", color:"#0B1E3F" } as CSSProperties;
+    const IS = { backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}`, color:ERP.navy } as CSSProperties;
     const FF = ({ label, children }: { label:string; children:ReactNode }) => (
       <div>
-        <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:"rgba(11,30,63,0.50)" }}>{label}</label>
+        <label className="text-[9px] font-black uppercase tracking-widest block mb-1.5" style={{ color:ERP.muted }}>{label}</label>
         {children}
       </div>
     );
     return (
       <div className="p-7">
         <div className="flex items-center gap-3 mb-5">
-          <button onClick={() => setView("list")} className="text-xs font-bold" style={{ color:"rgba(11,30,63,0.58)" }}>← Back</button>
-          <h2 className="text-sm font-bold text-[#0B1E3F]">Create New BRN</h2>
+          <button onClick={() => setView("list")} className="text-xs font-bold" style={{ color:ERP.muted }}>← Back</button>
+          <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Create New BRN</h2>
         </div>
         <div className="max-w-2xl space-y-4">
-          <div className="rounded-2xl p-5 grid grid-cols-2 gap-4" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.11)" }}>
+          <div className="rounded-2xl p-5 grid grid-cols-2 gap-4" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
             <FF label="Group ID"><select value={cGroup || (opts[0]?.value ?? "")} onChange={(e)=>setCGroup(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}>{opts.map((o)=><option key={o.value} value={o.value} style={{ color:"black" }}>{o.label}</option>)}</select></FF>
             <FF label="Service Type"><select value={cService} onChange={(e)=>setCService(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}><option>Hotel</option><option>Transport</option><option>Catering</option><option>Meet & Assist</option><option>Full Package</option></select></FF>
             <FF label="Date Required"><input type="date" value={cDate} onChange={(e)=>setCDate(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} /></FF>
@@ -2320,7 +2302,7 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
               <FF label="Service Detail"><textarea value={cDetail} onChange={(e)=>setCDetail(e.target.value)} rows={3} placeholder="Describe the service requirement in detail…" className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none resize-none" style={IS} /></FF>
             </div>
           </div>
-          <button disabled={busy} onClick={() => void submitBrn()} className="px-6 py-3 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor:OPS, color:"#0B1E3F" }}>Create BRN</button>
+          <button disabled={busy} onClick={() => void submitBrn()} className="px-6 py-3 rounded-xl text-xs font-bold disabled:opacity-50" style={{ backgroundColor:OPS, color:ERP.navy }}>Create BRN</button>
         </div>
       </div>
     );
@@ -2330,38 +2312,38 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
     <div className="p-7">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-sm font-bold text-[#0B1E3F]">BRN Management</h2>
-          <p className="text-xs mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>Booking Request Numbers — service request tracking</p>
+          <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">BRN Management</h2>
+          <p className="text-xs mt-0.5" style={{ color:ERP.muted }}>Booking Request Numbers — service request tracking</p>
         </div>
-        <button onClick={() => setView("create")} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ backgroundColor:`${OPS}18`, color:OPS }}>
+        <button onClick={() => setView("create")} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ backgroundColor:`${erpAlpha(OPS, 9)}`, color:OPS }}>
           <Plus size={12} /> New BRN
         </button>
       </div>
       <div className="grid grid-cols-3 gap-5">
         {/* BRN list */}
-        <div className="col-span-2 rounded-2xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
+        <div className="col-span-2 rounded-2xl overflow-hidden" style={{ border:`1px solid ${ERP.border}` }}>
           <table className="w-full">
             <thead>
-              <tr style={{ backgroundColor:"#FBFCFD", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+              <tr style={{ backgroundColor:ERP.surfaceSoft, borderBottom:`1px solid ${ERP.border}` }}>
                 {["BRN ID","Group","Agent","Service","Created","Status",""].map((c) => (
-                  <th key={c} className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.50)" }}>{c}</th>
+                  <th key={c} className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-widest" style={{ color:ERP.muted }}>{c}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {ready && rows.map((b, i) => (
                 <tr key={b.id} onClick={() => setSelBrn(b.id === selBrn ? null : b.id)}
-                    style={{ borderBottom: i < rows.length-1 ? "1px solid rgba(11,30,63,0.08)" : undefined, cursor:"pointer", backgroundColor: selBrn === b.id ? `${OPS}08` : undefined }}
+                    style={{ borderBottom: i < rows.length-1 ? `1px solid ${ERP.border}` : undefined, cursor:"pointer", backgroundColor: selBrn === b.id ? `${erpAlpha(OPS, 3)}` : undefined }}
                     className="hover:bg-white/2">
                   <td className="px-4 py-3 text-[10px] font-black whitespace-nowrap" style={{ color:OPS, fontFamily:"var(--font-mono)" }}>{b.id}</td>
-                  <td className="px-4 py-3 text-[9px] whitespace-nowrap" style={{ color:"rgba(11,30,63,0.76)", fontFamily:"var(--font-mono)" }}>{b.group}</td>
-                  <td className="px-4 py-3 text-xs text-[#0B1E3F]"><div className="truncate max-w-[12rem]" title={b.agent}>{b.agent}</div></td>
-                  <td className="px-4 py-3 text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}><div className="truncate max-w-[14rem]" title={b.service}>{b.service}</div></td>
-                  <td className="px-4 py-3 text-[10px] whitespace-nowrap" style={{ color:"rgba(11,30,63,0.58)", fontFamily:"var(--font-mono)" }}>{b.created}</td>
+                  <td className="px-4 py-3 text-[9px] whitespace-nowrap" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{b.group}</td>
+                  <td className="px-4 py-3 text-xs text-[color:var(--erp-text-strong)]"><div className="truncate max-w-[12rem]" title={b.agent}>{b.agent}</div></td>
+                  <td className="px-4 py-3 text-[10px]" style={{ color:ERP.muted }}><div className="truncate max-w-[14rem]" title={b.service}>{b.service}</div></td>
+                  <td className="px-4 py-3 text-[10px] whitespace-nowrap" style={{ color:ERP.muted, fontFamily:"var(--font-mono)" }}>{b.created}</td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black" style={{ backgroundColor:BRN_STAT[b.status].bg, color:BRN_STAT[b.status].color }}>{b.status}</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black" style={{ backgroundColor:erpAlpha(BRN_STAT[b.status].color, 13), color:BRN_STAT[b.status].color }}>{b.status}</span>
                   </td>
-                  <td className="px-4 py-3"><ChevronRight size={12} style={{ color:"rgba(11,30,63,0.50)" }} /></td>
+                  <td className="px-4 py-3"><ChevronRight size={12} style={{ color:ERP.muted }} /></td>
                 </tr>
               ))}
               {(!ready || rows.length === 0) && (
@@ -2374,28 +2356,28 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
         {/* Detail panel */}
         <div>
           {selectedBrn ? (
-            <div className="rounded-2xl overflow-hidden" style={{ border:`1px solid ${OPS}30` }}>
-              <div className="px-4 py-3" style={{ backgroundColor:`${OPS}10`, borderBottom:`1px solid ${OPS}20` }}>
+            <div className="rounded-2xl overflow-hidden" style={{ border:`1px solid ${erpAlpha(OPS, 19)}` }}>
+              <div className="px-4 py-3" style={{ backgroundColor:`${erpAlpha(OPS, 6)}`, borderBottom:`1px solid ${erpAlpha(OPS, 13)}` }}>
                 <div className="text-[9px] font-black uppercase tracking-widest mb-0.5" style={{ color:OPS }}>BRN Detail</div>
-                <div className="text-sm font-black text-[#0B1E3F]" style={{ fontFamily:"var(--font-mono)" }}>{selectedBrn.id}</div>
+                <div className="text-sm font-black text-[color:var(--erp-text-strong)]" style={{ fontFamily:"var(--font-mono)" }}>{selectedBrn.id}</div>
               </div>
               <div className="p-4 space-y-3">
                 {[["Group",selectedBrn.group],["Agent",selectedBrn.agent],["Service",selectedBrn.service],["Created",selectedBrn.created],["Status",selectedBrn.status],["Detail",selectedBrn.detail]].map(([l,v])=>(
                   <div key={l as string} className="min-w-0">
-                    <div className="text-[9px] font-black uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.50)" }}>{l}</div>
-                    <div className="text-xs font-semibold text-[#0B1E3F] mt-0.5 break-words">{v}</div>
+                    <div className="text-[9px] font-black uppercase tracking-widest" style={{ color:ERP.muted }}>{l}</div>
+                    <div className="text-xs font-semibold text-[color:var(--erp-text-strong)] mt-0.5 break-words">{v}</div>
                   </div>
                 ))}
               </div>
               <div className="px-4 pb-4 flex gap-2">
-                <button onClick={() => void updateStatus(selectedBrn)} disabled={statusBusy} className="flex-1 py-2 rounded-xl text-[10px] font-bold disabled:opacity-50" style={{ backgroundColor:`${OPS}18`, color:OPS }}>Update Status</button>
-                <button className="flex-1 py-2 rounded-xl text-[10px] font-bold" style={{ backgroundColor:"#F5F7FA", color:"rgba(11,30,63,0.66)" }}>Print BRN</button>
+                <button onClick={() => void updateStatus(selectedBrn)} disabled={statusBusy} className="flex-1 py-2 rounded-xl text-[10px] font-bold disabled:opacity-50" style={{ backgroundColor:`${erpAlpha(OPS, 9)}`, color:OPS }}>Update Status</button>
+                <button className="flex-1 py-2 rounded-xl text-[10px] font-bold" style={{ backgroundColor:ERP.surfaceSoft, color:ERP.muted }}>Print BRN</button>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-48 rounded-2xl" style={{ border:"1px dashed rgba(11,30,63,0.11)" }}>
-              <Hash size={22} style={{ color:"rgba(11,30,63,0.38)" }} />
-              <div className="text-xs mt-2" style={{ color:"rgba(11,30,63,0.50)" }}>Select a BRN to view</div>
+            <div className="flex flex-col items-center justify-center h-48 rounded-2xl" style={{ border:`1px dashed ${ERP.border}` }}>
+              <Hash size={22} style={{ color:ERP.mutedSoft }} />
+              <div className="text-xs mt-2" style={{ color:ERP.muted }}>Select a BRN to view</div>
             </div>
           )}
         </div>
@@ -2524,25 +2506,28 @@ export default function OpsControl() {
   // Board screens get the full-dark treatment — no extra padding wrapper
   const isBoardScreen = ["arrivals","departures","dispatch"].includes(screen);
 
+  // Module 5 — the whole Operations desk renders in the Design System theme.
   return (
-    <ERPShell
-      moduleId="ops"
-      moduleName="Operations Control"
-      moduleColor={OPS}
-      moduleIcon={Zap as IconFC}
-      navItems={OPS_NAV}
-      activeItem={screen}
-      onItemClick={(id) => setScreen(id as OpsView)}
-      breadcrumb={[SCREEN_LABELS[screen] ?? screen]}
-      notificationCount={5}
-      userName="Ops Control Room"
-      userRole="TUBA AL HIJAZ · Umrah Season 1446H"
-    >
-      <div className={`flex flex-col h-full overflow-hidden${isBoardScreen ? "" : ""}`} style={{ backgroundColor: isBoardScreen ? CR_BG : undefined }}>
-        <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }}>
-          {content[screen]}
+    <ErpThemeProvider theme="ds">
+      <ERPShell
+        moduleId="ops"
+        moduleName="Operations Control"
+        moduleColor={OPS}
+        moduleIcon={Zap as IconFC}
+        navItems={OPS_NAV}
+        activeItem={screen}
+        onItemClick={(id) => setScreen(id as OpsView)}
+        breadcrumb={[SCREEN_LABELS[screen] ?? screen]}
+        notificationCount={5}
+        userName="Ops Control Room"
+        userRole="TUBA AL HIJAZ · Umrah Season 1446H"
+      >
+        <div className={`flex flex-col h-full overflow-hidden${isBoardScreen ? "" : ""}`} style={{ backgroundColor: isBoardScreen ? CR_BG : undefined }}>
+          <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth:"thin", scrollbarColor:`${ERP.mutedSoft} transparent` }}>
+            {content[screen]}
+          </div>
         </div>
-      </div>
-    </ERPShell>
+      </ERPShell>
+    </ErpThemeProvider>
   );
 }
