@@ -148,7 +148,7 @@ function KPICard({ label, value, delta, icon: Icon, color, note }: KPIProps) {
 
 // Delegates to the shared ErpSectionHeader.
 function SectionHead({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
-  return <ErpSectionHeader title={title} subtitle={subtitle} action={action} className="mb-6" />;
+  return <ErpSectionHeader title={title} subtitle={subtitle} action={action} className="mb-4" />;
 }
 
 /** ESP-01 — FilterBar → ErpSearchBar + ErpButton adapter (uncontrolled search chrome). */
@@ -218,8 +218,8 @@ function DashboardScreen() {
           <KPICard label="Portal Users" value={userCount == null ? "\u2014" : String(userCount)} icon={Users2 as IconFC} color={ERP.success} note="staff accounts" />
         </div>
       )}
-      <div className="rounded-xl p-6" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
-        <div className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: ERP.muted }}>Platform Analytics — Season 1446H</div>
+      <div className="rounded-xl px-[18px] py-4" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+        <div className="text-xs font-bold mb-3.5" style={{ color: ERP.fgDim }}>Platform Analytics — Season 1446H</div>
         <SAAnalytics />
       </div>
     </div>
@@ -621,7 +621,7 @@ function CompanyScreen() {
   const suppliers = rows.filter((r) => r.typeLabel === "Supplier").length;
 
   return (
-    <div className="p-7">
+    <div className="px-6 pt-5 pb-14">
       <SectionHead
         title="Company Management"
         subtitle={
@@ -631,8 +631,8 @@ function CompanyScreen() {
         }
         action={
           <button
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
-            style={{ backgroundColor: GOLD, color: NAVY }}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[11px] font-semibold"
+            style={{ backgroundColor: erpAlpha(GOLD, 9), border: `1px solid ${erpAlpha(GOLD, 28)}`, color: GOLD }}
           >
             <Plus size={12} /> Add Company
           </button>
@@ -922,15 +922,15 @@ function UserRoleScreen() {
     : []; // live-only (Super Admin is auth-guarded)
 
   return (
-    <div className="p-7">
+    <div className="px-6 pt-5 pb-14">
       <SectionHead
         title="Users & Role Management"
         subtitle="Manage portal users and configure role-based access controls"
         action={
           <button
             onClick={() => isLive && setShowAdd(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
-            style={{ backgroundColor: GOLD, color: NAVY, opacity: isLive ? 1 : 0.5 }}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[11px] font-semibold"
+            style={{ backgroundColor: erpAlpha(GOLD, 9), border: `1px solid ${erpAlpha(GOLD, 28)}`, color: GOLD, opacity: isLive ? 1 : 0.5 }}
             title={isLive ? "Add a portal user" : "Sign in as Super Admin to manage users"}
           >
             <Plus size={12} /> Add User
@@ -1066,7 +1066,7 @@ function UserRoleScreen() {
 
 function SAComingSoon({ label }: { label: string }) {
   return (
-    <div className="p-7">
+    <div className="px-6 pt-5 pb-14">
       <EmptyState
         tone="light"
         title={label}
@@ -1162,7 +1162,7 @@ function AuditLogsScreen() {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
-    <div className="p-7">
+    <div className="px-6 pt-5 pb-14">
       <SectionHead
         title="Audit Logs"
         subtitle={data ? `${data.total} events · page ${data.page} of ${totalPages}` : "Platform activity trail"}

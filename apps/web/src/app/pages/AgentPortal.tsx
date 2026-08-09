@@ -206,9 +206,9 @@ function DashboardScreen({ onGo }: { onGo: (id: string) => void }) {
   ].slice(0, 8);
 
   const activityCols: ErpColumn<ActivityRow>[] = [
-    { id: "when", header: lang === "bn" ? "তারিখ" : "Date", cell: (r) => <span style={{ fontFamily: ERP.font.data, fontSize: ERP.text.size[11], color: ERP.muted }}>{r.when}</span> },
-    { id: "kind", header: lang === "bn" ? "ধরন" : "Type", cell: (r) => <span style={{ fontSize: ERP.text.size[11], color: ERP.fgDim }}>{r.kind}</span> },
-    { id: "label", header: lang === "bn" ? "বিবরণ" : "Detail", cell: (r) => <span style={{ fontSize: ERP.text.size[12], fontWeight: ERP.text.weight.semibold, color: ERP.navy }} className="truncate max-w-[220px] block">{r.label}</span> },
+    { id: "when", header: lang === "bn" ? "তারিখ" : "Date", cell: (r) => <span style={{ fontFamily: ERP.font.data, fontSize: ERP.text.size[13], color: ERP.muted }}>{r.when}</span> },
+    { id: "kind", header: lang === "bn" ? "ধরন" : "Type", cell: (r) => <span style={{ fontSize: ERP.text.size[13], color: ERP.fgDim }}>{r.kind}</span> },
+    { id: "label", header: lang === "bn" ? "বিবরণ" : "Detail", cell: (r) => <span style={{ fontSize: ERP.text.size[13], fontWeight: ERP.text.weight.normal, color: ERP.fgDim }} className="truncate max-w-[220px] block">{r.label}</span> },
     { id: "st", header: lang === "bn" ? "স্ট্যাটাস" : "Status", cell: (r) => <ErpBadge color={DS_ACCENT[dsStatusColor(r.status)]} size="sm" dot>{r.status}</ErpBadge> },
   ];
 
@@ -245,7 +245,7 @@ function DashboardScreen({ onGo }: { onGo: (id: string) => void }) {
       </div>
 
       {/* KPI stats — real API data */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: ERP.space[3], marginBottom: ERP.space[5] }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: ERP.space[2.5], marginBottom: ERP.space[5] }}>
         {tiles.map((t) => (
           <button
             key={t.id}
@@ -257,7 +257,7 @@ function DashboardScreen({ onGo }: { onGo: (id: string) => void }) {
             <div style={{ fontFamily: ERP.font.data, fontSize: ERP.text.size[20], fontWeight: ERP.text.weight.bold, color: DS_ACCENT[t.color], lineHeight: ERP.text.leading.none }}>
               {loading ? "…" : t.value}
             </div>
-            <div style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[9], color: ERP.muted, marginTop: ERP.space[1.5], letterSpacing: "0.02em" }}>{lang === "bn" ? t.labelBn : t.labelEn}</div>
+            <div style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[9], color: ERP.muted, marginTop: ERP.space[1.5] }}>{lang === "bn" ? t.labelBn : t.labelEn}</div>
           </button>
         ))}
       </div>
@@ -619,7 +619,7 @@ function DocumentsVaultScreen() {
           rows={filtered}
           rowKey={(doc) => doc.id}
           columns={[
-            { id: "doc", header: "Document", cell: (doc) => { const catColor = DOC_TYPE_COLORS[doc.cat] ?? ERP.accent; return (<div className="flex items-center gap-2.5"><div className="flex items-center justify-center shrink-0" style={{ width: 28, height: 28, borderRadius: ERP.radius.sm, background: erpAlpha(catColor, 13) }}><FileText size={12} style={{ color: catColor }} /></div><div className="min-w-0"><div className="truncate" style={{ fontSize: ERP.text.size[12], fontWeight: ERP.text.weight.semibold, color: ERP.navy }} title={doc.type}>{doc.type}</div><div className="truncate max-w-[180px]" style={{ fontSize: ERP.text.size[10], color: ERP.muted }} title={doc.filename}>{doc.filename}</div></div></div>); } },
+            { id: "doc", header: "Document", cell: (doc) => { const catColor = DOC_TYPE_COLORS[doc.cat] ?? ERP.accent; return (<div className="flex items-center gap-2.5"><div className="flex items-center justify-center shrink-0" style={{ width: 28, height: 28, borderRadius: ERP.radius.sm, background: erpAlpha(catColor, 13) }}><FileText size={12} style={{ color: catColor }} /></div><div className="min-w-0"><div className="truncate" style={{ fontSize: ERP.text.size[13], fontWeight: ERP.text.weight.semibold, color: ERP.navy }} title={doc.type}>{doc.type}</div><div className="truncate max-w-[180px]" style={{ fontSize: ERP.text.size[10], color: ERP.muted }} title={doc.filename}>{doc.filename}</div></div></div>); } },
             { id: "cat", header: "Category", cell: (doc) => { const catColor = DOC_TYPE_COLORS[doc.cat] ?? ERP.accent; return <span className="uppercase inline-block px-1.5 py-0.5 rounded-full" style={{ fontSize: ERP.text.size[9], fontWeight: ERP.text.weight.bold, letterSpacing: "0.04em", background: erpAlpha(catColor, 13), color: catColor }}>{doc.cat}</span>; } },
             { id: "ref", header: "Reference", cell: (doc) => <span style={{ fontSize: ERP.text.size[10], color: ERP.fgDim, fontFamily: ERP.font.data }}>{doc.ref}</span> },
             { id: "uploaded", header: "Uploaded", cell: (doc) => <span style={{ fontSize: ERP.text.size[10], color: ERP.muted }}>{doc.uploaded}</span> },

@@ -1274,7 +1274,7 @@ function ForexScreen() {
 
       {/* Converter */}
       <div className="space-y-4">
-        <div className="rounded-xl p-5" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}` }}>
+        <div className="rounded-xl p-4" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}` }}>
           <div className="text-xs font-bold text-[color:var(--erp-text-strong)] mb-4">Currency Converter</div>
           <div className="space-y-3">
             <div>
