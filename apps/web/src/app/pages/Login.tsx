@@ -96,7 +96,7 @@ export default function Login() {
   };
 
   const fieldLabel: React.CSSProperties = { display: "block", fontFamily: ERP.font.heading, fontSize: ERP.text.size[9], fontWeight: ERP.text.weight.bold, color: ERP.muted, letterSpacing: "0.1em", marginBottom: ERP.space[1.5], textTransform: "uppercase" };
-  const fieldInput: React.CSSProperties = { width: "100%", padding: `${ERP.space[2.5]}px ${ERP.space[3.5]}px`, background: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, borderRadius: ERP.radius.sm, color: ERP.navy, fontFamily: ERP.font.body, fontSize: ERP.text.size[13], outline: "none", boxSizing: "border-box" };
+  const fieldInput: React.CSSProperties = { width: "100%", padding: `${ERP.space[2.5]}px ${ERP.space[3.5]}px`, background: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, borderRadius: 8, color: ERP.navy, fontFamily: ERP.font.body, fontSize: ERP.text.size[13], outline: "none", boxSizing: "border-box" };
 
   return (
     <ErpThemeProvider theme="ds">
@@ -106,7 +106,7 @@ export default function Login() {
         <div style={{ width: "100%", maxWidth: 400 }}>
           {/* Brand mark */}
           <Link to="/" style={{ display: "block", textAlign: "center", marginBottom: ERP.space[8], textDecoration: "none" }}>
-            <div style={{ width: 52, height: 52, borderRadius: ERP.radius.md, background: ERP.goldDim, border: `1px solid ${ERP.goldBrd}`, display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: ERP.space[3.5] }}>
+            <div style={{ width: 52, height: 52, borderRadius: 12, background: ERP.goldDim, border: `1px solid ${ERP.goldBrd}`, display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: ERP.space[3.5] }}>
               <LogoMark size={26} />
             </div>
             <div style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[18], fontWeight: ERP.text.weight.bold, color: ERP.navy, marginBottom: ERP.space[0.5] }}>Tuba Al-Hijaz</div>
@@ -114,21 +114,21 @@ export default function Login() {
           </Link>
 
           {/* Card */}
-          <div style={{ background: ERP.surface, border: `1px solid ${ERP.border}`, borderRadius: ERP.radius.md, padding: `${ERP.space[7]}px ${ERP.space[7]}px ${ERP.space[6]}px`, boxShadow: ERP.shadow.lg }}>
+          <div style={{ background: ERP.surface, border: `1px solid ${ERP.border}`, borderRadius: ERP.radius.lg, padding: `${ERP.space[7]}px ${ERP.space[7]}px ${ERP.space[6]}px`, boxShadow: ERP.shadow.lg }}>
             <div style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[16], fontWeight: ERP.text.weight.bold, color: ERP.navy, marginBottom: ERP.space[1] }}>Welcome back</div>
-            <div style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[12], color: ERP.muted, marginBottom: ERP.space[5] }}>Sign in to your TUBA AL HIJAZ portal</div>
+            <div style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[12], color: ERP.muted, marginBottom: ERP.space[6] }}>Sign in to your TUBA AL HIJAZ portal</div>
 
             {/* Portal selector (segmented) */}
-            <div style={{ display: "flex", gap: ERP.space[1], padding: ERP.space[1], background: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, borderRadius: ERP.radius.sm, marginBottom: ERP.space[4] }}>
+            <div style={{ display: "flex", gap: ERP.space[1], padding: ERP.space[1], background: ERP.surfaceSoft, border: `1px solid ${ERP.border}`, borderRadius: 8, marginBottom: ERP.space[4] }}>
               {TABS.map((t) => (
                 <button key={t.id} type="button" onClick={() => { setTab(t.id); setError(""); }}
-                  style={{ flex: 1, padding: "8px 0", borderRadius: ERP.radius.sm, border: "none", cursor: "pointer", fontFamily: ERP.font.heading, fontSize: ERP.text.size[11], fontWeight: ERP.text.weight.bold, letterSpacing: "0.02em",
+                  style={{ flex: 1, padding: "9px 0", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: ERP.font.heading, fontSize: ERP.text.size[11], fontWeight: ERP.text.weight.semibold, letterSpacing: "0.02em",
                     background: tab === t.id ? ERP.accent : "transparent", color: tab === t.id ? ERP.canvas : ERP.muted, transition: "background 0.15s, color 0.15s" }}>
                   {t.label}
                 </button>
               ))}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: ERP.space[2], marginBottom: ERP.space[5], padding: `${ERP.space[2]}px ${ERP.space[3]}px`, background: ERP.goldDim, border: `1px solid ${ERP.goldBrd}`, borderRadius: ERP.radius.sm }}>
+            <div style={{ display: "flex", alignItems: "center", gap: ERP.space[2], marginBottom: ERP.space[5], padding: ERP.space[3], background: ERP.goldDim, border: `1px solid ${ERP.goldBrd}`, borderRadius: 8 }}>
               <span style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[11], color: ERP.fgDim, lineHeight: ERP.text.leading.normal }}>
                 <span style={{ color: ERP.accent, fontWeight: ERP.text.weight.semibold }}>{activeTab.label}: </span>{activeTab.desc}
               </span>
@@ -143,10 +143,7 @@ export default function Login() {
               </div>
 
               <div style={{ marginBottom: ERP.space[4] }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                  <label htmlFor="password" style={fieldLabel}>Password</label>
-                  <button type="button" onClick={() => navigate("/reset-password")} style={{ background: "none", border: "none", color: ERP.info, fontFamily: ERP.font.body, fontSize: ERP.text.size[11], cursor: "pointer", padding: ERP.space[0] }}>Forgot password?</button>
-                </div>
+                <label htmlFor="password" style={fieldLabel}>Password</label>
                 <div style={{ position: "relative" }}>
                   <input id="password" type={showPwd ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••••"
                     style={{ ...fieldInput, paddingRight: ERP.space[10] }} onFocus={(e) => (e.currentTarget.style.borderColor = ERP.accent)} onBlur={(e) => (e.currentTarget.style.borderColor = ERP.border)} />
@@ -157,26 +154,29 @@ export default function Login() {
                 </div>
               </div>
 
-              <label style={{ display: "flex", alignItems: "center", gap: ERP.space[1.5], cursor: "pointer", marginBottom: ERP.space[5] }}>
-                <input type="checkbox" defaultChecked style={{ accentColor: ERP.accent }} />
-                <span style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[11], color: ERP.muted }}>Remember me on this device</span>
-              </label>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: ERP.space[5] }}>
+                <label style={{ display: "flex", alignItems: "center", gap: ERP.space[1.5], cursor: "pointer" }}>
+                  <input type="checkbox" defaultChecked style={{ accentColor: ERP.accent }} />
+                  <span style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[11], color: ERP.muted }}>Remember me on this device</span>
+                </label>
+                <button type="button" onClick={() => navigate("/reset-password")} style={{ background: "none", border: "none", color: ERP.info, fontFamily: ERP.font.body, fontSize: ERP.text.size[11], cursor: "pointer", padding: ERP.space[0] }}>Forgot password?</button>
+              </div>
 
               {error && (
-                <div role="alert" style={{ display: "flex", gap: ERP.space[2], padding: `${ERP.space[2.5]}px ${ERP.space[3]}px`, background: ERP.destructiveDim, border: `1px solid ${ERP.destructive}`, borderRadius: ERP.radius.sm, marginBottom: ERP.space[4] }}>
+                <div role="alert" style={{ display: "flex", gap: ERP.space[2], padding: `${ERP.space[2.5]}px ${ERP.space[3]}px`, background: ERP.destructiveDim, border: `1px solid ${ERP.destructive}`, borderRadius: 8, marginBottom: ERP.space[4] }}>
                   <span style={{ color: ERP.destructive, fontSize: ERP.text.size[12] }}>⚠</span>
                   <span style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[12], color: ERP.navy }}>{error}</span>
                 </div>
               )}
 
               <button type="submit" disabled={loading}
-                style={{ width: "100%", padding: ERP.space[3], background: ERP.accent, border: "none", borderRadius: ERP.radius.sm, color: ERP.canvas, fontFamily: ERP.font.heading, fontSize: ERP.text.size[13], fontWeight: ERP.text.weight.bold, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: ERP.space[2] }}>
+                style={{ width: "100%", padding: ERP.space[3], background: ERP.accent, border: "none", borderRadius: 8, color: ERP.canvas, fontFamily: ERP.font.heading, fontSize: ERP.text.size[13], fontWeight: ERP.text.weight.bold, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: ERP.space[2] }}>
                 {loading ? <><Loader2 size={16} className="animate-spin" />Signing in…</> : <>Sign In as {activeTab.label}<ArrowRight size={14} /></>}
               </button>
             </form>
 
             {/* Certified platform */}
-            <div style={{ marginTop: ERP.space[5], paddingTop: ERP.space[4], borderTop: `1px solid ${ERP.border}`, display: "flex", alignItems: "center", gap: ERP.space[2] }}>
+            <div style={{ marginTop: ERP.space[4], padding: ERP.space[3], background: ERP.surfaceSoft, borderRadius: 8, display: "flex", alignItems: "center", gap: ERP.space[2] }}>
               <span style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[9], fontWeight: ERP.text.weight.bold, color: ERP.muted, letterSpacing: "0.12em" }}>CERTIFIED</span>
               {["NUSUK", "MOFA", "MHU"].map((b) => (
                 <span key={b} style={{ padding: `${ERP.space[0.5]}px ${ERP.space[2]}px`, borderRadius: ERP.radius.xs, border: `1px solid ${ERP.goldBrd}`, color: ERP.accent, fontFamily: ERP.font.heading, fontSize: ERP.text.size[9], fontWeight: ERP.text.weight.bold, letterSpacing: "0.08em", opacity: 0.8 }}>{b}</span>
