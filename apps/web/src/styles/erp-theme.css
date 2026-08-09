@@ -14,7 +14,6 @@
  * When every module is approved, the Legacy block is deleted and DS becomes root.
  */
 
-:root,
 .erp-theme-legacy {
   --erp-text-strong: #0B1E3F;
   --erp-fg-dim: rgba(11, 30, 63, 0.70);
@@ -71,6 +70,7 @@
   --erp-font-data: var(--font-mono, ui-monospace, monospace);
 }
 
+:root,
 .erp-theme-ds {
   --erp-text-strong: #E2E8F5;
   --erp-fg-dim: #A8B8D8;

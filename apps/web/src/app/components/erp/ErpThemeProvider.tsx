@@ -38,7 +38,7 @@ export interface ErpThemeProviderProps {
  * wrapper introduces no layout box — CSS custom properties still cascade to all
  * descendants, so the whole subtree's Erp* components pick up the theme.
  */
-export function ErpThemeProvider({ theme = "legacy", children, style, className }: ErpThemeProviderProps) {
+export function ErpThemeProvider({ theme = "ds", children, style, className }: ErpThemeProviderProps) {
   const scope = theme === "ds" ? "erp-theme-ds" : "erp-theme-legacy";
   return (
     <ErpThemeContext.Provider value={theme}>
