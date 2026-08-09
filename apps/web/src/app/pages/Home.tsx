@@ -9,27 +9,28 @@ import { useLang } from "../lib/LangContext";
 import { fontFor, lineHeightFor } from "../lib/i18n";
 import HeroBackdrop from "../components/HeroBackdrop";
 
-const NAVY = "#0B1E3F";
-const GOLD = "#C9A24B";
-const WARM = "#F4F1EC";
+const NAVY = "#0F1326";
+const INK  = "#E2E8F5";
+const GOLD = "#C8943A";
+const WARM = "#07091A";
 
 const MODULES = [
-  { id: "visa",      icon: FileCheck,       color: "#0D9488", bg: "#F0FDFA",
+  { id: "visa",      icon: FileCheck,       color: "#2FB8A8", bg: "rgba(47,184,168,0.10)",
     en: { name: "Visa Processing",     sub: "Desk-operated pipeline", desc: "End-to-end mutamer visa desk — OCR intake, staff-updated pipeline status, Umrah Co coordination, and agent notifications. No live government visa API." },
     bn: { name: "ভিসা প্রক্রিয়াকরণ", sub: "ডেস্ক-পরিচালিত পাইপলাইন", desc: "শুরু থেকে শেষ পর্যন্ত মুতামির ভিসা ডেস্ক — OCR ইনটেক, স্টাফ-আপডেটেড পাইপলাইন স্ট্যাটাস, উমরাহ কোম্পানি সমন্বয় এবং এজেন্ট নোটিফিকেশন। কোনো লাইভ সরকারি ভিসা API নেই।" } },
-  { id: "hotel",     icon: Building,        color: "#2563EB", bg: "#EFF6FF",
+  { id: "hotel",     icon: Building,        color: "#3B7FE8", bg: "rgba(59,127,232,0.10)",
     en: { name: "Hotel Accommodation", sub: "Makkah · Madinah",      desc: "Seamless hotel booking coordination for pilgrims across Makkah, Madinah and Jeddah with occupancy management." },
     bn: { name: "হোটেল আবাসন",         sub: "মক্কা · মদিনা",        desc: "মক্কা, মদিনা ও জেদ্দায় যাত্রীদের জন্য নিরবচ্ছিন্ন হোটেল বুকিং সমন্বয় এবং আসন ব্যবস্থাপনা।" } },
-  { id: "transport", icon: Bus,             color: "#EA580C", bg: "#FFF7ED",
+  { id: "transport", icon: Bus,             color: "#E8991A", bg: "rgba(232,153,26,0.10)",
     en: { name: "Ground Transport",    sub: "Full fleet dispatch",    desc: "Full fleet dispatch and routing management for pilgrim transport between Masha'er, airports and accommodations." },
     bn: { name: "স্থলপথ পরিবহন",       sub: "সম্পূর্ণ ফ্লিট প্রেরণ", desc: "মাশায়ের, বিমানবন্দর ও আবাসনের মধ্যে যাত্রী পরিবহনের জন্য সম্পূর্ণ ফ্লিট প্রেরণ ও রুটিং ব্যবস্থাপনা।" } },
-  { id: "catering",  icon: UtensilsCrossed, color: "#9333EA", bg: "#FAF5FF",
+  { id: "catering",  icon: UtensilsCrossed, color: "#9B7BE8", bg: "rgba(155,123,232,0.10)",
     en: { name: "Catering & Meals",    sub: "Halal certified",        desc: "Halal-certified catering logistics with supplier management, dietary tracking and delivery coordination." },
     bn: { name: "খাদ্য ও পানীয়",       sub: "হালাল সার্টিফাইড",     desc: "সরবরাহকারী ব্যবস্থাপনা, খাদ্য ট্র্যাকিং এবং ডেলিভারি সমন্বয় সহ হালাল-প্রত্যয়িত ক্যাটারিং লজিস্টিক্স।" } },
-  { id: "finance",   icon: Wallet,          color: "#16A34A", bg: "#F0FDF4",
+  { id: "finance",   icon: Wallet,          color: "#22B573", bg: "rgba(34,181,115,0.10)",
     en: { name: "Finance & Billing",   sub: "Multi-currency",         desc: "Integrated financial management covering group invoicing, supplier payments and multi-currency reconciliation." },
     bn: { name: "অর্থ ও চালান",          sub: "বহু-মুদ্রা সমর্থন",    desc: "গ্রুপ ইনভয়েসিং, সরবরাহকারী পেমেন্ট এবং বহু-মুদ্রা রিকনসিলিয়েশন সমন্বিত আর্থিক ব্যবস্থাপনা।" } },
-  { id: "fleet",     icon: Truck,           color: "#475569", bg: "#F8FAFC",
+  { id: "fleet",     icon: Truck,           color: "#A8B8D8", bg: "#141830",
     en: { name: "Fleet Management",    sub: "Real-time tracking",     desc: "Real-time vehicle tracking, maintenance scheduling and driver management for your entire transport fleet." },
     bn: { name: "ফ্লিট ব্যবস্থাপনা",   sub: "রিয়েল-টাইম ট্র্যাকিং", desc: "আপনার সম্পূর্ণ পরিবহন বহরের জন্য রিয়েল-টাইম যান ট্র্যাকিং, রক্ষণাবেক্ষণ সময়সূচি এবং চালক ব্যবস্থাপনা।" } },
 ];
@@ -141,7 +142,7 @@ export default function Home() {
                 </span>
                 <span
                   className={`text-[10px] sm:text-[11px] font-bold uppercase ${isBn ? "tracking-[0.08em]" : "tracking-[0.18em]"}`}
-                  style={{ color: "#A8842C", fontFamily: ff, lineHeight: 1.5 }}
+                  style={{ color: "#D9A84A", fontFamily: ff, lineHeight: 1.5 }}
                 >
                   {T("২০০৬ সাল থেকে ২৪ লাখ+ তীর্থযাত্রীর আস্থা", "Trusted by 2.4M+ Pilgrims Since 2006")}
                 </span>
@@ -152,7 +153,7 @@ export default function Home() {
                 px size, so it gets its own (smaller) ramp rather than a shared one. */}
             <motion.h1
               variants={rise}
-              className={`font-bold text-[#0B1E3F] mb-6 ${
+              className={`font-bold text-[#E2E8F5] mb-6 ${
                 isBn
                   ? "text-[1.8rem] sm:text-[2.6rem] lg:text-[3.4rem] xl:text-[3.75rem]"
                   : "text-[2.25rem] sm:text-[3.25rem] lg:text-[4.25rem] xl:text-[4.75rem]"
@@ -183,7 +184,7 @@ export default function Home() {
             <motion.p
               variants={rise}
               className={`mb-9 max-w-[38rem] ${isBn ? "text-[15px] sm:text-base" : "text-base sm:text-lg"}`}
-              style={{ color: "rgba(11,30,63,0.76)", fontFamily: ff, lineHeight: lh }}
+              style={{ color: "rgba(226,232,245,0.76)", fontFamily: ff, lineHeight: lh }}
             >
               {T(
                 "উমরাহ ও হজ অপারেশনের জন্য সৌদি আরবে আমাদের সম্পূর্ণ গ্রাউন্ড হ্যান্ডলিং সেবা — ভিসা ক্লিয়ারেন্স, হোটেল লজিস্টিক্স, পরিবহন প্রেরণ, ক্যাটারিং ও আর্থিক ব্যবস্থাপনা, সবই এক দায়বদ্ধ অপারেশনের অধীনে।",
@@ -197,15 +198,15 @@ export default function Home() {
                 to="/auth-onboarding"
                 className="thj-cta group relative overflow-hidden inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-base transition-transform duration-200 hover:-translate-y-0.5"
                 style={{
-                  background: `linear-gradient(135deg, #DDBB6A 0%, ${GOLD} 55%, #B08C38 100%)`,
-                  color: NAVY,
+                  background: `linear-gradient(135deg, #C8943A 0%, ${GOLD} 55%, #D9A84A 100%)`,
+                  color: INK,
                   fontFamily: ff,
                   boxShadow: "0 10px 30px -10px rgba(201,162,75,0.55)",
                 }}
               >
                 <span
                   className="thj-sheen pointer-events-none absolute left-0 top-0 bottom-0 w-1/3"
-                  style={{ background: "linear-gradient(90deg, transparent, #E4E9F0, transparent)" }}
+                  style={{ background: "linear-gradient(90deg, transparent, #1C2444, transparent)" }}
                 />
                 <span className="relative">{T("এজেন্ট হন", "Become an Agent")}</span>
                 <ArrowRight size={16} className="relative transition-transform duration-200 group-hover:translate-x-1" />
@@ -213,8 +214,8 @@ export default function Home() {
 
               <Link
                 to="/login"
-                className="thj-cta inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-base border backdrop-blur-sm transition-colors duration-200 hover:bg-white/[0.07]"
-                style={{ borderColor: "rgba(11,30,63,0.22)", backgroundColor: "#FBFCFD", color: "#0B1E3F", fontFamily: ff }}
+                className="thj-cta inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-base border backdrop-blur-sm transition-colors duration-200 hover:bg-[#0F1326]/[0.07]"
+                style={{ borderColor: "rgba(226,232,245,0.22)", backgroundColor: "#141830", color: "#E2E8F5", fontFamily: ff }}
               >
                 {T("সরবরাহকারী লগইন", "Supplier Login")}
                 <ChevronRight size={16} />
@@ -232,12 +233,12 @@ export default function Home() {
                   <div
                     key={item.en.k}
                     className={i > 0 ? "sm:pl-5 sm:border-l" : ""}
-                    style={i > 0 ? { borderColor: "rgba(11,30,63,0.15)" } : undefined}
+                    style={i > 0 ? { borderColor: "rgba(226,232,245,0.15)" } : undefined}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <item.icon size={13} style={{ color: GOLD }} className="shrink-0" />
                       <span
-                        className="text-[13px] font-bold text-[#0B1E3F]"
+                        className="text-[13px] font-bold text-[#E2E8F5]"
                         style={{ fontFamily: ff, lineHeight: lhH }}
                       >
                         {p.k}
@@ -245,7 +246,7 @@ export default function Home() {
                     </div>
                     <div
                       className="text-[11px] sm:text-xs"
-                      style={{ color: "rgba(11,30,63,0.58)", fontFamily: ff, lineHeight: lh }}
+                      style={{ color: "rgba(226,232,245,0.58)", fontFamily: ff, lineHeight: lh }}
                     >
                       {p.v}
                     </div>
@@ -260,11 +261,11 @@ export default function Home() {
         <div className="hidden lg:flex absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex-col items-center gap-3">
           <span
             className="text-[9px] font-bold uppercase tracking-[0.28em]"
-            style={{ color: "rgba(11,30,63,0.50)", fontFamily: ff }}
+            style={{ color: "rgba(226,232,245,0.50)", fontFamily: ff }}
           >
             {T("নিচে দেখুন", "Scroll")}
           </span>
-          <span className="relative block w-px h-12 overflow-hidden" style={{ backgroundColor: "#EEF1F6" }}>
+          <span className="relative block w-px h-12 overflow-hidden" style={{ backgroundColor: "#1C2444" }}>
             <span
               className="thj-anim thj-cue absolute inset-x-0 top-0 h-4"
               style={{ background: `linear-gradient(to bottom, transparent, ${GOLD})` }}
@@ -274,10 +275,10 @@ export default function Home() {
       </section>
 
       {/* Trust Strip */}
-      <section style={{ backgroundColor: "#F8F5F0", borderTop: `1px solid rgba(11,30,63,0.06)`, borderBottom: `1px solid rgba(11,30,63,0.06)` }}>
+      <section style={{ backgroundColor: "#0F1326", borderTop: `1px solid rgba(226,232,245,0.06)`, borderBottom: `1px solid rgba(226,232,245,0.06)` }}>
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-8">
           <div className="text-center mb-6">
-            <div className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "#9CA3AF", fontFamily: ff }}>
+            <div className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "#5A6A8A", fontFamily: ff }}>
               {isBn ? "সৌদি সরকারি প্ল্যাটফর্মের সাথে সংযুক্ত" : "Integrated with Saudi Government Platforms"}
             </div>
           </div>
@@ -285,10 +286,10 @@ export default function Home() {
             {TRUST_LOGOS.map((logo) => (
               <div key={logo.name} className="flex flex-col items-center gap-1.5 group">
                 <div className="w-20 h-14 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all" style={{ borderColor: `${NAVY}12`, backgroundColor: "white" }}>
-                  <div className="text-sm font-black tracking-wider" style={{ color: NAVY }}>{logo.name}</div>
+                  <div className="text-sm font-black tracking-wider" style={{ color: INK }}>{logo.name}</div>
                   <div className="text-[9px]" style={{ color: GOLD, fontFamily: "var(--font-arabic)" }} lang="ar">{logo.sub}</div>
                 </div>
-                <div className="text-[10px] text-center max-w-20 leading-tight" style={{ color: "#9CA3AF", fontFamily: ff }}>
+                <div className="text-[10px] text-center max-w-20 leading-tight" style={{ color: "#5A6A8A", fontFamily: ff }}>
                   {isBn ? logo.bn : logo.en}
                 </div>
               </div>
@@ -304,10 +305,10 @@ export default function Home() {
             <div className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: GOLD, fontFamily: ff }}>
               {isBn ? "সেবা বিভাগ" : "Service Lines"}
             </div>
-            <h2 className="text-4xl font-bold mb-4" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>
+            <h2 className="text-4xl font-bold mb-4" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>
               {isBn ? "সম্পূর্ণ তীর্থযাত্রা লজিস্টিক্স" : "Complete Pilgrimage Logistics"}
             </h2>
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>
               {isBn
                 ? "ভিসা থেকে প্রস্থান পর্যন্ত উমরাহ গ্রাউন্ড অপারেশনের প্রতিটি দিক কভার করে ছয়টি সমন্বিত সেবা মডিউল।"
                 : "Six integrated service modules covering every aspect of Umrah ground operations — from visa to departure."
@@ -322,17 +323,17 @@ export default function Home() {
                 <Link
                   key={mod.id}
                   to={`/services#${mod.id}`}
-                  className="bg-white rounded-xl border p-6 md:p-7 transition-all duration-300 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 hover:shadow-md"
+                  className="bg-[#0F1326] rounded-xl border p-6 md:p-7 transition-all duration-300 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 hover:shadow-md"
                   style={{ borderColor: `${NAVY}10`, outlineColor: GOLD }}
                 >
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: mod.bg }} aria-hidden>
                     <mod.icon size={22} style={{ color: mod.color }} />
                   </div>
-                  <h3 className="text-lg font-bold mb-1.5" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>{m.name}</h3>
+                  <h3 className="text-lg font-bold mb-1.5" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>{m.name}</h3>
                   <div className="text-xs font-bold mb-3 uppercase tracking-wide" style={{ color: mod.color, fontFamily: ff }}>
                     {m.sub}
                   </div>
-                  <p className="text-sm leading-relaxed" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>{m.desc}</p>
+                  <p className="text-sm leading-relaxed" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>{m.desc}</p>
                   <div className="flex items-center gap-1.5 mt-5 text-xs font-semibold transition-all" style={{ color: mod.color, fontFamily: ff }}>
                     {isBn ? "আরও জানুন" : "Learn more"} <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" aria-hidden />
                   </div>
@@ -342,7 +343,7 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-10">
-            <Link to="/services" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-sm border-2 transition-all" style={{ borderColor: NAVY, color: NAVY, fontFamily: ff }}>
+            <Link to="/services" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-sm border-2 transition-all" style={{ borderColor: NAVY, color: INK, fontFamily: ff }}>
               {isBn ? "সব সেবার বিস্তারিত দেখুন" : "View All Service Details"}
               <ArrowRight size={14} />
             </Link>
@@ -361,7 +362,7 @@ export default function Home() {
                 <div key={stat.value} className="text-center">
                   <div className="text-5xl font-bold mb-2" style={{ color: GOLD }}>{stat.value}</div>
                   <div className="text-sm font-semibold text-white mb-1" style={{ fontFamily: ff }}>{s.label}</div>
-                  <div className="text-xs" style={{ color: "rgba(255,255,255,0.62)", fontFamily: ff, lineHeight: lh }}>{s.sub}</div>
+                  <div className="text-xs" style={{ color: "rgba(15,19,38,0.62)", fontFamily: ff, lineHeight: lh }}>{s.sub}</div>
                 </div>
               );
             })}
@@ -370,20 +371,20 @@ export default function Home() {
       </section>
 
       {/* Why TUBA */}
-      <section className="py-24" style={{ backgroundColor: "#F8F5F0" }}>
+      <section className="py-24" style={{ backgroundColor: "#0F1326" }}>
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.2em] mb-5" style={{ color: GOLD, fontFamily: ff }}>
                 {isBn ? "আমাদের কেন বেছে নেবেন" : "Why Choose Us"}
               </div>
-              <h2 className="text-4xl font-bold mb-6" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>
+              <h2 className="text-4xl font-bold mb-6" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>
                 {isBn
                   ? "পবিত্র মৌসুম অপারেশনের চাহিদার জন্য নির্মিত"
                   : "Built for the Demands of Sacred Season Operations"
                 }
               </h2>
-              <p className="text-base mb-8" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>
+              <p className="text-base mb-8" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>
                 {isBn
                   ? "উমরাহ ও হজ গ্রুপ পরিচালনার জন্য এমন নির্ভুলতা প্রয়োজন যা স্ট্যান্ডার্ড লজিস্টিক্স প্ল্যাটফর্ম দিতে পারে না। তুবা আল হিজাজ সৌদি গ্রাউন্ড হ্যান্ডলিংয়ের জন্য বিশেষভাবে নির্মিত।"
                   : "Managing Umrah and Hajj groups demands precision that standard logistics platforms cannot deliver. TUBA AL HIJAZ is purpose-built for Saudi ground handling — bilingual, desk-operated, and season-ready."
@@ -394,14 +395,14 @@ export default function Home() {
                   <div
                     key={item.title}
                     className="flex gap-4 rounded-xl p-3 md:p-4"
-                    style={{ backgroundColor: "#FFFFFF", border: `1px solid ${NAVY}0A` }}
+                    style={{ backgroundColor: "#0F1326", border: `1px solid ${NAVY}0A` }}
                   >
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${GOLD}18` }} aria-hidden>
                       <CheckCircle size={14} style={{ color: GOLD }} />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-bold mb-1" style={{ color: NAVY, fontFamily: ff }}>{item.title}</div>
-                      <div className="text-sm" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>{item.desc}</div>
+                      <div className="text-sm font-bold mb-1" style={{ color: INK, fontFamily: ff }}>{item.title}</div>
+                      <div className="text-sm" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>{item.desc}</div>
                     </div>
                   </div>
                 ))}
@@ -410,18 +411,18 @@ export default function Home() {
             <div className="relative">
               <div className="rounded-xl overflow-hidden aspect-[4/3] shadow-2xl">
                 <img src="https://images.unsplash.com/photo-1768961869826-cb62a2dd93b1?auto=format&fit=crop&w=900&q=80" alt="Makkah skyline" className="w-full h-full object-cover" />
-                <div className="absolute inset-0" style={{ background: `linear-gradient(to top, rgba(11,30,63,0.6) 0%, transparent 50%)` }} />
+                <div className="absolute inset-0" style={{ background: `linear-gradient(to top, rgba(226,232,245,0.6) 0%, transparent 50%)` }} />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-xl p-5 border" style={{ borderColor: `${NAVY}08` }}>
+              <div className="absolute -bottom-6 -left-6 bg-[#0F1326] rounded-xl shadow-xl p-5 border" style={{ borderColor: `${NAVY}08` }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${GOLD}15` }}>
                     <TrendingUp size={18} style={{ color: GOLD }} />
                   </div>
                   <div>
-                    <div className="text-xs text-gray-400 mb-0.5" style={{ fontFamily: ff }}>
+                    <div className="text-xs text-[#5A6A8A] mb-0.5" style={{ fontFamily: ff }}>
                       {isBn ? "মৌসুম ১৪৪৬হি পারফরম্যান্স" : "Season 1446H Performance"}
                     </div>
-                    <div className="text-sm font-bold" style={{ color: NAVY, fontFamily: ff }}>
+                    <div className="text-sm font-bold" style={{ color: INK, fontFamily: ff }}>
                       {isBn ? "+২৩% গ্রুপ প্রক্রিয়াকৃত" : "+23% groups processed"}
                     </div>
                   </div>
@@ -443,10 +444,10 @@ export default function Home() {
           </svg>
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-10 text-center">
-          <h2 className="text-4xl font-bold mb-4" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>
+          <h2 className="text-4xl font-bold mb-4" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>
             {isBn ? "তুবা আল হিজাজের সাথে অংশীদারিত্বের জন্য প্রস্তুত?" : "Ready to Partner with TUBA AL HIJAZ?"}
           </h2>
-          <p className="text-lg mb-10 opacity-70" style={{ color: NAVY, fontFamily: ff, lineHeight: lh }}>
+          <p className="text-lg mb-10 opacity-70" style={{ color: INK, fontFamily: ff, lineHeight: lh }}>
             {isBn
               ? "আমাদের একীভূত প্ল্যাটফর্মের মাধ্যমে তাদের উমরাহ অপারেশন পরিচালনাকারী শত শত ট্রাভেল এজেন্সিতে যোগ দিন।"
               : "Join hundreds of travel agencies managing their Umrah operations through our unified platform."
@@ -457,7 +458,7 @@ export default function Home() {
               {isBn ? "এজেন্ট হন" : "Become an Agent"}
               <ArrowRight size={16} />
             </Link>
-            <Link to="/login" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-base border-2 transition-all" style={{ borderColor: `${NAVY}50`, color: NAVY, fontFamily: ff }}>
+            <Link to="/login" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-base border-2 transition-all" style={{ borderColor: `${NAVY}50`, color: INK, fontFamily: ff }}>
               {isBn ? "সরবরাহকারী পোর্টাল" : "Supplier Portal"}
               <ChevronRight size={16} />
             </Link>

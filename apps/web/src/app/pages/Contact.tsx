@@ -4,9 +4,10 @@ import { MapPin, Phone, Mail, Clock, Send, ChevronDown, CheckCircle } from "luci
 import { useLang } from "../lib/LangContext";
 import { fontFor, lineHeightFor } from "../lib/i18n";
 
-const NAVY = "#0B1E3F";
-const GOLD = "#C9A24B";
-const WARM = "#F4F1EC";
+const NAVY = "#0F1326";
+const INK  = "#E2E8F5";
+const GOLD = "#C8943A";
+const WARM = "#07091A";
 
 function GeometricPattern({ opacity = 0.04 }: { opacity?: number }) {
   return (
@@ -104,7 +105,7 @@ export default function Contact() {
               : <>Partner with <span style={{ color: GOLD }}>TUBA AL HIJAZ</span></>
             }
           </h1>
-          <p className="text-lg max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.78)", fontFamily: ff, lineHeight: lh }}>
+          <p className="text-lg max-w-xl mx-auto" style={{ color: "rgba(15,19,38,0.78)", fontFamily: ff, lineHeight: lh }}>
             {isBn
               ? "আপনি অপারেশন অংশীদার খুঁজছেন একটি ট্রাভেল এজেন্সি, সেবা নিবন্ধন করছেন একজন সরবরাহকারী, বা জিজ্ঞাসা করছেন একটি যাত্রী গ্রুপ — আমরা সাহায্য করতে এখানে আছি।"
               : "Whether you're a travel agency seeking an operations partner, a supplier registering your services, or a pilgrim group with an enquiry — we're here to help."
@@ -118,12 +119,12 @@ export default function Contact() {
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
             {/* Form */}
-            <div className="bg-white rounded-xl border shadow-sm overflow-hidden" style={{ borderColor: `${NAVY}08` }}>
-              <div className="px-8 py-6 border-b" style={{ borderColor: `${NAVY}08`, backgroundColor: "#FAFAF8" }}>
+            <div className="bg-[#0F1326] rounded-xl border shadow-sm overflow-hidden" style={{ borderColor: `${NAVY}08` }}>
+              <div className="px-8 py-6 border-b" style={{ borderColor: `${NAVY}08`, backgroundColor: "#0F1326" }}>
                 <div className="text-xs font-bold uppercase tracking-[0.2em] mb-1" style={{ color: GOLD, fontFamily: ff }}>
                   {isBn ? "অনুসন্ধান ফর্ম" : "Enquiry Form"}
                 </div>
-                <div className="text-xl font-bold" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>
+                <div className="text-xl font-bold" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>
                   {isBn ? "আমাদের একটি বার্তা পাঠান" : "Send Us a Message"}
                 </div>
               </div>
@@ -133,10 +134,10 @@ export default function Contact() {
                   <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5" style={{ backgroundColor: `${GOLD}15` }}>
                     <CheckCircle size={28} style={{ color: GOLD }} />
                   </div>
-                  <h3 className="text-xl font-bold mb-3" style={{ color: NAVY, fontFamily: ff }}>
+                  <h3 className="text-xl font-bold mb-3" style={{ color: INK, fontFamily: ff }}>
                     {isBn ? "বার্তা পাওয়া গেছে" : "Message Received"}
                   </h3>
-                  <p className="text-sm" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>
+                  <p className="text-sm" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>
                     {isBn
                       ? "আপনার অনুসন্ধানের জন্য ধন্যবাদ। আমাদের দল একটি কার্যদিবসের মধ্যে সাড়া দেবে।"
                       : "Thank you for your enquiry. Our team will respond within one business day."
@@ -150,7 +151,7 @@ export default function Contact() {
                 <form onSubmit={handleSubmit} className="p-8 space-y-5">
                   {/* Enquiry Type */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: NAVY, fontFamily: ff }}>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: INK, fontFamily: ff }}>
                       {isBn ? "আমি একজন" : "I am a"}
                     </label>
                     <div className="flex gap-2 flex-wrap">
@@ -164,7 +165,7 @@ export default function Contact() {
                             fontFamily: ff,
                             ...(form.type === t.val
                               ? { backgroundColor: NAVY, borderColor: NAVY, color: "white" }
-                              : { borderColor: `${NAVY}15`, color: "#9CA3AF" })
+                              : { borderColor: `${NAVY}15`, color: "#5A6A8A" })
                           }}
                         >
                           {t.label}
@@ -175,59 +176,59 @@ export default function Contact() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold mb-1.5" style={{ color: NAVY, fontFamily: ff }}>
+                      <label className="block text-xs font-semibold mb-1.5" style={{ color: INK, fontFamily: ff }}>
                         {isBn ? "পূর্ণ নাম *" : "Full Name *"}
                       </label>
                       <input required type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
                         placeholder={isBn ? "আপনার পূর্ণ নাম" : "Your full name"}
                         className="w-full px-3 py-2.5 text-sm rounded-xl border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1"
-                        style={{ borderColor: `${NAVY}18`, backgroundColor: "#F8F6F2", color: NAVY, fontFamily: ff, outlineColor: GOLD }} />
+                        style={{ borderColor: `${NAVY}18`, backgroundColor: "#0F1326", color: INK, fontFamily: ff, outlineColor: GOLD }} />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold mb-1.5" style={{ color: NAVY, fontFamily: ff }}>
+                      <label className="block text-xs font-semibold mb-1.5" style={{ color: INK, fontFamily: ff }}>
                         {isBn ? "কোম্পানি / এজেন্সি" : "Company / Agency"}
                       </label>
                       <input type="text" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })}
                         placeholder={isBn ? "আপনার প্রতিষ্ঠান" : "Your organisation"}
                         className="w-full px-3 py-2.5 text-sm rounded-xl border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1"
-                        style={{ borderColor: `${NAVY}18`, backgroundColor: "#F8F6F2", color: NAVY, fontFamily: ff, outlineColor: GOLD }} />
+                        style={{ borderColor: `${NAVY}18`, backgroundColor: "#0F1326", color: INK, fontFamily: ff, outlineColor: GOLD }} />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5" style={{ color: NAVY, fontFamily: ff }}>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color: INK, fontFamily: ff }}>
                       {isBn ? "ইমেইল ঠিকানা *" : "Email Address *"}
                     </label>
                     <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
                       placeholder="you@yourcompany.com"
                       className="w-full px-3 py-2.5 text-sm rounded-xl border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1"
-                      style={{ borderColor: `${NAVY}18`, backgroundColor: "#F8F6F2", color: NAVY, fontFamily: ff, outlineColor: GOLD }} />
+                      style={{ borderColor: `${NAVY}18`, backgroundColor: "#0F1326", color: INK, fontFamily: ff, outlineColor: GOLD }} />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5" style={{ color: NAVY, fontFamily: ff }}>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color: INK, fontFamily: ff }}>
                       {isBn ? "বিষয় *" : "Subject *"}
                     </label>
                     <div className="relative">
                       <select required value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}
                         className="w-full px-3 py-2.5 text-sm rounded-xl border appearance-none transition pr-9 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1"
-                        style={{ borderColor: `${NAVY}18`, backgroundColor: "#F8F6F2", color: form.subject ? NAVY : "#9CA3AF", fontFamily: ff, outlineColor: GOLD }}>
+                        style={{ borderColor: `${NAVY}18`, backgroundColor: "#0F1326", color: form.subject ? NAVY : "#5A6A8A", fontFamily: ff, outlineColor: GOLD }}>
                         {subjects.map((s, i) => (
                           <option key={i} value={i === 0 ? "" : s}>{s}</option>
                         ))}
                       </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#9CA3AF" }} />
+                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#5A6A8A" }} />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold mb-1.5" style={{ color: NAVY, fontFamily: ff }}>
+                    <label className="block text-xs font-semibold mb-1.5" style={{ color: INK, fontFamily: ff }}>
                       {isBn ? "বার্তা *" : "Message *"}
                     </label>
                     <textarea required rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })}
                       placeholder={isBn ? "আপনার জিজ্ঞাসা বিস্তারিত বর্ণনা করুন…" : "Describe your enquiry in detail…"}
                       className="w-full px-3 py-2.5 text-sm rounded-xl border transition resize-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1"
-                      style={{ borderColor: `${NAVY}18`, backgroundColor: "#F8F6F2", color: NAVY, fontFamily: ff, outlineColor: GOLD }} />
+                      style={{ borderColor: `${NAVY}18`, backgroundColor: "#0F1326", color: INK, fontFamily: ff, outlineColor: GOLD }} />
                   </div>
 
                   <button
@@ -239,7 +240,7 @@ export default function Contact() {
                     {isBn ? "বার্তা পাঠান" : "Send Message"}
                   </button>
 
-                  <div className="text-center text-xs" style={{ color: "#9CA3AF", fontFamily: ff }}>
+                  <div className="text-center text-xs" style={{ color: "#5A6A8A", fontFamily: ff }}>
                     {isBn ? "আমরা সব জিজ্ঞাসার একটি কার্যদিবসের মধ্যে সাড়া দিই (AST)।" : "We respond to all enquiries within one business day (AST)."}
                   </div>
                 </form>
@@ -254,13 +255,13 @@ export default function Contact() {
                 </div>
                 <div className="space-y-4">
                   {contactDetails.map((item) => (
-                    <div key={item.label} className="flex items-start gap-4 p-4 rounded-xl bg-white border" style={{ borderColor: `${NAVY}08` }}>
+                    <div key={item.label} className="flex items-start gap-4 p-4 rounded-xl bg-[#0F1326] border" style={{ borderColor: `${NAVY}08` }}>
                       <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${GOLD}15` }}>
                         <item.icon size={16} style={{ color: GOLD }} />
                       </div>
                       <div>
-                        <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: NAVY, fontFamily: ff }}>{item.label}</div>
-                        <div className="text-sm whitespace-pre-line" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>{item.value}</div>
+                        <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: INK, fontFamily: ff }}>{item.label}</div>
+                        <div className="text-sm whitespace-pre-line" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>{item.value}</div>
                       </div>
                     </div>
                   ))}
@@ -269,14 +270,14 @@ export default function Contact() {
 
               {/* Map */}
               <div className="rounded-xl overflow-hidden border" style={{ borderColor: `${NAVY}08` }}>
-                <div className="h-64 relative flex items-center justify-center" style={{ backgroundColor: "#E8E4DD" }}>
+                <div className="h-64 relative flex items-center justify-center" style={{ backgroundColor: "#1C2444" }}>
                   <div className="absolute inset-0">
                     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                       {Array.from({ length: 8 }).map((_, i) => (
-                        <line key={`h${i}`} x1="0" y1={`${(i + 1) * 12.5}%`} x2="100%" y2={`${(i + 1) * 12.5}%`} stroke="rgba(11,30,63,0.08)" strokeWidth="1" />
+                        <line key={`h${i}`} x1="0" y1={`${(i + 1) * 12.5}%`} x2="100%" y2={`${(i + 1) * 12.5}%`} stroke="rgba(226,232,245,0.08)" strokeWidth="1" />
                       ))}
                       {Array.from({ length: 10 }).map((_, i) => (
-                        <line key={`v${i}`} x1={`${(i + 1) * 10}%`} y1="0" x2={`${(i + 1) * 10}%`} y2="100%" stroke="rgba(11,30,63,0.08)" strokeWidth="1" />
+                        <line key={`v${i}`} x1={`${(i + 1) * 10}%`} y1="0" x2={`${(i + 1) * 10}%`} y2="100%" stroke="rgba(226,232,245,0.08)" strokeWidth="1" />
                       ))}
                     </svg>
                   </div>
@@ -284,23 +285,23 @@ export default function Contact() {
                     <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: NAVY }}>
                       <MapPin size={18} style={{ color: GOLD }} />
                     </div>
-                    <div className="mt-2 px-3 py-1.5 rounded-lg shadow text-xs font-semibold bg-white" style={{ color: NAVY, fontFamily: ff }}>
+                    <div className="mt-2 px-3 py-1.5 rounded-lg shadow text-xs font-semibold bg-[#0F1326]" style={{ color: INK, fontFamily: ff }}>
                       TUBA AL HIJAZ HQ
                     </div>
-                    <div className="text-[10px] mt-1" style={{ color: "#9CA3AF", fontFamily: ff }}>
+                    <div className="text-[10px] mt-1" style={{ color: "#5A6A8A", fontFamily: ff }}>
                       {isBn ? "মক্কা আল-মুকাররামা" : "Makkah Al-Mukarramah"}
                     </div>
                   </div>
                 </div>
-                <div className="px-5 py-3 bg-white text-center">
-                  <div className="text-xs" style={{ color: "#9CA3AF", fontFamily: ff }}>
+                <div className="px-5 py-3 bg-[#0F1326] text-center">
+                  <div className="text-xs" style={{ color: "#5A6A8A", fontFamily: ff }}>
                     {isBn ? "চিত্রের জন্য মানচিত্র · সঠিক দিকনির্দেশনার জন্য যোগাযোগ করুন" : "Map for illustration · Contact us for precise directions"}
                   </div>
                 </div>
               </div>
 
               {/* Saudi offices list */}
-              <div className="bg-white rounded-xl border p-6" style={{ borderColor: `${NAVY}08` }}>
+              <div className="bg-[#0F1326] rounded-xl border p-6" style={{ borderColor: `${NAVY}08` }}>
                 <div className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: GOLD, fontFamily: ff }}>
                   {isBn ? "সৌদি অফিস" : "Saudi Offices"}
                 </div>
@@ -311,11 +312,11 @@ export default function Contact() {
                     { en: "Madinah", bn: "মদিনা",  roleEn: "Northern Hub", roleBn: "উত্তর হাব",       flag: "🌙" },
                     { en: "Riyadh",  bn: "রিয়াদ", roleEn: "Corporate",    roleBn: "কর্পোরেট",        flag: "🏢" },
                   ].map((o) => (
-                    <div key={o.en} className="flex items-center gap-2.5 p-3 rounded-xl" style={{ backgroundColor: "#F8F5F0" }}>
+                    <div key={o.en} className="flex items-center gap-2.5 p-3 rounded-xl" style={{ backgroundColor: "#0F1326" }}>
                       <span className="text-xl">{o.flag}</span>
                       <div>
-                        <div className="text-xs font-bold" style={{ color: NAVY, fontFamily: ff }}>{isBn ? o.bn : o.en}</div>
-                        <div className="text-[10px]" style={{ color: "#9CA3AF", fontFamily: ff }}>{isBn ? o.roleBn : o.roleEn}</div>
+                        <div className="text-xs font-bold" style={{ color: INK, fontFamily: ff }}>{isBn ? o.bn : o.en}</div>
+                        <div className="text-[10px]" style={{ color: "#5A6A8A", fontFamily: ff }}>{isBn ? o.roleBn : o.roleEn}</div>
                       </div>
                     </div>
                   ))}

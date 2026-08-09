@@ -31,10 +31,10 @@
 // element carries `.thj-anim`, which the reduced-motion media query at the
 // bottom of the stylesheet switches off wholesale.
 
-const GOLD = "#C9A24B";       // brand accent, unchanged
-const GOLD_DEEP = "#B08C38";  // same hue, dropped in value so hairlines and
+const GOLD = "#C8943A";       // brand accent, unchanged
+const GOLD_DEEP = "#D9A84A";  // same hue, dropped in value so hairlines and
                               // gradient-clipped text survive a light ground
-const NAVY = "#0B1E3F";       // brand ink — also the silhouette colour
+const NAVY = "#1C2444";       // brand ink — also the silhouette colour
 
 /* ── Skyline coordinate system ────────────────────────────────────────────── */
 // The band is authored at 1440×360 and always rendered at its full intrinsic
@@ -146,7 +146,7 @@ function ClockTower({ cx, base, h, w }: { cx: number; base: number; h: number; w
           dark: inside the flattened group it is a near-white disc, so after the
           group's alpha ramp it reads as a bright face punched into a pale navy
           tower. Gold marks run high-opacity because that same ramp thins them. */}
-      <circle cx={cx} cy={faceCy} r={faceR} fill="#F7FAFD" />
+      <circle cx={cx} cy={faceCy} r={faceR} fill="#E2E8F5" />
       <circle cx={cx} cy={faceCy} r={faceR} fill="none" stroke={GOLD_DEEP} strokeWidth={1.6} opacity={0.95} />
       <rect x={cx - w * 0.014} y={faceCy - faceR * 0.72} width={w * 0.028} height={faceR * 0.72} fill={GOLD_DEEP} opacity={0.9} />
       <rect x={cx - w * 0.014} y={faceCy - w * 0.014} width={faceR * 0.58} height={w * 0.028} fill={GOLD_DEEP} opacity={0.9} />
@@ -175,7 +175,7 @@ function Arcade() {
     <>
       <defs>
         <mask id="thjh-arcade">
-          <rect x={from} y={GROUND} width={to - from + step} height={PLINTH - GROUND} fill="#fff" />
+          <rect x={from} y={GROUND} width={to - from + step} height={PLINTH - GROUND} fill="#1C2444" />
           {bays}
         </mask>
       </defs>
@@ -255,8 +255,8 @@ function Rosette() {
     <svg viewBox="0 0 600 600" className="w-full h-full" aria-hidden="true">
       <defs>
         <radialGradient id="thjh-rose-fade" cx="50%" cy="50%" r="50%">
-          <stop offset="45%" stopColor="#fff" stopOpacity="1" />
-          <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+          <stop offset="45%" stopColor="#E2E8F5" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#E2E8F5" stopOpacity="0" />
         </radialGradient>
         <mask id="thjh-rose-mask">
           <rect width="600" height="600" fill="url(#thjh-rose-fade)" />
@@ -318,10 +318,10 @@ export default function HeroBackdrop() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 96% at 16% 2%, #FFFFFF 0%, rgba(255,255,255,0.45) 38%, rgba(255,255,255,0) 66%)," +
-            "radial-gradient(84% 70% at 86% 8%, rgba(203,220,240,0.55) 0%, rgba(203,220,240,0) 62%)," +
-            "radial-gradient(72% 46% at 50% 100%, rgba(247,238,219,0.85) 0%, rgba(247,238,219,0) 72%)," +
-            "linear-gradient(180deg, #F6F9FD 0%, #F1F5FB 42%, #EBF1F8 72%, #E7EEF6 100%)",
+            "radial-gradient(120% 96% at 16% 2%, rgba(226,232,245,0.10) 0%, rgba(226,232,245,0.045) 38%, rgba(226,232,245,0) 66%)," +
+            "radial-gradient(84% 70% at 86% 8%, rgba(59,127,232,0.12) 0%, rgba(59,127,232,0) 62%)," +
+            "radial-gradient(72% 46% at 50% 100%, rgba(200,148,58,0.20) 0%, rgba(200,148,58,0) 72%)," +
+            "linear-gradient(180deg, #07091A 0%, #0B1024 42%, #0F1326 72%, #141830 100%)",
         }}
       />
 
@@ -330,7 +330,7 @@ export default function HeroBackdrop() {
         className="thj-anim thj-drift absolute inset-x-[-10%] bottom-[-24%] h-[78%]"
         style={{
           background:
-            "radial-gradient(58% 100% at 50% 100%, rgba(201,162,75,0.22) 0%, rgba(201,162,75,0.08) 40%, rgba(201,162,75,0) 74%)",
+            "radial-gradient(58% 100% at 50% 100%, rgba(200,148,58,0.26) 0%, rgba(200,148,58,0.10) 40%, rgba(200,148,58,0) 74%)",
         }}
       />
       {/* light column behind the grand dome — on the light theme this brightens
@@ -339,7 +339,7 @@ export default function HeroBackdrop() {
         className="thj-anim thj-glow absolute bottom-0 left-1/2 -translate-x-1/2 w-[62%] h-[74%]"
         style={{
           background:
-            "radial-gradient(40% 100% at 50% 100%, rgba(255,250,238,0.9) 0%, rgba(243,229,196,0.3) 44%, rgba(201,162,75,0) 80%)",
+            "radial-gradient(40% 100% at 50% 100%, rgba(217,168,74,0.55) 0%, rgba(200,148,58,0.20) 44%, rgba(200,148,58,0) 80%)",
         }}
       />
 
@@ -352,8 +352,8 @@ export default function HeroBackdrop() {
         style={{
           background:
             "repeating-conic-gradient(from 188deg at 79% -8%," +
-            "rgba(255,248,232,0) 0deg, rgba(255,248,232,0.9) 2.1deg," +
-            "rgba(255,248,232,0) 5.2deg, rgba(255,248,232,0) 12deg)",
+            "rgba(226,232,245,0) 0deg, rgba(226,232,245,0.16) 2.1deg," +
+            "rgba(226,232,245,0) 5.2deg, rgba(226,232,245,0) 12deg)",
           WebkitMaskImage:
             "radial-gradient(74% 86% at 79% -8%, #000 0%, rgba(0,0,0,0.5) 44%, rgba(0,0,0,0) 78%)",
           maskImage:
@@ -375,7 +375,7 @@ export default function HeroBackdrop() {
           <radialGradient id="thjh-lattice-fade" cx="64%" cy="24%" r="74%">
             <stop offset="0%" stopColor="#fff" stopOpacity="0.9" />
             <stop offset="52%" stopColor="#fff" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+            <stop offset="100%" stopColor="#E2E8F5" stopOpacity="0" />
           </radialGradient>
           <mask id="thjh-lattice-mask">
             <rect width="100%" height="100%" fill="url(#thjh-lattice-fade)" />
@@ -388,7 +388,7 @@ export default function HeroBackdrop() {
       <div className="hidden lg:block absolute top-[6%] right-[-14%] w-[640px] h-[640px] xl:w-[760px] xl:h-[760px] opacity-50">
         <div
           className="absolute inset-[12%] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(255,248,231,0.95) 0%, rgba(201,162,75,0.10) 42%, rgba(201,162,75,0) 70%)" }}
+          style={{ background: "radial-gradient(circle, rgba(217,168,74,0.40) 0%, rgba(200,148,58,0.12) 42%, rgba(200,148,58,0) 70%)" }}
         />
         <Rosette />
       </div>
@@ -452,8 +452,8 @@ export default function HeroBackdrop() {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(100deg, rgba(249,251,254,0.94) 0%, rgba(249,251,254,0.88) 26%," +
-            "rgba(249,251,254,0.62) 46%, rgba(249,251,254,0.26) 66%, rgba(249,251,254,0) 86%)",
+            "linear-gradient(100deg, rgba(7,9,26,0.94) 0%, rgba(7,9,26,0.88) 26%," +
+            "rgba(7,9,26,0.62) 46%, rgba(7,9,26,0.26) 66%, rgba(7,9,26,0) 86%)",
           WebkitMaskImage:
             "linear-gradient(180deg, #000 0%, #000 56%, rgba(0,0,0,0.6) 78%, rgba(0,0,0,0) 100%)",
           maskImage:

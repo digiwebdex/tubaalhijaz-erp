@@ -10,8 +10,9 @@ import { ImageWithFallback } from "@/app/components/figma/ImageWithFallback";
 // filter whitened the background too and rendered the logo as a solid white box.
 import logoImg from "@/assets/logo-light.png";
 
-const NAVY = "#0B1E3F";
-const GOLD = "#C9A24B";
+const NAVY = "#0F1326";
+const INK  = "#E2E8F5";
+const GOLD = "#C8943A";
 
 const links = [
   { to: "/", label: "Home", bn: "হোম" },
@@ -40,8 +41,8 @@ export default function Nav() {
       <header
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         style={{
-          backgroundColor: solid ? "#FFFFFF" : "transparent",
-          boxShadow: solid ? "0 1px 0 rgba(11,30,63,0.38)" : "none",
+          backgroundColor: solid ? "#0F1326" : "transparent",
+          boxShadow: solid ? "0 1px 0 rgba(226,232,245,0.38)" : "none",
           backdropFilter: solid ? "none" : "blur(0)",
         }}
       >
@@ -61,7 +62,7 @@ export default function Nav() {
                 to={link.to}
                 className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{
-                  color: location.pathname === link.to ? GOLD : "rgba(11,30,63,0.86)",
+                  color: location.pathname === link.to ? GOLD : "rgba(226,232,245,0.86)",
                   backgroundColor: location.pathname === link.to ? "rgba(201,162,75,0.1)" : "transparent",
                   outlineColor: GOLD,
                 }}
@@ -77,13 +78,13 @@ export default function Nav() {
             <button
               onClick={toggleLang}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={{ color: "rgba(11,30,63,0.76)", backgroundColor: "#F5F7FA" }}
+              style={{ color: "rgba(226,232,245,0.76)", backgroundColor: "#141830" }}
             >
               <Globe size={13} />
               <span style={{ fontFamily: lang === "bn" ? "var(--font-bengali)" : "var(--font-sans)" }}>
                 {lang === "bn" ? "বাং" : "EN"}
               </span>
-              <span style={{ color: "rgba(11,30,63,0.50)", margin: "0 1px" }}>·</span>
+              <span style={{ color: "rgba(226,232,245,0.50)", margin: "0 1px" }}>·</span>
               <span style={{ fontFamily: lang === "bn" ? "var(--font-sans)" : "var(--font-bengali)" }}>
                 {lang === "bn" ? "EN" : "বাং"}
               </span>
@@ -91,7 +92,7 @@ export default function Nav() {
             <Link
               to="/auth-onboarding"
               className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-              style={{ color: NAVY, backgroundColor: "transparent", border: `1px solid ${GOLD}`, fontFamily: lang === "bn" ? "var(--font-bengali)" : "var(--font-sans)" }}
+              style={{ color: INK, backgroundColor: "transparent", border: `1px solid ${GOLD}`, fontFamily: lang === "bn" ? "var(--font-bengali)" : "var(--font-sans)" }}
             >
               <span style={{ fontFamily: lang === "bn" ? "var(--font-bengali)" : "var(--font-sans)" }}>
                 {lang === "bn" ? "এজেন্ট রেজিস্ট্রেশন" : "Agent Registration"}
@@ -100,7 +101,7 @@ export default function Nav() {
             <Link
               to="/login"
               className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-              style={{ color: NAVY, backgroundColor: GOLD, fontFamily: lang === "bn" ? "var(--font-bengali)" : "var(--font-sans)" }}
+              style={{ color: INK, backgroundColor: GOLD, fontFamily: lang === "bn" ? "var(--font-bengali)" : "var(--font-sans)" }}
             >
               <span style={{ fontFamily: lang === "bn" ? "var(--font-bengali)" : "var(--font-sans)" }}>
                 {lang === "bn" ? "এজেন্ট লগইন" : "Agent Login"}
@@ -110,7 +111,7 @@ export default function Nav() {
 
           <button
             className="md:hidden ml-auto p-2 rounded-lg"
-            style={{ color: "rgba(11,30,63,0.86)" }}
+            style={{ color: "rgba(226,232,245,0.86)" }}
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -118,24 +119,24 @@ export default function Nav() {
         </div>
 
         {mobileOpen && (
-          <div className="md:hidden border-t" style={{ borderColor: "rgba(11,30,63,0.11)", backgroundColor: "#FFFFFF" }}>
+          <div className="md:hidden border-t" style={{ borderColor: "rgba(226,232,245,0.11)", backgroundColor: "#0F1326" }}>
             <div className="px-6 py-4 space-y-1">
               {links.map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
                   className="block px-4 py-3 rounded-lg text-sm font-medium"
-                  style={{ color: location.pathname === link.to ? GOLD : "rgba(11,30,63,0.86)" }}
+                  style={{ color: location.pathname === link.to ? GOLD : "rgba(226,232,245,0.86)" }}
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-3 border-t" style={{ borderColor: "rgba(11,30,63,0.11)" }}>
+              <div className="pt-3 border-t" style={{ borderColor: "rgba(226,232,245,0.11)" }}>
                 <Link
                   to="/auth-onboarding"
                   className="block w-full text-center px-4 py-2.5 rounded-lg text-sm font-semibold mt-2"
-                  style={{ backgroundColor: "transparent", border: `1px solid ${GOLD}`, color: NAVY }}
+                  style={{ backgroundColor: "transparent", border: `1px solid ${GOLD}`, color: INK }}
                   onClick={() => setMobileOpen(false)}
                 >
                   Agent Registration
@@ -143,7 +144,7 @@ export default function Nav() {
                 <Link
                   to="/login"
                   className="block w-full text-center px-4 py-2.5 rounded-lg text-sm font-semibold mt-2"
-                  style={{ backgroundColor: GOLD, color: NAVY }}
+                  style={{ backgroundColor: GOLD, color: INK }}
                   onClick={() => setMobileOpen(false)}
                 >
                   Agent Login

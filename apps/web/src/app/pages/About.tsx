@@ -3,9 +3,10 @@ import { MapPin, ArrowRight, CheckCircle } from "lucide-react";
 import { useLang } from "../lib/LangContext";
 import { fontFor, lineHeightFor } from "../lib/i18n";
 
-const NAVY = "#0B1E3F";
-const GOLD = "#C9A24B";
-const WARM = "#F4F1EC";
+const NAVY = "#0F1326";
+const INK  = "#E2E8F5";
+const GOLD = "#C8943A";
+const WARM = "#07091A";
 
 function GeometricPattern({ opacity = 0.04 }: { opacity?: number }) {
   return (
@@ -68,7 +69,7 @@ export default function About() {
       <section className="relative pt-28 pb-20 overflow-hidden">
         <div className="absolute inset-0">
           <img src="https://images.unsplash.com/photo-1780657432436-58c4fefcde41?auto=format&fit=crop&w=2000&q=80" alt="Saudi architecture" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: `linear-gradient(to right, rgba(6,15,32,0.96) 0%, rgba(11,30,63,0.82) 60%, rgba(11,30,63,0.5) 100%)` }} />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(to right, rgba(6,15,32,0.96) 0%, rgba(226,232,245,0.82) 60%, rgba(226,232,245,0.5) 100%)` }} />
         </div>
         <GeometricPattern opacity={0.04} />
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10">
@@ -82,7 +83,7 @@ export default function About() {
                 : <>Nearly Two Decades of<br /><span style={{ color: GOLD }}>Sacred Service</span></>
               }
             </h1>
-            <p className="text-lg" style={{ color: "rgba(255,255,255,0.78)", fontFamily: ff, lineHeight: lh }}>
+            <p className="text-lg" style={{ color: "rgba(15,19,38,0.78)", fontFamily: ff, lineHeight: lh }}>
               {isBn
                 ? "২০০৬ সালে জেদ্দায় প্রতিষ্ঠিত, তুবা আল হিজাজ একটি স্থানীয় পরিবহন সমন্বয়কারী থেকে উমরাহ ও হজ অপারেশনের জন্য সৌদি আরবের সবচেয়ে ব্যাপক এন্টারপ্রাইজ গ্রাউন্ড হ্যান্ডলিং প্ল্যাটফর্মে পরিণত হয়েছে।"
                 : "Founded in Jeddah in 2006, TUBA AL HIJAZ has grown from a local transport coordinator into the Kingdom's most comprehensive enterprise ground handling platform for Umrah and Hajj operations."
@@ -122,10 +123,10 @@ export default function About() {
               <div className="text-xs font-bold uppercase tracking-[0.2em] mb-5" style={{ color: GOLD, fontFamily: ff }}>
                 {isBn ? "আমাদের লক্ষ্য" : "Our Mission"}
               </div>
-              <h2 className="text-3xl font-bold mb-5" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>
+              <h2 className="text-3xl font-bold mb-5" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>
                 {isBn ? "তীর্থযাত্রীর প্রতিটি অভিজ্ঞতাকে উন্নীত করা" : "Elevating Every Aspect of the Pilgrim's Journey"}
               </h2>
-              <p className="text-base mb-6" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>
+              <p className="text-base mb-6" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>
                 {isBn
                   ? "আমরা নিশ্চিত করতে বিদ্যমান যে সৌদি আরবে আগত প্রতিটি যাত্রী প্রথম ডকুমেন্ট জমা থেকে শেষ যাত্রা পর্যন্ত নিরবচ্ছিন্ন, মর্যাদাপূর্ণ লজিস্টিক্যাল সহায়তা পায়। আমাদের লক্ষ্য হলো উমরাহর অপারেশনাল স্তরকে অদৃশ্য করে তোলা, যাতে যাত্রীরা সম্পূর্ণভাবে তাদের আধ্যাত্মিক উদ্দেশ্যে মনোযোগ দিতে পারেন।"
                   : "We exist to ensure that every pilgrim arriving in the Kingdom receives seamless, dignified logistical support — from their first document submission to their final journey home. Our mission is to make the operational layer of Umrah invisible, so pilgrims can focus entirely on their spiritual purpose."
@@ -138,7 +139,7 @@ export default function About() {
                 ).map((item) => (
                   <div key={item} className="flex items-start gap-3">
                     <CheckCircle size={16} className="shrink-0 mt-0.5" style={{ color: GOLD }} />
-                    <span className="text-sm" style={{ color: "#374151", fontFamily: ff, lineHeight: lh }}>{item}</span>
+                    <span className="text-sm" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>{item}</span>
                   </div>
                 ))}
               </div>
@@ -147,23 +148,23 @@ export default function About() {
               <div className="text-xs font-bold uppercase tracking-[0.2em] mb-5" style={{ color: GOLD, fontFamily: ff }}>
                 {isBn ? "আমাদের দৃষ্টিভঙ্গি" : "Our Vision"}
               </div>
-              <h2 className="text-3xl font-bold mb-5" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>
+              <h2 className="text-3xl font-bold mb-5" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>
                 {isBn ? "সৌদি ভিশন ২০৩০ — ধর্মীয় পর্যটন নেতৃত্ব" : "Saudi Vision 2030 — Religious Tourism Leadership"}
               </h2>
-              <p className="text-base mb-6" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>
+              <p className="text-base mb-6" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>
                 {isBn
                   ? "বার্ষিক ৩ কোটি উমরাহ যাত্রী আয়োজনের সৌদি আরবের ভিশন ২০৩০ লক্ষ্যমাত্রার সাথে সামঞ্জস্য রেখে, তুবা আল হিজাজ সেই উচ্চাভিলাষ সমর্থন করতে ডিজিটাল ও পরিচালনামূলক অবকাঠামো নির্মাণ করছে।"
                   : "Aligned with Saudi Arabia's Vision 2030 goal of hosting 30 million Umrah pilgrims annually, TUBA AL HIJAZ is building the digital and operational infrastructure to support that ambition — while maintaining the hospitality standards that the Holy Cities demand."
                 }
               </p>
-              <div className="p-6 rounded-xl border-l-4" style={{ backgroundColor: "#F8F5F0", borderLeftColor: GOLD }}>
-                <div className="text-sm italic" style={{ color: "#374151", fontFamily: ff, lineHeight: lh }}>
+              <div className="p-6 rounded-xl border-l-4" style={{ backgroundColor: "#0F1326", borderLeftColor: GOLD }}>
+                <div className="text-sm italic" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>
                   {isBn
                     ? '"আমাদের প্ল্যাটফর্ম শুধু একটি ERP নয় — এটি ২০৩০ সালের মধ্যে ৩ কোটি যাত্রীকে সেবা দেওয়ার সৌদি উচ্চাভিলাষের জন্য পরিচালনামূলক ভিত্তি।"'
                     : '"Our platform is not just an ERP — it is the operational foundation for the Kingdom\'s ambition to serve 30 million pilgrims by 2030."'
                   }
                 </div>
-                <div className="text-xs font-bold mt-3" style={{ color: NAVY, fontFamily: ff }}>— H.E. Khalid Al-Rashidi, {isBn ? "CEO" : "CEO"}</div>
+                <div className="text-xs font-bold mt-3" style={{ color: INK, fontFamily: ff }}>— H.E. Khalid Al-Rashidi, {isBn ? "CEO" : "CEO"}</div>
               </div>
             </div>
           </div>
@@ -171,13 +172,13 @@ export default function About() {
       </section>
 
       {/* Timeline */}
-      <section className="py-20" style={{ backgroundColor: "#F0EDE8" }}>
+      <section className="py-20" style={{ backgroundColor: "#141830" }}>
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div className="text-center mb-14">
             <div className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: GOLD, fontFamily: ff }}>
               {isBn ? "কোম্পানির ইতিহাস" : "Company History"}
             </div>
-            <h2 className="text-4xl font-bold" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>
+            <h2 className="text-4xl font-bold" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>
               {isBn ? "২০০৬ সাল থেকে আমাদের যাত্রা" : "Our Journey Since 2006"}
             </h2>
           </div>
@@ -189,10 +190,10 @@ export default function About() {
                   <div className="shrink-0 w-14 h-14 rounded-full flex items-center justify-center font-black text-sm border-2" style={{ backgroundColor: NAVY, borderColor: GOLD, color: GOLD, fontFamily: "var(--font-mono)" }}>
                     {m.year.slice(-2)}
                   </div>
-                  <div className="bg-white rounded-xl p-5 shadow-sm border flex-1" style={{ borderColor: `${NAVY}08` }}>
+                  <div className="bg-[#0F1326] rounded-xl p-5 shadow-sm border flex-1" style={{ borderColor: `${NAVY}08` }}>
                     <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: GOLD, fontFamily: "var(--font-mono)" }}>{m.year}</div>
-                    <div className="text-base font-bold mb-2" style={{ color: NAVY, fontFamily: ff }}>{m.title}</div>
-                    <div className="text-sm" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>{m.desc}</div>
+                    <div className="text-base font-bold mb-2" style={{ color: INK, fontFamily: ff }}>{m.title}</div>
+                    <div className="text-sm" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>{m.desc}</div>
                   </div>
                 </div>
               ))}
@@ -208,22 +209,22 @@ export default function About() {
             <div className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: GOLD, fontFamily: ff }}>
               {isBn ? "নির্বাহী নেতৃত্ব" : "Executive Leadership"}
             </div>
-            <h2 className="text-4xl font-bold" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>
+            <h2 className="text-4xl font-bold" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>
               {isBn ? "প্ল্যাটফর্মের পেছনের দল" : "The Team Behind the Platform"}
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {LEADERSHIP.map((person) => (
-              <div key={person.name} className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: `${NAVY}08` }}>
+              <div key={person.name} className="bg-[#0F1326] rounded-xl border overflow-hidden" style={{ borderColor: `${NAVY}08` }}>
                 <div className="h-40 flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: `${NAVY}05` }}>
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold border-2" style={{ backgroundColor: `${GOLD}15`, borderColor: `${GOLD}30`, color: NAVY }}>
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold border-2" style={{ backgroundColor: `${GOLD}15`, borderColor: `${GOLD}30`, color: INK }}>
                     {person.name.split(" ").filter((w) => /^[A-Z]/.test(w)).slice(1, 3).map((w) => w[0]).join("")}
                   </div>
                 </div>
                 <div className="p-5">
-                  <div className="text-sm font-bold mb-0.5" style={{ color: NAVY }}>{person.name}</div>
+                  <div className="text-sm font-bold mb-0.5" style={{ color: INK }}>{person.name}</div>
                   <div className="text-xs font-semibold mb-1" style={{ color: GOLD, fontFamily: ff }}>{person.role[lang]}</div>
-                  <div className="text-xs" style={{ color: "#9CA3AF", fontFamily: ff }}>{person.tenure[lang]}</div>
+                  <div className="text-xs" style={{ color: "#5A6A8A", fontFamily: ff }}>{person.tenure[lang]}</div>
                 </div>
               </div>
             ))}
@@ -245,13 +246,13 @@ export default function About() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {OFFICES.map((office) => (
-              <div key={office.city.en} className="rounded-xl border p-6" style={{ backgroundColor: "#FBFCFD", borderColor: `${GOLD}20` }}>
+              <div key={office.city.en} className="rounded-xl border p-6" style={{ backgroundColor: "#141830", borderColor: `${GOLD}20` }}>
                 <div className="text-3xl mb-4">{office.icon}</div>
                 <div className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: GOLD, fontFamily: ff }}>{office.role[lang]}</div>
-                <div className="text-base font-bold text-[#0B1E3F] mb-2" style={{ fontFamily: ff }}>{office.city[lang]}</div>
+                <div className="text-base font-bold text-[#E2E8F5] mb-2" style={{ fontFamily: ff }}>{office.city[lang]}</div>
                 <div className="flex items-start gap-2">
                   <MapPin size={12} className="mt-0.5 shrink-0" style={{ color: GOLD }} />
-                  <span className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>{office.addr}</span>
+                  <span className="text-xs" style={{ color: "rgba(226,232,245,0.58)" }}>{office.addr}</span>
                 </div>
               </div>
             ))}
@@ -262,10 +263,10 @@ export default function About() {
       {/* CTA */}
       <section className="py-20" style={{ backgroundColor: WARM }}>
         <div className="max-w-3xl mx-auto px-6 lg:px-10 text-center">
-          <h2 className="text-4xl font-bold mb-4" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>
+          <h2 className="text-4xl font-bold mb-4" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>
             {isBn ? "আমাদের অংশীদার নেটওয়ার্কে যোগ দিন" : "Join Our Partner Network"}
           </h2>
-          <p className="text-lg mb-8" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>
+          <p className="text-lg mb-8" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>
             {isBn
               ? "৪৭টি দেশের শত শত ট্রাভেল এজেন্সি তাদের উমরাহ গ্রুপ অপারেশনের জন্য তুবা আল হিজাজের উপর আস্থা রাখে।"
               : "Hundreds of travel agencies across 47 countries trust TUBA AL HIJAZ for their Umrah group operations."
@@ -275,7 +276,7 @@ export default function About() {
             <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base" style={{ backgroundColor: NAVY, color: "white", fontFamily: ff }}>
               {isBn ? "এজেন্ট হন" : "Become an Agent"} <ArrowRight size={16} />
             </Link>
-            <Link to="/services" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base border-2" style={{ borderColor: NAVY, color: NAVY, fontFamily: ff }}>
+            <Link to="/services" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base border-2" style={{ borderColor: NAVY, color: INK, fontFamily: ff }}>
               {isBn ? "আমাদের সেবা" : "Our Services"}
             </Link>
           </div>

@@ -6,13 +6,14 @@ import {
 import { useLang } from "../lib/LangContext";
 import { fontFor, lineHeightFor } from "../lib/i18n";
 
-const NAVY = "#0B1E3F";
-const GOLD = "#C9A24B";
-const WARM = "#F4F1EC";
+const NAVY = "#0F1326";
+const INK  = "#E2E8F5";
+const GOLD = "#C8943A";
+const WARM = "#07091A";
 
 const SERVICES = [
   {
-    id: "visa", icon: FileCheck, color: "#0D9488", bg: "#F0FDFA",
+    id: "visa", icon: FileCheck, color: "#2FB8A8", bg: "rgba(47,184,168,0.10)",
     image: "https://images.unsplash.com/photo-1768831822158-e34bd8fc87a9?auto=format&fit=crop&w=800&q=80",
     stat: { value: "94.8%" },
     en: {
@@ -29,7 +30,7 @@ const SERVICES = [
     },
   },
   {
-    id: "hotel", icon: Building, color: "#2563EB", bg: "#EFF6FF",
+    id: "hotel", icon: Building, color: "#3B7FE8", bg: "rgba(59,127,232,0.10)",
     image: "https://images.unsplash.com/photo-1677129667171-92abd8740fa3?auto=format&fit=crop&w=800&q=80",
     stat: { value: "200+" },
     en: {
@@ -46,7 +47,7 @@ const SERVICES = [
     },
   },
   {
-    id: "transport", icon: Bus, color: "#EA580C", bg: "#FFF7ED",
+    id: "transport", icon: Bus, color: "#E8991A", bg: "rgba(232,153,26,0.10)",
     image: "https://images.unsplash.com/photo-1508053803120-e3e60f3f9674?auto=format&fit=crop&w=800&q=80",
     stat: { value: "300+" },
     en: {
@@ -63,7 +64,7 @@ const SERVICES = [
     },
   },
   {
-    id: "catering", icon: UtensilsCrossed, color: "#9333EA", bg: "#FAF5FF",
+    id: "catering", icon: UtensilsCrossed, color: "#9B7BE8", bg: "rgba(155,123,232,0.10)",
     image: "https://images.unsplash.com/photo-1576842546422-60562b9242ae?auto=format&fit=crop&w=800&q=80",
     stat: { value: "100%" },
     en: {
@@ -80,7 +81,7 @@ const SERVICES = [
     },
   },
   {
-    id: "finance", icon: Wallet, color: "#16A34A", bg: "#F0FDF4",
+    id: "finance", icon: Wallet, color: "#22B573", bg: "rgba(34,181,115,0.10)",
     image: "https://images.unsplash.com/photo-1783261289464-3aca4b7ee008?auto=format&fit=crop&w=800&q=80",
     stat: { value: "SAR 1B+" },
     en: {
@@ -97,7 +98,7 @@ const SERVICES = [
     },
   },
   {
-    id: "fleet", icon: Truck, color: "#475569", bg: "#F8FAFC",
+    id: "fleet", icon: Truck, color: "#A8B8D8", bg: "#141830",
     image: "https://images.unsplash.com/photo-1768961869826-cb62a2dd93b1?auto=format&fit=crop&w=800&q=80",
     stat: { value: "99.2%" },
     en: {
@@ -148,7 +149,7 @@ export default function Services() {
           <h1 className="text-5xl font-bold text-white mb-4" style={{ lineHeight: lhH, fontFamily: ff }}>
             {isBn ? <>শুরু থেকে শেষ <span style={{ color: GOLD }}>উমরাহ সেবা</span></> : <>End-to-End <span style={{ color: GOLD }}>Umrah Services</span></>}
           </h1>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: "rgba(255,255,255,0.78)", fontFamily: ff, lineHeight: lh }}>
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: "rgba(15,19,38,0.78)", fontFamily: ff, lineHeight: lh }}>
             {isBn
               ? "একজন যাত্রী ভিসা পাওয়ার মুহূর্ত থেকে নিরাপদে বাড়ি ফেরা পর্যন্ত — তুবা আল হিজাজ প্রতিটি অপারেশনাল স্তর যত্নের সাথে পরিচালনা করে।"
               : "From the moment a pilgrim receives their visa to their safe return home — TUBA AL HIJAZ handles every operational layer with precision and care."
@@ -168,12 +169,12 @@ export default function Services() {
                   key={svc.id}
                   href={`#${svc.id}`}
                   className="rounded-xl p-3 text-center transition-all hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                  style={{ backgroundColor: "#FFFFFF", border: `1px solid ${NAVY}10`, outlineColor: GOLD }}
+                  style={{ backgroundColor: "#0F1326", border: `1px solid ${NAVY}10`, outlineColor: GOLD }}
                 >
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: svc.bg }} aria-hidden>
                     <svc.icon size={18} style={{ color: svc.color }} />
                   </div>
-                  <div className="text-[11px] font-bold leading-snug" style={{ color: NAVY, fontFamily: ff }}>{s.name}</div>
+                  <div className="text-[11px] font-bold leading-snug" style={{ color: INK, fontFamily: ff }}>{s.name}</div>
                 </a>
               );
             })}
@@ -192,14 +193,14 @@ export default function Services() {
                 <div className={`relative ${i % 2 === 1 ? "lg:col-start-2" : ""}`}>
                   <div className="rounded-xl overflow-hidden aspect-[4/3] shadow-xl">
                     <img src={svc.image} alt={s.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0" style={{ background: `linear-gradient(to top, rgba(11,30,63,0.55) 0%, transparent 50%)` }} />
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to top, rgba(226,232,245,0.55) 0%, transparent 50%)` }} />
                   </div>
                   <div className="absolute -top-4 -right-4 w-16 h-16 rounded-xl flex items-center justify-center shadow-lg border-2 border-white" style={{ backgroundColor: svc.bg }}>
                     <svc.icon size={26} style={{ color: svc.color }} />
                   </div>
-                  <div className="absolute bottom-5 left-5 bg-white rounded-xl px-4 py-3 shadow-lg">
+                  <div className="absolute bottom-5 left-5 bg-[#0F1326] rounded-xl px-4 py-3 shadow-lg">
                     <div className="text-2xl font-bold" style={{ color: svc.color }}>{svc.stat.value}</div>
-                    <div className="text-xs font-medium text-gray-500" style={{ fontFamily: ff }}>{s.statLabel}</div>
+                    <div className="text-xs font-medium text-[#A8B8D8]" style={{ fontFamily: ff }}>{s.statLabel}</div>
                   </div>
                 </div>
 
@@ -208,10 +209,10 @@ export default function Services() {
                   <div className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: svc.color, fontFamily: ff }}>
                     {s.name}
                   </div>
-                  <h2 className="text-3xl font-bold mb-4" style={{ color: NAVY, fontFamily: ff, lineHeight: lhH }}>
+                  <h2 className="text-3xl font-bold mb-4" style={{ color: INK, fontFamily: ff, lineHeight: lhH }}>
                     {s.headline}
                   </h2>
-                  <p className="text-base mb-8" style={{ color: "#6B7280", fontFamily: ff, lineHeight: lh }}>
+                  <p className="text-base mb-8" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>
                     {s.desc}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-8">
@@ -220,7 +221,7 @@ export default function Services() {
                         <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: `${svc.color}15` }}>
                           <Check size={10} style={{ color: svc.color }} />
                         </div>
-                        <span className="text-sm" style={{ color: "#374151", fontFamily: ff, lineHeight: lh }}>{f}</span>
+                        <span className="text-sm" style={{ color: "#A8B8D8", fontFamily: ff, lineHeight: lh }}>{f}</span>
                       </div>
                     ))}
                   </div>
@@ -242,17 +243,17 @@ export default function Services() {
           <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: ff, lineHeight: lhH }}>
             {isBn ? "ছয়টি সেবা, একটি প্ল্যাটফর্ম" : "All Six Services, One Platform"}
           </h2>
-          <p className="text-lg mb-10" style={{ color: "rgba(255,255,255,0.78)", fontFamily: ff, lineHeight: lh }}>
+          <p className="text-lg mb-10" style={{ color: "rgba(15,19,38,0.78)", fontFamily: ff, lineHeight: lh }}>
             {isBn
               ? "আমাদের ERP প্ল্যাটফর্ম প্রতিটি সেবা বিভাগকে একটি অপারেশন ড্যাশবোর্ডের অধীনে একত্রিত করে — আপনার দলকে সম্পূর্ণ দৃশ্যমানতা ও নিয়ন্ত্রণ দেয়।"
               : "Our ERP platform unifies every service line under a single operations dashboard — giving your team complete visibility and control."
             }
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base" style={{ backgroundColor: GOLD, color: NAVY, fontFamily: ff }}>
+            <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base" style={{ backgroundColor: GOLD, color: INK, fontFamily: ff }}>
               {isBn ? "ডেমো অনুরোধ করুন" : "Request a Demo"} <ArrowRight size={16} />
             </Link>
-            <Link to="/login" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base border-2" style={{ borderColor: "rgba(255,255,255,0.30)", color: "white", fontFamily: ff }}>
+            <Link to="/login" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base border-2" style={{ borderColor: "rgba(15,19,38,0.30)", color: "white", fontFamily: ff }}>
               {isBn ? "এজেন্ট লগইন" : "Agent Login"} <ChevronRight size={16} />
             </Link>
           </div>
