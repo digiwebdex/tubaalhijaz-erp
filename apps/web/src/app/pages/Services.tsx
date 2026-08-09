@@ -190,11 +190,11 @@ export default function Services() {
               <div id={svc.id} key={svc.id} className={`scroll-mt-24 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center ${i % 2 === 1 ? "lg:grid-flow-dense" : ""}`}>
                 {/* Image */}
                 <div className={`relative ${i % 2 === 1 ? "lg:col-start-2" : ""}`}>
-                  <div className="rounded-2xl overflow-hidden aspect-[4/3] shadow-xl">
+                  <div className="rounded-xl overflow-hidden aspect-[4/3] shadow-xl">
                     <img src={svc.image} alt={s.name} className="w-full h-full object-cover" />
                     <div className="absolute inset-0" style={{ background: `linear-gradient(to top, rgba(11,30,63,0.55) 0%, transparent 50%)` }} />
                   </div>
-                  <div className="absolute -top-4 -right-4 w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 border-white" style={{ backgroundColor: svc.bg }}>
+                  <div className="absolute -top-4 -right-4 w-16 h-16 rounded-xl flex items-center justify-center shadow-lg border-2 border-white" style={{ backgroundColor: svc.bg }}>
                     <svc.icon size={26} style={{ color: svc.color }} />
                   </div>
                   <div className="absolute bottom-5 left-5 bg-white rounded-xl px-4 py-3 shadow-lg">

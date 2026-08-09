@@ -165,7 +165,7 @@ function Amt({ value, type }: { value: number; type?: "credit" | "debit" }) {
 }
 
 function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-2xl overflow-hidden ${className}`} style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>{children}</div>;
+  return <div className={`rounded-xl overflow-hidden ${className}`} style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>{children}</div>;
 }
 
 function CardHead({ title, action }: { title: string; action?: ReactNode }) {
@@ -242,8 +242,8 @@ function DashboardScreen({ type, bookings, name, code, since, demo, state, onRet
   return (
     <div className="p-7 space-y-5">
       {/* Supplier identity */}
-      <div className="flex items-center gap-4 rounded-2xl px-5 py-4" style={{ backgroundColor: `${erpAlpha(color, 6)}`, border: `1px solid ${erpAlpha(color, 15)}` }}>
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${erpAlpha(color, 13)}` }}>
+      <div className="flex items-center gap-4 rounded-xl px-5 py-4" style={{ backgroundColor: `${erpAlpha(color, 6)}`, border: `1px solid ${erpAlpha(color, 15)}` }}>
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${erpAlpha(color, 13)}` }}>
           <Icon size={22} style={{ color }} />
         </div>
         <div className="flex-1">
@@ -288,7 +288,7 @@ function DashboardScreen({ type, bookings, name, code, since, demo, state, onRet
 
       {/* Pending bookings action required */}
       {ready && pending > 0 && (
-        <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${erpAlpha(color, 15)}` }}>
+        <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${erpAlpha(color, 15)}` }}>
           <div className="flex items-center gap-2.5 px-5 py-3" style={{ backgroundColor: `${erpAlpha(color, 5)}`, borderBottom: `1px solid ${erpAlpha(color, 13)}` }}>
             <AlertCircle size={13} style={{ color }} />
             <span className="text-xs font-bold text-[color:var(--erp-text-strong)]">Action Required — {pending} booking{pending > 1 ? "s" : ""} awaiting your acceptance</span>
@@ -403,7 +403,7 @@ function BookingsScreen({ type, bookings, live, onRefresh, demo, state }: { type
           <button
             key={b.id}
             onClick={() => { setSel(b.id); setAction("idle"); }}
-            className="w-full text-left p-4 rounded-2xl transition-all"
+            className="w-full text-left p-4 rounded-xl transition-all"
             style={{ border: `1px solid ${sel === b.id ? color : ERP.mutedSoft}`, backgroundColor: sel === b.id ? `${erpAlpha(color, 4)}` : ERP.mutedSoft }}
           >
             <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -427,7 +427,7 @@ function BookingsScreen({ type, bookings, live, onRefresh, demo, state }: { type
               <button
                 key={b.id}
                 onClick={() => { setSel(b.id); setAction("idle"); }}
-                className="w-full text-left p-3.5 rounded-2xl transition-all opacity-70"
+                className="w-full text-left p-3.5 rounded-xl transition-all opacity-70"
                 style={{ border: `1px solid ${sel === b.id ? color : ERP.mutedSoft}`, backgroundColor: sel === b.id ? `${erpAlpha(color, 3)}` : ERP.mutedSoft }}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -445,7 +445,7 @@ function BookingsScreen({ type, bookings, live, onRefresh, demo, state }: { type
       {selected ? (
         <div className="col-span-3 space-y-4">
           {/* Booking detail card */}
-          <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${erpAlpha(color, 19)}` }}>
+          <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${erpAlpha(color, 19)}` }}>
             <div className="flex items-center justify-between px-5 py-3.5" style={{ backgroundColor: `${erpAlpha(color, 5)}`, borderBottom: `1px solid ${erpAlpha(color, 13)}` }}>
               <div>
                 <div className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color }}>Booking Detail</div>
@@ -472,7 +472,7 @@ function BookingsScreen({ type, bookings, live, onRefresh, demo, state }: { type
 
           {/* Action panel */}
           {!accepted.has(selected.id) && !rejected.has(selected.id) && selected.status === "pending_acceptance" && (
-            <div className="rounded-2xl p-5" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+            <div className="rounded-xl p-5" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
               <div className="text-xs font-bold text-[color:var(--erp-text-strong)] mb-3">Your Response</div>
               {action === "idle" && (
                 <div className="flex gap-3">
@@ -512,7 +512,7 @@ function BookingsScreen({ type, bookings, live, onRefresh, demo, state }: { type
           )}
 
           {(accepted.has(selected.id) || rejected.has(selected.id)) && (
-            <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl" style={{ backgroundColor: accepted.has(selected.id) ? erpAlpha(ERP.success, 6) : erpAlpha(ERP.destructive, 6), border: `1px solid ${accepted.has(selected.id) ? erpAlpha(ERP.success, 19) : erpAlpha(ERP.destructive, 19)}` }}>
+            <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl" style={{ backgroundColor: accepted.has(selected.id) ? erpAlpha(ERP.success, 6) : erpAlpha(ERP.destructive, 6), border: `1px solid ${accepted.has(selected.id) ? erpAlpha(ERP.success, 19) : erpAlpha(ERP.destructive, 19)}` }}>
               {accepted.has(selected.id) ? <CheckCircle size={16} style={{ color: ERP.success }} /> : <X size={16} style={{ color: ERP.destructive }} />}
               <span className="text-xs font-semibold" style={{ color: accepted.has(selected.id) ? ERP.success : ERP.destructive }}>
                 {accepted.has(selected.id) ? "Booking accepted — confirmation sent to agent" : "Booking rejected — reason submitted"}
@@ -521,7 +521,7 @@ function BookingsScreen({ type, bookings, live, onRefresh, demo, state }: { type
           )}
 
           {/* Status tracker */}
-          <div className="rounded-2xl p-5" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+          <div className="rounded-xl p-5" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
             <div className="text-xs font-bold text-[color:var(--erp-text-strong)] mb-4">Booking Lifecycle</div>
             <div className="relative pl-5">
               <div className="absolute left-[9px] top-2 bottom-2 w-px" style={{ backgroundColor: ERP.surfaceSoft }} />
@@ -639,7 +639,7 @@ function VouchersScreen({ type, bookings, live, demo, state }: { type: SupplierT
           <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Voucher Upload</h2>
           <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Upload service vouchers and permits for confirmed bookings</p>
         </div>
-        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+        <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
           <div className="grid grid-cols-2 gap-3">
             <FF label="Related Booking">
               <FSelect value={bookingSel} onChange={(e) => setBookingSel(e.target.value)}>
@@ -660,7 +660,7 @@ function VouchersScreen({ type, bookings, live, demo, state }: { type: SupplierT
             </div>
           </div>
         </div>
-        <div className="rounded-2xl p-5" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+        <div className="rounded-xl p-5" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
           <div className="text-[9px] font-bold uppercase tracking-widest mb-3" style={{ color: ERP.muted }}>Attach Voucher Document</div>
           <input
             ref={fileInput} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden"
@@ -794,7 +794,7 @@ function InvoicesScreen({ type, bookings, live, demo, state }: { type: SupplierT
           <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Invoice Upload</h2>
           <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Submit invoices for confirmed bookings — includes VAT (15%) calculation</p>
         </div>
-        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+        <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
           <div className="grid grid-cols-2 gap-3">
             <FF label="Invoice Number"><FInput placeholder="INV-XXXX-XXXXXX" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} /></FF>
             <FF label="Related Booking">
@@ -828,7 +828,7 @@ function InvoicesScreen({ type, bookings, live, demo, state }: { type: SupplierT
           </div>
           <FF label="Notes (optional)"><FInput placeholder="Any additional notes…" value={notes} onChange={(e) => setNotes(e.target.value)} /></FF>
         </div>
-        <div className="rounded-2xl p-5" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+        <div className="rounded-xl p-5" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
           <div className="text-[9px] font-bold uppercase tracking-widest mb-3" style={{ color: ERP.muted }}>Attach Invoice PDF</div>
           <input
             ref={fileInput} type="file" accept=".pdf,application/pdf" className="hidden"
@@ -879,7 +879,7 @@ function StatementScreen(_p: { type: SupplierType; demo: boolean }) {
   return (
     <div className="p-7">
       <div className="mb-5"><h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Statement — Supplier View</h2><p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Running balance of booking settlements and platform fees</p></div>
-      <div className="rounded-2xl p-8" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+      <div className="rounded-xl p-8" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
         <EmptyState title="সাপ্লায়ার স্টেটমেন্ট" hint="এই মডিউল এখনও কনফিগার করা হয়নি। বুকিং, ভাউচার ও চালান অন্য ট্যাবে লাইভ।" />
       </div>
     </div>
@@ -890,7 +890,7 @@ function PaymentsScreen(_p: { type: SupplierType; demo: boolean }) {
   return (
     <div className="p-7">
       <div className="mb-5"><h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Payments &amp; Payouts</h2><p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Disbursements and bank-settlement details</p></div>
-      <div className="rounded-2xl p-8" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+      <div className="rounded-xl p-8" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
         <EmptyState title="পেমেন্ট ও পেআউট" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
       </div>
     </div>

@@ -379,7 +379,7 @@ function DropzoneShowcase() {
   ];
 
   return (
-    <div className="mb-10 rounded-2xl overflow-hidden" style={{ border: `1px solid ${GOLD}20`, backgroundColor: `${GOLD}04` }}>
+    <div className="mb-10 rounded-xl overflow-hidden" style={{ border: `1px solid ${GOLD}20`, backgroundColor: `${GOLD}04` }}>
       <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: `1px solid ${GOLD}15`, backgroundColor: `${GOLD}08` }}>
         <ScanLine size={13} style={{ color: GOLD }} />
         <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: GOLD }}>
@@ -601,8 +601,8 @@ function AgentRegSection() {
           <div className="text-xs font-bold uppercase tracking-[0.18em] mb-1" style={{ color: GOLD }}>Section 02</div>
           <h2 className="text-2xl font-bold text-[var(--erp-text-strong)]">Agent Registration</h2>
         </div>
-        <div className="rounded-2xl p-12 flex flex-col items-center text-center" style={{ border: `1px solid ${GREEN}30`, backgroundColor: `${GREEN}06` }}>
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{ backgroundColor: `${GREEN}15`, border: `1px solid ${GREEN}30` }}>
+        <div className="rounded-xl p-12 flex flex-col items-center text-center" style={{ border: `1px solid ${GREEN}30`, backgroundColor: `${GREEN}06` }}>
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: `${GREEN}15`, border: `1px solid ${GREEN}30` }}>
             <CheckCircle size={28} style={{ color: GREEN }} />
           </div>
           <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: GREEN }}>Application Submitted</div>
@@ -643,7 +643,7 @@ function AgentRegSection() {
       {/* Dropzone showcase — only on step 1 */}
       {/* DropzoneShowcase removed for live launch: it showed fabricated OCR extraction (sample "Rashidi Travel Co. LLC") to real applicants */}
 
-      <div className="rounded-2xl p-8" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "var(--erp-surface)" }}>
+      <div className="rounded-xl p-8" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "var(--erp-surface)" }}>
         <StepBar steps={AGENT_STEPS} current={step} />
 
         {/* Step 1 — Documents */}
@@ -1011,7 +1011,7 @@ function VerificationSection() {
       </div>
 
       {/* Detail panel */}
-      <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${current.color}30` }}>
+      <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${current.color}30` }}>
         {/* Header */}
         <div
           className="px-6 py-4 flex items-center gap-4"
@@ -1292,8 +1292,8 @@ function SupplierRegSection() {
           <div className="text-xs font-bold uppercase tracking-[0.18em] mb-1" style={{ color: GOLD }}>Section 04</div>
           <h2 className="text-2xl font-bold text-[var(--erp-text-strong)]">Supplier Registration</h2>
         </div>
-        <div className="rounded-2xl p-12 flex flex-col items-center text-center" style={{ border: `1px solid ${GREEN}30`, backgroundColor: `${GREEN}06` }}>
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{ backgroundColor: `${GREEN}15`, border: `1px solid ${GREEN}30` }}>
+        <div className="rounded-xl p-12 flex flex-col items-center text-center" style={{ border: `1px solid ${GREEN}30`, backgroundColor: `${GREEN}06` }}>
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: `${GREEN}15`, border: `1px solid ${GREEN}30` }}>
             <CheckCircle size={28} style={{ color: GREEN }} />
           </div>
           <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: GREEN }}>Supplier Application Submitted</div>
@@ -1340,7 +1340,7 @@ function SupplierRegSection() {
                 <button
                   key={t.id}
                   onClick={() => setSupType(t.id)}
-                  className="rounded-2xl p-6 text-left transition-all hover:scale-[1.01]"
+                  className="rounded-xl p-6 text-left transition-all hover:scale-[1.01]"
                   style={{ border: `1px solid rgba(11,30,63,0.11)`, backgroundColor: "var(--erp-surface)" }}
                 >
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: `${t.color}18` }}>
@@ -1374,7 +1374,7 @@ function SupplierRegSection() {
             </button>
           </div>
 
-          <div className="rounded-2xl p-8" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "var(--erp-surface)" }}>
+          <div className="rounded-xl p-8" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "var(--erp-surface)" }}>
             <StepBar steps={SUP_STEPS} current={step} />
 
             {step === 1 && (

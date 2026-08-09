@@ -112,7 +112,7 @@ function Amt({ value, type }: { value: number; type?: "credit" | "debit" | "neut
 // Surface wrapper (no auto-padding — screens control inner padding).
 function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl ${className}`} style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+    <div className={`rounded-xl ${className}`} style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
       {children}
     </div>
   );
@@ -228,7 +228,7 @@ function WalletScreen() {
     <div className="p-7 space-y-5">
       {/* Balance hero */}
       <div
-        className="rounded-2xl p-6 relative overflow-hidden"
+        className="rounded-xl p-6 relative overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${erpAlpha(FIN, 13)} 0%, ${ERP.surfaceSoft} 100%)`, border: `1px solid ${erpAlpha(FIN, 21)}` }}
       >
         {/* Background orb */}
@@ -421,7 +421,7 @@ function LedgerScreen() {
         ].map((k) => {
           const Icon = k.icon;
           return (
-            <div key={k.label} className="rounded-2xl p-4 flex items-center gap-4" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+            <div key={k.label} className="rounded-xl p-4 flex items-center gap-4" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${erpAlpha(k.color, 9)}` }}>
                 <Icon size={16} style={{ color: k.color }} />
               </div>
@@ -566,7 +566,7 @@ function PaymentSlipScreen() {
           <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Upload a bank transfer receipt or cheque scan to credit your wallet</p>
         </div>
 
-        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+        <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
           <div className="grid grid-cols-2 gap-3">
             <FF label="Payment Type">
               <FSelect value={slipType} onChange={setSlipType}>
@@ -592,7 +592,7 @@ function PaymentSlipScreen() {
         </div>
 
         {/* File Upload */}
-        <div className="rounded-2xl p-5 space-y-3" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+        <div className="rounded-xl p-5 space-y-3" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
           <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: ERP.muted }}>Attach Payment Slip</div>
           <input
             ref={fileRef}
@@ -718,7 +718,7 @@ function StatementsScreen() {
           <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Generate Statement</h2>
           <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Export a period statement for your records or for submission</p>
         </div>
-        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+        <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
           <FF label="Date From"><FInput type="date" defaultValue="2025-01-01" /></FF>
           <FF label="Date To"><FInput type="date" defaultValue="2025-07-16" /></FF>
           <FF label="Statement Type">
@@ -751,7 +751,7 @@ function StatementsScreen() {
         ) : (
           <div>
             {/* Statement header */}
-            <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${erpAlpha(FIN, 19)}` }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${erpAlpha(FIN, 19)}` }}>
               <div className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: `${erpAlpha(FIN, 7)}` }}>
                 <div className="min-w-0">
                   <div className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color: FIN }}>TUBA AL HIJAZ · AGENT STATEMENT</div>
@@ -846,7 +846,7 @@ function ReportsScreen() {
         <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Reports</h2>
         <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Generate, filter, and export financial reports</p>
       </div>
-      <div className="rounded-2xl p-8" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+      <div className="rounded-xl p-8" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
         <EmptyState
           title="আর্থিক রিপোর্ট"
           hint="এই মডিউল এখনও কনফিগার করা হয়নি। ওয়ালেট, লেজার ও স্টেটমেন্ট অন্য ট্যাবে লাইভ।"
@@ -992,7 +992,7 @@ function DocumentsScreen() {
             const DIcon = DOC_ICONS[doc.type] ?? FileText;
             const c     = DOC_COLORS[doc.type] ?? CAT.slate;
             return (
-              <div key={doc.id} className="rounded-2xl p-4 flex flex-col gap-3 transition-all hover:scale-[1.01]" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+              <div key={doc.id} className="rounded-xl p-4 flex flex-col gap-3 transition-all hover:scale-[1.01]" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
                 <div className="flex items-start justify-between">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${erpAlpha(c, 9)}` }}><DIcon size={18} style={{ color: c }} /></div>
                   <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full capitalize" style={{ backgroundColor: `${erpAlpha(c, 9)}`, color: c }}>{TYPE_LABELS[doc.type]}</span>

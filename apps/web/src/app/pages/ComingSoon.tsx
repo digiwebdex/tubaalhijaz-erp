@@ -23,7 +23,7 @@ export default function ComingSoon() {
       style={{ backgroundColor: "#F7F5F1", fontFamily: "'Noto Sans Bengali', 'Hind Siliguri', system-ui, sans-serif" }}
     >
       <div
-        className="flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
+        className="flex items-center justify-center w-16 h-16 rounded-xl mb-6"
         style={{ backgroundColor: `${GOLD}1A`, border: `1px solid ${GOLD}40` }}
       >
         <AlertCircle size={28} style={{ color: GOLD }} />

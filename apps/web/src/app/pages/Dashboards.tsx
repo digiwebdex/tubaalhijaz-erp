@@ -242,7 +242,7 @@ function DCard({ title, sub, action, children, color, minH }: {
   // UX: hide card deep-links the session cannot access (API still enforces).
   const showAction = !!(dest && canAccessPath(dest));
   return (
-    <div className="rounded-2xl overflow-hidden h-full flex flex-col" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}`, minHeight:minH }}>
+    <div className="rounded-xl overflow-hidden h-full flex flex-col" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}`, minHeight:minH }}>
       <div className="flex items-center justify-between px-5 py-3.5 shrink-0" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:ERP.surface }}>
         <div>
           <div className="text-xs font-bold text-[color:var(--erp-text-strong)]">{title}</div>

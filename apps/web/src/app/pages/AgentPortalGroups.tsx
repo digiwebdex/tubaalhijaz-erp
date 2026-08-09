@@ -1304,7 +1304,7 @@ function CsvImportModal({ groupId, onClose, onImported }: { groupId: string; onC
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: ERP.scrim }} onClick={onClose}>
-      <div className="w-[680px] max-h-[92vh] overflow-y-auto rounded-2xl shadow-2xl" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }} onClick={(e) => e.stopPropagation()}>
+      <div className="w-[680px] max-h-[92vh] overflow-y-auto rounded-xl shadow-2xl" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 sticky top-0 z-10" style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
           <div>
             <div className="text-sm font-bold text-[color:var(--erp-text-strong)]">Mutamer Excel Import</div>
@@ -1328,9 +1328,9 @@ function CsvImportModal({ groupId, onClose, onImported }: { groupId: string; onC
         <div className="p-5">
           {step === 1 && (
             <div>
-              <label className="flex flex-col items-center gap-3 p-8 rounded-2xl cursor-pointer transition-all" style={{ border: `2px dashed ${erpAlpha(AGENT, 21)}`, backgroundColor: `${erpAlpha(AGENT, 2)}`, opacity: previewing ? 0.6 : 1 }}>
+              <label className="flex flex-col items-center gap-3 p-8 rounded-xl cursor-pointer transition-all" style={{ border: `2px dashed ${erpAlpha(AGENT, 21)}`, backgroundColor: `${erpAlpha(AGENT, 2)}`, opacity: previewing ? 0.6 : 1 }}>
                 <input type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" disabled={previewing} onChange={(e) => onFile(e.target.files?.[0])} />
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${erpAlpha(AGENT, 9)}` }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${erpAlpha(AGENT, 9)}` }}>
                   {previewing ? <Loader2 size={20} className="animate-spin" style={{ color: AGENT }} /> : <Upload size={20} style={{ color: AGENT }} />}
                 </div>
                 <div className="text-center">
@@ -1456,7 +1456,7 @@ function CsvImportModal({ groupId, onClose, onImported }: { groupId: string; onC
 
           {step === 3 && (
             <div className="text-center py-6">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: erpAlpha(ERP.success, 9) }}>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: erpAlpha(ERP.success, 9) }}>
                 <CheckCircle size={28} style={{ color: ERP.success }} />
               </div>
               <h3 className="text-sm font-bold text-[color:var(--erp-text-strong)] mb-1">Import complete</h3>
@@ -2619,7 +2619,7 @@ function GroupFoundationPanel({
   const fieldStyle = { backgroundColor: ERP.surfaceSoft, border: `1px solid ${erpAlpha(AGENT, 19)}`, color: ERP.navy } as const;
 
   return (
-    <div className="mx-7 mt-5 mb-2 rounded-2xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+    <div className="mx-7 mt-5 mb-2 rounded-xl p-5 space-y-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Group Foundation</h2>

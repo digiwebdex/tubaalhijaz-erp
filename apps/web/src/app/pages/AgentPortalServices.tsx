@@ -293,7 +293,7 @@ function TrackerSlot({ loading, latest, states, labels, color, title }: {
 function RecentReqs({ rows, color, state }: { rows: { ref: string; group: string; status: string; date: string }[]; color: string; state?: ReactNode }) {
   const statusColor = (s: string) => s === "approved" || s === "confirmed" || s === "complete" || s === "completed" ? ERP.success : s === "requested" || s === "pending" ? ERP.warning : s === "rejected" || s === "cancelled" ? ERP.destructive : ERP.info;
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${ERP.border}`, background: ERP.surface }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${ERP.border}`, background: ERP.surface }}>
       <div className="px-4 py-3" style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
         <span className="text-[10px] font-bold" style={{ color: ERP.navy }}>Recent Requests</span>
       </div>
@@ -315,7 +315,7 @@ function VoucherCard({ color, title, badge, lines, onDownload }: {
   lines: [string, string][]; onDownload?: () => void;
 }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${erpAlpha(color, 19)}`, background: ERP.surface }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${erpAlpha(color, 19)}`, background: ERP.surface }}>
       <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: erpAlpha(color, 7) }}>
         <div>
           <div className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color }}>TUBA AL HIJAZ · {title.toUpperCase()}</div>
@@ -350,7 +350,7 @@ function SvcHeader({ color, icon: Icon, title, subtitle }: {
 }) {
   return (
     <div className="flex items-center gap-3 mb-6 pb-5" style={{ borderBottom: `1px solid ${ERP.border}` }}>
-      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: erpAlpha(color, 8), border: `1px solid ${erpAlpha(color, 19)}` }}>
+      <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: erpAlpha(color, 8), border: `1px solid ${erpAlpha(color, 19)}` }}>
         <Icon size={19} style={{ color }} />
       </div>
       <div>
@@ -491,7 +491,7 @@ function VisaScreen() {
         <div className="col-span-2 space-y-4">
           <TrackerSlot loading={loading} latest={latest} states={VISA_STATES} labels={VISA_LABELS} color={C_VISA} title="Visa Status" />
           {latest && (
-            <div className="rounded-2xl p-4 space-y-2" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+            <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
               <div className="text-[10px] font-bold text-[color:var(--erp-text-strong)] mb-1">Latest Request</div>
               {([
                 ["Reference", latest.code],
@@ -528,7 +528,7 @@ function FlightComingSoon() {
     <div className="p-7">
       <SvcHeader color={C_FLIGHT} icon={Plane} title="Flight Information & Ticket Upload" subtitle="Arrival/departure details and airline ticket upload" />
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: `${C_FLIGHT}12`, border: `1px solid ${C_FLIGHT}25` }}>
+        <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: `${C_FLIGHT}12`, border: `1px solid ${C_FLIGHT}25` }}>
           <Clock size={22} style={{ color: C_FLIGHT }} />
         </div>
         <h3 className="text-sm font-bold text-[color:var(--erp-text-strong)] mb-1.5">ফ্লাইট</h3>
@@ -874,7 +874,7 @@ function CateringScreen() {
                 <button
                   key={p.id}
                   onClick={() => setPlan(p.id)}
-                  className="flex flex-col items-start gap-2 p-4 rounded-2xl transition-all text-left"
+                  className="flex flex-col items-start gap-2 p-4 rounded-xl transition-all text-left"
                   style={{ border: `1px solid ${plan === p.id ? p.color : ERP.borderStrong}`, backgroundColor: plan === p.id ? `${p.color}0C` : ERP.surface }}
                 >
                   <div className="flex items-center justify-between w-full">
@@ -920,7 +920,7 @@ function CateringScreen() {
 
         <div className="col-span-2 space-y-4">
           <TrackerSlot loading={loading} latest={latest} states={SUPPLIER_STATES} labels={SUPPLIER_LABELS} color={C_CATERING} title="Catering Status" />
-          <div className="rounded-2xl p-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+          <div className="rounded-xl p-4" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
             <div className="text-[10px] font-bold text-[color:var(--erp-text-strong)] mb-3">Plan Summary</div>
             <div className="grid grid-cols-3 gap-2 mb-3">
               {selected.meals.filter((m) => m !== "★").map((m, i) => {
@@ -1036,7 +1036,7 @@ function AdditionalScreen() {
             </div>
           </FormCard>
 
-          <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
+          <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
             <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: ERP.surfaceSoft, borderBottom: `1px solid ${ERP.border}` }}>
               <span className="text-[10px] font-bold text-[color:var(--erp-text-strong)]">Service History</span>
             </div>
@@ -1060,7 +1060,7 @@ function AdditionalScreen() {
         <div className="col-span-2 space-y-4">
           <TrackerSlot loading={loading} latest={latest} states={EXTRA_STATES} labels={EXTRA_LABELS} color={C_EXTRA} title="Request Status" />
           {latest && (
-            <div className="rounded-2xl p-4 space-y-2" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+            <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
               <div className="text-[10px] font-bold text-[color:var(--erp-text-strong)] mb-1">Latest Request</div>
               {([
                 ["Reference", latest.code],

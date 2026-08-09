@@ -382,7 +382,7 @@ function IntegrationHub() {
   return (
     <div className="space-y-6">
       {/* WaSender — reuse existing dedicated page */}
-      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
         <div className="flex items-center gap-3 px-5 py-4">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: erpAlpha(ERP.success, 9) }}><MessageCircle size={16} style={{ color: ERP.success }} /></div>
           <div className="flex-1">
@@ -395,7 +395,7 @@ function IntegrationHub() {
       </div>
 
       {/* Email — extends existing SMTP backend (nodemailer) via IntegrationConfig */}
-      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
         <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: `1px solid ${ERP.border}` }}>
           <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: erpAlpha(ERP.info, 9) }}><Mail size={16} style={{ color: ERP.info }} /></div>
           <div className="flex-1">
@@ -748,7 +748,7 @@ function SectionShell({ title, subtitle, children }: { title: string; subtitle?:
   return (
     <div className="p-7">
       <div className="mb-5"><h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">{title}</h2>{subtitle && <p className="text-xs mt-0.5" style={{ color: ERP.muted }}>{subtitle}</p>}</div>
-      <div className="rounded-2xl p-6" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>{children}</div>
+      <div className="rounded-xl p-6" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>{children}</div>
     </div>
   );
 }
@@ -812,13 +812,13 @@ export default function Settings() {
           <div className="mb-5"><h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">{lang === "bn" ? "সিস্টেম প্রশাসন" : "System Administration"}</h2><p className="text-xs mt-0.5" style={{ color: ERP.muted }}>{lang === "bn" ? "সব প্রশাসনিক সেটিংস এক জায়গায়" : "All administration settings in one place"}</p></div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {internalNav.filter((n) => n.id !== "overview").map((n) => { const I = n.icon; return (
-              <button key={n.id} onClick={() => setSection(n.section)} className="text-left rounded-2xl p-5 transition-colors" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+              <button key={n.id} onClick={() => setSection(n.section)} className="text-left rounded-xl p-5 transition-colors" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: erpAlpha(GOLD, 9) }}><I size={16} style={{ color: GOLD }} /></div>
                 <div className="text-xs font-bold text-[color:var(--erp-text-strong)]">{lang === "bn" ? n.labelBn : n.label}</div>
               </button>
             ); })}
             {links.map((l) => { const I = l.icon; return (
-              <button key={l.id} onClick={() => navigate(l.path)} className="text-left rounded-2xl p-5 transition-colors" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+              <button key={l.id} onClick={() => navigate(l.path)} className="text-left rounded-xl p-5 transition-colors" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: erpAlpha(ERP.info, 9) }}><I size={16} style={{ color: ERP.info }} /></div>
                 <div className="text-xs font-bold text-[color:var(--erp-text-strong)] flex items-center gap-1">{lang === "bn" ? l.labelBn : l.label}<ExternalLink size={11} style={{ color: ERP.muted }} /></div>
               </button>

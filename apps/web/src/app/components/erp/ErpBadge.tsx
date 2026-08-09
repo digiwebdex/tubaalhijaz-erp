@@ -50,7 +50,7 @@ export function ErpStatusChip({ status, label, lang = "bn" }: ErpStatusChipProps
   const text = label ?? (lang === "bn" ? meta.labelBn : meta.labelEn);
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[11px] font-semibold"
       style={{
         backgroundColor: erpAlpha(meta.color, 8),
         color: meta.color,

@@ -110,7 +110,6 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
           left: selectable ? 40 : 0,
           zIndex: stickyHeader ? 11 : 2,
           backgroundColor: ERP.surfaceSoft,
-          boxShadow: `2px 0 0 ${ERP.border}`,
         }
       : {};
 
@@ -121,7 +120,6 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
           left: selectable ? 40 : 0,
           zIndex: 1,
           backgroundColor: selected ? erpAlpha(ERP.gold, 6) : ERP.surface,
-          boxShadow: `2px 0 0 ${ERP.border}`,
         }
       : {};
 
@@ -142,7 +140,7 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
             <tr style={{ borderBottom: `1px solid ${ERP.border}` }}>
               {selectable && (
                 <th
-                  className="px-3 py-3 w-10"
+                  className="px-3.5 py-2.5 w-10"
                   style={
                     stickyFirstColumn
                       ? { position: "sticky", left: 0, zIndex: 12, backgroundColor: ERP.surfaceSoft }
@@ -165,7 +163,7 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
               {columns.map((col, colIdx) => (
                 <th
                   key={col.id}
-                  className={`px-3 py-3 text-[11px] font-bold uppercase tracking-wide ${col.className ?? ""}`}
+                  className={`px-3.5 py-2.5 text-[11px] font-bold uppercase tracking-[0.08em] ${col.className ?? ""}`}
                   style={{
                     color: ERP.muted,
                     width: col.width,
@@ -189,7 +187,7 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
               ))}
               {rowActions && (
                 <th
-                  className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-right"
+                  className="px-3.5 py-2.5 text-[11px] font-bold uppercase tracking-[0.08em] text-right"
                   style={{ color: ERP.muted }}
                 >
                   {lang === "bn" ? "কার্যক্রম" : "Actions"}
@@ -230,7 +228,7 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
                     key={key}
                     className="transition-colors hover:bg-[var(--erp-surface-soft)]"
                     style={{
-                      borderBottom: `1px solid ${ERP.border}`,
+                      borderBottom: `1px solid ${erpAlpha(ERP.border, 40)}`,
                       backgroundColor: selected ? erpAlpha(ERP.gold, 6) : undefined,
                       cursor: onRowClick ? "pointer" : "default",
                     }}
@@ -238,7 +236,7 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
                   >
                     {selectable && (
                       <td
-                        className="px-3 py-2.5"
+                        className="px-3.5 py-2.5"
                         onClick={(e) => e.stopPropagation()}
                         style={
                           stickyFirstColumn
@@ -264,7 +262,7 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
                     {columns.map((col, colIdx) => (
                       <td
                         key={col.id}
-                        className={`px-3 py-2.5 text-xs ${col.className ?? ""}`}
+                        className={`px-3.5 py-2.5 text-[13px] ${col.className ?? ""}`}
                         style={{
                           color: ERP.navy,
                           textAlign: col.align ?? "left",
@@ -277,10 +275,10 @@ export const ErpDataTable = memo(function ErpDataTable<T>({
                     ))}
                     {rowActions && (
                       <td
-                        className="px-3 py-2.5 text-right"
+                        className="px-3.5 py-2.5 text-right"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="inline-flex items-center justify-end gap-1 min-h-[44px]">
+                        <div className="inline-flex items-center justify-end gap-1 min-h-0">
                           {rowActions(row)}
                         </div>
                       </td>

@@ -164,7 +164,7 @@ function TH({ cols }:{ cols:string[] }) {
 
 function FKpi({ label, value, sub, color, icon:Icon }:{ label:string; value:string; sub?:string; color:string; icon:IconFC }) {
   return (
-    <div className="rounded-2xl p-5" style={CARD}>
+    <div className="rounded-xl p-5" style={CARD}>
       <div className="flex items-start justify-between mb-4">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor:`${color}18` }}>
           <Icon size={16} style={{ color }} />
@@ -391,7 +391,7 @@ function DashboardScreen() {
       </div>
 
       <div className="grid grid-cols-3 gap-5">
-        <div className="col-span-2 rounded-2xl p-5" style={PANEL}>
+        <div className="col-span-2 rounded-xl p-5" style={PANEL}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="text-xs font-bold text-[var(--erp-text-strong)]">Operating Cost — Last 6 Months</div>
@@ -406,7 +406,7 @@ function DashboardScreen() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl p-5" style={CARD}>
+          <div className="rounded-xl p-5" style={CARD}>
             <div className="flex items-center justify-between mb-3">
               <div className="text-xs font-bold text-[var(--erp-text-strong)]">Fleet Utilization</div>
               <Gauge size={14} style={{ color:FLEET }} />
@@ -417,7 +417,7 @@ function DashboardScreen() {
             </div>
             <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>{d.utilization.activeDispatch} vehicles on active dispatch</div>
           </div>
-          <div className="rounded-2xl p-5 flex items-center gap-4" style={{ backgroundColor:"#DC262610", border:"1px solid #DC262630" }}>
+          <div className="rounded-xl p-5 flex items-center gap-4" style={{ backgroundColor:"#DC262610", border:"1px solid #DC262630" }}>
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor:"#DC262622" }}>
               <AlertTriangle size={18} style={{ color:"var(--erp-destructive)" }} />
             </div>
@@ -429,7 +429,7 @@ function DashboardScreen() {
         </div>
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
+      <div className="rounded-xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
         <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor:"var(--erp-surface)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
           <span className="text-xs font-bold text-[var(--erp-text-strong)]">Expiring Soon</span>
           <span className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>Documents · Licenses · Insurance</span>
@@ -1039,7 +1039,7 @@ function ComplianceScreen() {
 
   return (
     <div className="p-7 space-y-5">
-      <div className="rounded-2xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
+      <div className="rounded-xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
         <div className="flex items-center justify-between px-5 py-3 gap-3 flex-wrap" style={{ backgroundColor:"var(--erp-surface)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
           <div className="flex items-center gap-2">
             <ShieldCheck size={14} style={{ color:FLEET }} />
@@ -1079,7 +1079,7 @@ function ComplianceScreen() {
         </div>
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
+      <div className="rounded-xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
         <div className="flex items-center justify-between px-5 py-3 gap-3 flex-wrap" style={{ backgroundColor:"var(--erp-surface)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
           <div className="flex items-center gap-2">
             <FileText size={14} style={{ color:FLEET }} />
@@ -1661,7 +1661,7 @@ function GpsScreen() {
       </div>
 
       <div className="grid grid-cols-3 gap-5">
-        <div className="col-span-2 rounded-2xl overflow-hidden" style={PANEL}>
+        <div className="col-span-2 rounded-xl overflow-hidden" style={PANEL}>
           <div className="relative w-full" style={{ height:440, background:"linear-gradient(135deg,#EEF3F8,#E4EBF3)" }}>
             {[25,50,75].map(p => <div key={`v${p}`} className="absolute top-0 bottom-0" style={{ left:`${p}%`, borderLeft:"1px dashed rgba(11,30,63,0.08)" }} />)}
             {[25,50,75].map(p => <div key={`h${p}`} className="absolute left-0 right-0" style={{ top:`${p}%`, borderTop:"1px dashed rgba(11,30,63,0.08)" }} />)}
@@ -1693,7 +1693,7 @@ function GpsScreen() {
 
         <div className="space-y-4">
           {selected && (
-            <div className="rounded-2xl p-4" style={CARD}>
+            <div className="rounded-xl p-4" style={CARD}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-black text-[var(--erp-text-strong)]" style={{ fontFamily:"var(--font-mono)" }}>{selected.code}</span>
                 <Chip s={selected.status} />
@@ -1707,7 +1707,7 @@ function GpsScreen() {
             </div>
           )}
 
-          <div className="rounded-2xl p-4" style={PANEL}>
+          <div className="rounded-xl p-4" style={PANEL}>
             <div className="flex items-center gap-2 mb-3">
               <Navigation size={13} style={{ color:FLEET }} />
               <span className="text-xs font-bold text-[var(--erp-text-strong)]">Simulate Location</span>
@@ -1761,7 +1761,7 @@ function DispatchScreen() {
           <EmptyState tone="light" title="No dispatches to assign" hint="Transport orders raised by Ops appear here awaiting a vehicle and driver." />
         )}
         {rows.map(o => (
-          <div key={o.id} className="rounded-2xl p-5" style={CARD}>
+          <div key={o.id} className="rounded-xl p-5" style={CARD}>
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor:`${FLEET}22` }}><Route size={18} style={{ color:FLEET }} /></div>

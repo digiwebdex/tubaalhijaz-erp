@@ -56,7 +56,7 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "var(--erp-canvas)" }}>
-      <div className="w-full max-w-md rounded-2xl p-8 shadow-sm" style={{ backgroundColor: "var(--erp-surface)", border: "1px solid rgba(11,30,63,0.11)" }}>
+      <div className="w-full max-w-md rounded-xl p-8 shadow-sm" style={{ backgroundColor: "var(--erp-surface)", border: "1px solid rgba(11,30,63,0.11)" }}>
         <div className="flex items-center gap-2 mb-6">
           <ShieldCheck size={22} style={{ color: GOLD }} />
           <span className="text-sm font-bold" style={{ color: NAVY }}>TUBA AL HIJAZ</span>

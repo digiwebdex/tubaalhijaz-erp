@@ -218,7 +218,7 @@ function DashboardScreen() {
           <KPICard label="Portal Users" value={userCount == null ? "\u2014" : String(userCount)} icon={Users2 as IconFC} color={ERP.success} note="staff accounts" />
         </div>
       )}
-      <div className="rounded-2xl p-6" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
+      <div className="rounded-xl p-6" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
         <div className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: ERP.muted }}>Platform Analytics — Season 1446H</div>
         <SAAnalytics />
       </div>
@@ -661,7 +661,7 @@ function CompanyScreen() {
         </div>
       )}
 
-      <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
+      <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
         {loading ? (
           <div className="px-4 py-3">
             <LoadingSkeleton rows={5} tone="light" />
@@ -709,7 +709,7 @@ function CompanyScreen() {
       )}
 
       {/* Row "…" action menu — portalled to <body> with position:fixed so it is not
-          clipped by the table's rounded-2xl overflow-hidden wrapper. */}
+          clipped by the table's rounded-xl overflow-hidden wrapper. */}
       {menuFor && menuPos && (() => {
         const active = filtered.find((r) => r.key === menuFor);
         if (!active || !active.realId) return null;
@@ -954,7 +954,7 @@ function UserRoleScreen() {
       {tab === "users" && (
         <>
           <FilterBar placeholder="Search by name, email, role…" />
-          <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
+          <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
             {loading ? (
               <div className="px-4 py-3">
                 <LoadingSkeleton rows={5} tone="light" />
@@ -995,7 +995,7 @@ function UserRoleScreen() {
               {matrixError}
             </div>
           )}
-          <div className="rounded-2xl overflow-auto" style={{ border: `1px solid ${ERP.border}` }}>
+          <div className="rounded-xl overflow-auto" style={{ border: `1px solid ${ERP.border}` }}>
             {loading ? (
               <div className="px-4 py-3">
                 <LoadingSkeleton rows={6} tone="light" />
@@ -1266,7 +1266,7 @@ function AuditLogsScreen() {
         </button>
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
+      <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${ERP.border}` }}>
         {loading ? (
           <div className="px-4 py-3"><LoadingSkeleton rows={6} tone="light" /></div>
         ) : error ? (

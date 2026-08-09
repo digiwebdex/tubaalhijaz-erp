@@ -416,9 +416,9 @@ export function OcrIntakeModal({ groupId, groups: groupsIn, onClose, onApproved,
     >
       {phase === "upload" && (
         <div>
-          <label className="flex flex-col items-center gap-3 p-8 rounded-2xl cursor-pointer" style={{ border: `2px dashed ${OCR}35`, backgroundColor: `${OCR}06` }}>
+          <label className="flex flex-col items-center gap-3 p-8 rounded-xl cursor-pointer" style={{ border: `2px dashed ${OCR}35`, backgroundColor: `${OCR}06` }}>
             <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => void onFile(e.target.files?.[0])} />
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${OCR}18` }}><Upload size={20} style={{ color: OCR }} /></div>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${OCR}18` }}><Upload size={20} style={{ color: OCR }} /></div>
             <div className="text-center">
               <div className="text-sm font-semibold text-[var(--erp-text-strong)]">
                 {isNusuk ? "Click to choose a Nusuk Groups List image or PDF" : "Click to choose a passport image or PDF"}

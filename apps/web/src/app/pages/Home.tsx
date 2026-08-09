@@ -322,7 +322,7 @@ export default function Home() {
                 <Link
                   key={mod.id}
                   to={`/services#${mod.id}`}
-                  className="bg-white rounded-2xl border p-6 md:p-7 transition-all duration-300 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 hover:shadow-md"
+                  className="bg-white rounded-xl border p-6 md:p-7 transition-all duration-300 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 hover:shadow-md"
                   style={{ borderColor: `${NAVY}10`, outlineColor: GOLD }}
                 >
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: mod.bg }} aria-hidden>
@@ -408,11 +408,11 @@ export default function Home() {
               </div>
             </div>
             <div className="relative">
-              <div className="rounded-2xl overflow-hidden aspect-[4/3] shadow-2xl">
+              <div className="rounded-xl overflow-hidden aspect-[4/3] shadow-2xl">
                 <img src="https://images.unsplash.com/photo-1768961869826-cb62a2dd93b1?auto=format&fit=crop&w=900&q=80" alt="Makkah skyline" className="w-full h-full object-cover" />
                 <div className="absolute inset-0" style={{ background: `linear-gradient(to top, rgba(11,30,63,0.6) 0%, transparent 50%)` }} />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-5 border" style={{ borderColor: `${NAVY}08` }}>
+              <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-xl p-5 border" style={{ borderColor: `${NAVY}08` }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${GOLD}15` }}>
                     <TrendingUp size={18} style={{ color: GOLD }} />

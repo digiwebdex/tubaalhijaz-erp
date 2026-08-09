@@ -1278,7 +1278,7 @@ function MeetAssist({ arrivals, maUpdate, demo, state, onRetry }: { arrivals: Fl
           void s;
           return (
             <button key={a.id} onClick={() => setSelId(a.id)}
-              className="w-full text-left p-4 rounded-2xl transition-all"
+              className="w-full text-left p-4 rounded-xl transition-all"
               style={{ border:`1px solid ${selId === a.id ? OPS : ERP.mutedSoft}`, backgroundColor: selId === a.id ? `${erpAlpha(OPS, 4)}` : ERP.mutedSoft }}>
               <div className="flex items-center justify-between gap-2 mb-2">
                 <span className="text-base font-black truncate" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{a.flight}</span>
@@ -1305,7 +1305,7 @@ function MeetAssist({ arrivals, maUpdate, demo, state, onRetry }: { arrivals: Fl
           }
           const steps = stepsById[selId] ?? new Set<number>();
           return (
-            <div className="rounded-2xl overflow-hidden" style={{ border:`1px solid ${erpAlpha(OPS, 15)}` }}>
+            <div className="rounded-xl overflow-hidden" style={{ border:`1px solid ${erpAlpha(OPS, 15)}` }}>
               <div className="px-5 py-4" style={{ backgroundColor:`${erpAlpha(OPS, 5)}`, borderBottom:`1px solid ${erpAlpha(OPS, 13)}` }}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
@@ -1470,7 +1470,7 @@ function ZiyarahScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
         ) : rows.map((z) => {
           const statusColor = z.status === "COMPLETED" ? ERP.success : z.status === "CONFIRMED" ? ERP.success : ERP.info;
           return (
-            <div key={z.id} className="rounded-2xl p-5" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}`, opacity: z.status === "COMPLETED" ? 0.6 : 1 }}>
+            <div key={z.id} className="rounded-xl p-5" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}`, opacity: z.status === "COMPLETED" ? 0.6 : 1 }}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
@@ -2293,7 +2293,7 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
           <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Create New BRN</h2>
         </div>
         <div className="max-w-2xl space-y-4">
-          <div className="rounded-2xl p-5 grid grid-cols-2 gap-4" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
+          <div className="rounded-xl p-5 grid grid-cols-2 gap-4" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
             <FF label="Group ID"><select value={cGroup || (opts[0]?.value ?? "")} onChange={(e)=>setCGroup(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}>{opts.map((o)=><option key={o.value} value={o.value} style={{ color:"black" }}>{o.label}</option>)}</select></FF>
             <FF label="Service Type"><select value={cService} onChange={(e)=>setCService(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}><option>Hotel</option><option>Transport</option><option>Catering</option><option>Meet & Assist</option><option>Full Package</option></select></FF>
             <FF label="Date Required"><input type="date" value={cDate} onChange={(e)=>setCDate(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} /></FF>
@@ -2321,7 +2321,7 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
       </div>
       <div className="grid grid-cols-3 gap-5">
         {/* BRN list */}
-        <div className="col-span-2 rounded-2xl overflow-hidden" style={{ border:`1px solid ${ERP.border}` }}>
+        <div className="col-span-2 rounded-xl overflow-hidden" style={{ border:`1px solid ${ERP.border}` }}>
           <table className="w-full">
             <thead>
               <tr style={{ backgroundColor:ERP.surfaceSoft, borderBottom:`1px solid ${ERP.border}` }}>
@@ -2356,7 +2356,7 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
         {/* Detail panel */}
         <div>
           {selectedBrn ? (
-            <div className="rounded-2xl overflow-hidden" style={{ border:`1px solid ${erpAlpha(OPS, 19)}` }}>
+            <div className="rounded-xl overflow-hidden" style={{ border:`1px solid ${erpAlpha(OPS, 19)}` }}>
               <div className="px-4 py-3" style={{ backgroundColor:`${erpAlpha(OPS, 6)}`, borderBottom:`1px solid ${erpAlpha(OPS, 13)}` }}>
                 <div className="text-[9px] font-black uppercase tracking-widest mb-0.5" style={{ color:OPS }}>BRN Detail</div>
                 <div className="text-sm font-black text-[color:var(--erp-text-strong)]" style={{ fontFamily:"var(--font-mono)" }}>{selectedBrn.id}</div>
@@ -2375,7 +2375,7 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-48 rounded-2xl" style={{ border:`1px dashed ${ERP.border}` }}>
+            <div className="flex flex-col items-center justify-center h-48 rounded-xl" style={{ border:`1px dashed ${ERP.border}` }}>
               <Hash size={22} style={{ color:ERP.mutedSoft }} />
               <div className="text-xs mt-2" style={{ color:ERP.muted }}>Select a BRN to view</div>
             </div>

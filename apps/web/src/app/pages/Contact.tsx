@@ -118,7 +118,7 @@ export default function Contact() {
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
             {/* Form */}
-            <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: `${NAVY}08` }}>
+            <div className="bg-white rounded-xl border shadow-sm overflow-hidden" style={{ borderColor: `${NAVY}08` }}>
               <div className="px-8 py-6 border-b" style={{ borderColor: `${NAVY}08`, backgroundColor: "#FAFAF8" }}>
                 <div className="text-xs font-bold uppercase tracking-[0.2em] mb-1" style={{ color: GOLD, fontFamily: ff }}>
                   {isBn ? "অনুসন্ধান ফর্ম" : "Enquiry Form"}
@@ -268,7 +268,7 @@ export default function Contact() {
               </div>
 
               {/* Map */}
-              <div className="rounded-2xl overflow-hidden border" style={{ borderColor: `${NAVY}08` }}>
+              <div className="rounded-xl overflow-hidden border" style={{ borderColor: `${NAVY}08` }}>
                 <div className="h-64 relative flex items-center justify-center" style={{ backgroundColor: "#E8E4DD" }}>
                   <div className="absolute inset-0">
                     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -300,7 +300,7 @@ export default function Contact() {
               </div>
 
               {/* Saudi offices list */}
-              <div className="bg-white rounded-2xl border p-6" style={{ borderColor: `${NAVY}08` }}>
+              <div className="bg-white rounded-xl border p-6" style={{ borderColor: `${NAVY}08` }}>
                 <div className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: GOLD, fontFamily: ff }}>
                   {isBn ? "সৌদি অফিস" : "Saudi Offices"}
                 </div>

@@ -183,7 +183,7 @@ function WorkCard({
     <button
       type="button"
       onClick={onClick}
-      className="text-left rounded-2xl p-5 min-h-[120px] transition-all active:scale-[0.99] w-full"
+      className="text-left rounded-xl p-5 min-h-[120px] transition-all active:scale-[0.99] w-full"
       style={{
         backgroundColor: ERP.surface,
         border: `1px solid ${ERP.border}`,
@@ -657,7 +657,7 @@ export function OpsTodayDashboard() {
                         key={g.label}
                         type="button"
                         onClick={() => go("/ops-control?tab=groups")}
-                        className="rounded-2xl p-5 text-left"
+                        className="rounded-xl p-5 text-left"
                         style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}
                       >
                         <g.icon size={18} style={{ color: g.tone }} className="mb-3" />
@@ -681,7 +681,7 @@ export function OpsTodayDashboard() {
           {/* Section 4 — Today's Activity */}
           <section>
             <SectionTitle bn="আজকের কার্যক্রম" en="Today's Activity" lang={lang} />
-            <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
+            <div className="rounded-xl overflow-hidden" style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}>
               {activity.loading ? (
                 <div className="p-4"><LoadingSkeleton tone="light" rows={4} /></div>
               ) : activity.error || !activity.data?.length ? (
@@ -755,7 +755,7 @@ export function OpsTodayDashboard() {
                     key={a.id}
                     type="button"
                     onClick={() => go(a.path)}
-                    className="rounded-2xl p-5 text-left flex items-start gap-3"
+                    className="rounded-xl p-5 text-left flex items-start gap-3"
                     style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}
                   >
                     <a.icon size={20} style={{ color: a.tone }} className="shrink-0 mt-0.5" />
@@ -797,7 +797,7 @@ export function OpsTodayDashboard() {
                     key={c.label}
                     type="button"
                     onClick={() => go("/finance-erp")}
-                    className="rounded-2xl p-5 text-left"
+                    className="rounded-xl p-5 text-left"
                     style={{ backgroundColor: ERP.surface, border: `1px solid ${ERP.border}` }}
                   >
                     <div className="text-xs font-semibold mb-2" style={{ color: ERP.muted }}>{c.label}</div>

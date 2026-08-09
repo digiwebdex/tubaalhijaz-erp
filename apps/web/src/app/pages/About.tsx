@@ -156,7 +156,7 @@ export default function About() {
                   : "Aligned with Saudi Arabia's Vision 2030 goal of hosting 30 million Umrah pilgrims annually, TUBA AL HIJAZ is building the digital and operational infrastructure to support that ambition — while maintaining the hospitality standards that the Holy Cities demand."
                 }
               </p>
-              <div className="p-6 rounded-2xl border-l-4" style={{ backgroundColor: "#F8F5F0", borderLeftColor: GOLD }}>
+              <div className="p-6 rounded-xl border-l-4" style={{ backgroundColor: "#F8F5F0", borderLeftColor: GOLD }}>
                 <div className="text-sm italic" style={{ color: "#374151", fontFamily: ff, lineHeight: lh }}>
                   {isBn
                     ? '"আমাদের প্ল্যাটফর্ম শুধু একটি ERP নয় — এটি ২০৩০ সালের মধ্যে ৩ কোটি যাত্রীকে সেবা দেওয়ার সৌদি উচ্চাভিলাষের জন্য পরিচালনামূলক ভিত্তি।"'
@@ -214,7 +214,7 @@ export default function About() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {LEADERSHIP.map((person) => (
-              <div key={person.name} className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: `${NAVY}08` }}>
+              <div key={person.name} className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: `${NAVY}08` }}>
                 <div className="h-40 flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: `${NAVY}05` }}>
                   <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold border-2" style={{ backgroundColor: `${GOLD}15`, borderColor: `${GOLD}30`, color: NAVY }}>
                     {person.name.split(" ").filter((w) => /^[A-Z]/.test(w)).slice(1, 3).map((w) => w[0]).join("")}
@@ -245,7 +245,7 @@ export default function About() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {OFFICES.map((office) => (
-              <div key={office.city.en} className="rounded-2xl border p-6" style={{ backgroundColor: "#FBFCFD", borderColor: `${GOLD}20` }}>
+              <div key={office.city.en} className="rounded-xl border p-6" style={{ backgroundColor: "#FBFCFD", borderColor: `${GOLD}20` }}>
                 <div className="text-3xl mb-4">{office.icon}</div>
                 <div className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: GOLD, fontFamily: ff }}>{office.role[lang]}</div>
                 <div className="text-base font-bold text-[#0B1E3F] mb-2" style={{ fontFamily: ff }}>{office.city[lang]}</div>

@@ -261,7 +261,7 @@ function FlowArrow() {
 
 function FlowBlock({ step, color, icon:Icon, items, editing }: { step:string; color:string; icon:typeof Zap; items:string[]; editing:boolean }) {
   return (
-    <div className="flex-1 min-w-0 rounded-2xl overflow-hidden" style={{ border:`1px solid ${color}25` }}>
+    <div className="flex-1 min-w-0 rounded-xl overflow-hidden" style={{ border:`1px solid ${color}25` }}>
       <div className="flex items-center gap-2 px-4 py-3" style={{ backgroundColor:`${color}18` }}>
         <Icon size={13} style={{ color }} />
         <span className="text-[9px] font-black uppercase tracking-widest" style={{ color }}>{step}</span>
@@ -676,7 +676,7 @@ function NotificationsScreen() {
 
           {/* WhatsApp preview */}
           {tab==="whatsapp" && (
-            <div className="rounded-2xl overflow-hidden" style={{ backgroundColor:"#F0F7F2" }}>
+            <div className="rounded-xl overflow-hidden" style={{ backgroundColor:"#F0F7F2" }}>
               {/* WA header */}
               <div className="flex items-center gap-3 px-4 py-3" style={{ backgroundColor:"#F0F7F3" }}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-black text-[var(--erp-text-strong)]" style={{ backgroundColor:WA_C }}>TH</div>
@@ -715,7 +715,7 @@ function NotificationsScreen() {
 
           {/* Email preview */}
           {tab==="email" && (
-            <div className="rounded-2xl overflow-hidden shadow-xl" style={{ fontFamily:"var(--font-sans)" }}>
+            <div className="rounded-xl overflow-hidden shadow-xl" style={{ fontFamily:"var(--font-sans)" }}>
               <div className="h-1.5" style={{ background:"linear-gradient(90deg,var(--erp-accent),#E8C87A,var(--erp-accent))" }} />
               <div className="bg-white px-6 py-5">
                 <div className="flex items-start justify-between mb-4 pb-4" style={{ borderBottom:"1px solid #E5E7EB" }}>
@@ -768,7 +768,7 @@ function NotificationsScreen() {
           {tab==="inapp" && (
             <div>
               <div className="text-[9px] mb-3 font-bold uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.50)" }}>In-App Notification Preview</div>
-              <div className={`rounded-2xl p-4`}
+              <div className={`rounded-xl p-4`}
                 style={{
                   backgroundColor:evt.id==="emergency"?`${EM_C}08`:"rgba(11,30,63,0.38)",
                   border:`1px solid ${evt.id==="emergency"?`${EM_C}30`:"rgba(11,30,63,0.38)"}`,
@@ -966,7 +966,7 @@ function DropdownDemoScreen() {
       </div>
 
       {/* Simulated top bar context */}
-      <div className="rounded-2xl flex items-center justify-between px-5 py-3 mb-2" style={{ backgroundColor:"var(--erp-surface-soft)", border:"1px solid rgba(11,30,63,0.11)" }}>
+      <div className="rounded-xl flex items-center justify-between px-5 py-3 mb-2" style={{ backgroundColor:"var(--erp-surface-soft)", border:"1px solid rgba(11,30,63,0.11)" }}>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor:AUTO }} />
           <span className="text-[10px] font-bold text-[var(--erp-text-strong)]">TUBA AL HIJAZ ERP</span>
@@ -994,7 +994,7 @@ function DropdownDemoScreen() {
       </div>
 
       {/* Dropdown panel */}
-      <div className="ml-auto max-w-sm rounded-2xl overflow-hidden" style={{ backgroundColor:"var(--erp-canvas)", border:"1px solid rgba(11,30,63,0.15)", boxShadow:"0 24px 64px rgba(0,0,0,0.6)" }}>
+      <div className="ml-auto max-w-sm rounded-xl overflow-hidden" style={{ backgroundColor:"var(--erp-canvas)", border:"1px solid rgba(11,30,63,0.15)", boxShadow:"0 24px 64px rgba(0,0,0,0.6)" }}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"var(--erp-surface-soft)" }}>
           <div className="flex items-center gap-2">

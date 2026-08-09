@@ -140,7 +140,7 @@ function StageNode({ stage, status, selected, onClick, groupCount }: {
   return (
     <button
       onClick={onClick}
-      className="relative flex flex-col items-center gap-1 rounded-2xl pt-3 pb-3 px-2 transition-all duration-150"
+      className="relative flex flex-col items-center gap-1 rounded-xl pt-3 pb-3 px-2 transition-all duration-150"
       style={{
         width: 92, minHeight: 128, flexShrink: 0,
         backgroundColor: selected ? `${erpAlpha(stage.color, 8)}` : active ? `${erpAlpha(stage.color, 3)}` : done ? ERP.mutedSoft : ERP.mutedSoft,
@@ -225,7 +225,7 @@ function StageDetailPane({ stageId, group }: { stageId: number; group: GroupPipe
   const here   = GROUPS.filter(g => g.currentStage === stageId);
   const Icon   = stage.icon;
   return (
-    <div className="rounded-2xl p-5 mt-4 shrink-0" style={{ backgroundColor:`${erpAlpha(stage.color, 3)}`, border:`1px solid ${erpAlpha(stage.color, 13)}` }}>
+    <div className="rounded-xl p-5 mt-4 shrink-0" style={{ backgroundColor:`${erpAlpha(stage.color, 3)}`, border:`1px solid ${erpAlpha(stage.color, 13)}` }}>
       <div className="flex items-start gap-6">
         {/* Stage overview */}
         <div className="flex-1 min-w-0">
@@ -341,7 +341,7 @@ function PipelineScreen() {
         const phaseStages = STAGES.filter(s => s.phase === phase.id);
         return (
           <div key={phase.id}>
-            <div className="rounded-2xl px-4 pt-4 pb-5" style={{ backgroundColor:ERP.surface, border:`1px solid ${erpAlpha(phase.color, 9)}` }}>
+            <div className="rounded-xl px-4 pt-4 pb-5" style={{ backgroundColor:ERP.surface, border:`1px solid ${erpAlpha(phase.color, 9)}` }}>
               {/* Phase header */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px" style={{ width:16, backgroundColor:`${erpAlpha(phase.color, 25)}` }} />
@@ -392,7 +392,7 @@ function PipelineScreen() {
       )}
 
       {/* Module legend */}
-      <div className="rounded-2xl p-4 mt-4" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
+      <div className="rounded-xl p-4 mt-4" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
         <div className="text-[8px] font-black uppercase tracking-widest mb-3" style={{ color:ERP.muted }}>Module Ownership Legend</div>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           {([
@@ -430,7 +430,7 @@ function GroupTrackerScreen() {
           <div key={g.id}>
             <button
               onClick={() => setSelected(isOpen ? null : g.id)}
-              className="w-full text-left rounded-2xl p-5 transition-all"
+              className="w-full text-left rounded-xl p-5 transition-all"
               style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${isOpen?cStage.color:ERP.mutedSoft}` }}
             >
               <div className="flex items-start gap-4 mb-4">
@@ -465,7 +465,7 @@ function GroupTrackerScreen() {
 
             {/* Expanded stage list */}
             {isOpen && (
-              <div className="mt-2 rounded-2xl overflow-hidden" style={{ border:`1px solid ${ERP.border}` }}>
+              <div className="mt-2 rounded-xl overflow-hidden" style={{ border:`1px solid ${ERP.border}` }}>
                 {STAGES.map((s, i) => {
                   const st = stageStatus(s.id, g);
                   const [sc, sl] = SS[st];

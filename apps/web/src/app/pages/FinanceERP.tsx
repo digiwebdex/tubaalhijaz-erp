@@ -314,7 +314,7 @@ function ActionBtn({ label, color, icon:Icon, onClick, disabled }: { label:strin
 
 function FinDoc({ type, docNo, date, children, noBarcode }: { type:string; docNo:string; date:string; children:ReactNode; noBarcode?:boolean }) {
   return (
-    <div className="rounded-2xl overflow-hidden shadow-xl" style={{ fontFamily:"var(--font-sans)" }}>
+    <div className="rounded-xl overflow-hidden shadow-xl" style={{ fontFamily:"var(--font-sans)" }}>
       <div className="h-2" style={{ background:`linear-gradient(90deg,${GOLD},${ERP.goldHov},${GOLD})` }} />
       <div className="bg-white px-8 py-6">
         <div className="flex items-start justify-between mb-6">
@@ -1251,7 +1251,7 @@ function ForexScreen() {
     <div className="p-7 grid grid-cols-3 gap-6">
       <div className="col-span-2 space-y-5">
         <div><h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Multi-Currency</h2><p className="text-xs mt-0.5" style={{ color:ERP.muted }}>Live rates · SAR, BDT, USD exposures · Season 1446H</p></div>
-        <div className="rounded-2xl overflow-hidden" style={{ border:`1px solid ${ERP.border}` }}>
+        <div className="rounded-xl overflow-hidden" style={{ border:`1px solid ${ERP.border}` }}>
           {(error && !demo) ? <div className="p-4"><ErrorState onRetry={refetch} /></div> : (
           <ErpDataTable
             flush
@@ -1274,7 +1274,7 @@ function ForexScreen() {
 
       {/* Converter */}
       <div className="space-y-4">
-        <div className="rounded-2xl p-5" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}` }}>
+        <div className="rounded-xl p-5" style={{ backgroundColor:ERP.surfaceSoft, border:`1px solid ${ERP.border}` }}>
           <div className="text-xs font-bold text-[color:var(--erp-text-strong)] mb-4">Currency Converter</div>
           <div className="space-y-3">
             <div>
@@ -1306,7 +1306,7 @@ function ForexScreen() {
             </div>
           </div>
         </div>
-        <div className="rounded-2xl p-4" style={{ backgroundColor:`${erpAlpha(FIN, 3)}`, border:`1px solid ${erpAlpha(FIN, 13)}` }}>
+        <div className="rounded-xl p-4" style={{ backgroundColor:`${erpAlpha(FIN, 3)}`, border:`1px solid ${erpAlpha(FIN, 13)}` }}>
           <div className="text-[9px] font-black uppercase tracking-widest mb-2" style={{ color:FIN }}>BDT Exposure Note</div>
           <div className="text-[10px]" style={{ color:ERP.muted }}>BDT 12.4M in agent balances is the largest foreign-currency exposure. Exchange risk is partially hedged via advance booking contracts.</div>
         </div>
@@ -1932,7 +1932,7 @@ function PLScreen() {
     <div className="p-7 space-y-5">
       {/* Chart + KPIs */}
       <div className="grid grid-cols-3 gap-5">
-        <div className="col-span-2 rounded-2xl p-5" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
+        <div className="col-span-2 rounded-xl p-5" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
           <div className="flex items-center justify-between mb-4">
             <div><div className="text-xs font-bold text-[color:var(--erp-text-strong)]">P&L Overview — Jan–Jul 2025</div><div className="text-[10px]" style={{ color:ERP.muted }}>Revenue · COGS · OpEx (SAR thousands)</div></div>
           </div>

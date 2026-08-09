@@ -33,11 +33,11 @@ export function ErpStatCard({ label, value, icon, accent, hint, delta, onClick, 
       ) : (
         icon != null && <div style={{ fontSize: ERP.text.size[18], marginBottom: ERP.space[1.5] }}>{icon}</div>
       )}
-      <div style={{ fontFamily: ERP.font.data, fontSize: ERP.text.size[20], fontWeight: ERP.text.weight.bold, color: a, lineHeight: ERP.text.leading.tight }}>
+        <div style={{ fontFamily: ERP.font.heading, fontSize: ERP.text.size[9], fontWeight: ERP.text.weight.bold, color: ERP.muted, marginBottom: ERP.space[1.5], textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          {label}
+        </div>
+      <div style={{ fontFamily: ERP.font.data, fontSize: ERP.text.size[18], fontWeight: ERP.text.weight.bold, color: a, lineHeight: ERP.text.leading.tight }}>
         {value}
-      </div>
-      <div style={{ fontFamily: ERP.font.body, fontSize: ERP.text.size[10], color: ERP.muted, marginTop: ERP.space[1.5], letterSpacing: "0.02em" }}>
-        {label}
       </div>
       {hint != null && (
         <div style={{ fontSize: ERP.text.size[10], color: ERP.mutedSoft, marginTop: ERP.space[0.5] }}>{hint}</div>

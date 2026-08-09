@@ -82,7 +82,7 @@ function MPill({ label, color, size = "sm" }: { label: string; color: string; si
 // Mobile card wrapper
 function MCard({ children, color, className = "" }: { children: ReactNode; color?: string; className?: string }) {
   return (
-    <div className={`rounded-2xl overflow-hidden ${className}`} style={{ backgroundColor:"var(--erp-surface-soft)", border:`1px solid ${color ? color+"20" : "rgba(11,30,63,0.38)"}` }}>
+    <div className={`rounded-xl overflow-hidden ${className}`} style={{ backgroundColor:"var(--erp-surface-soft)", border:`1px solid ${color ? color+"20" : "rgba(11,30,63,0.38)"}` }}>
       {children}
     </div>
   );
@@ -273,7 +273,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                 {/* Driver status card */}
                 <MCard color={DRV_C} className="mx-4 mb-4">
                   <div className="p-4 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor:`${DRV_C}20` }}>
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor:`${DRV_C}20` }}>
                       <Truck size={22} style={{ color:DRV_C }} />
                     </div>
                     <div className="flex-1">
@@ -296,7 +296,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
               <div className="px-4 space-y-3 pb-4">
                 {DRV_TRIPS.map(t => (
                   <button key={t.id} onClick={() => { if(t.status==="ACTIVE"){ setTab("today"); setScreen("trip"); } }}
-                    className="w-full rounded-2xl p-4 text-left active:scale-98 transition-all"
+                    className="w-full rounded-xl p-4 text-left active:scale-98 transition-all"
                     style={{ backgroundColor:t.status==="ACTIVE"?`${DRV_C}10`:"rgba(11,30,63,0.38)", border:`1px solid ${t.status==="ACTIVE"?`${DRV_C}30`:"rgba(11,30,63,0.38)"}`, borderLeft:`3px solid ${t.color}` }}>
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-[10px] font-black" style={{ color:DRV_C, fontFamily:"var(--font-mono)" }}>{t.id}</span>
@@ -371,15 +371,15 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
               {/* Action buttons */}
               <div className="px-4 pb-4 space-y-2">
                 <div className="flex gap-2">
-                  <button className="flex-1 py-3 rounded-2xl text-sm font-bold active:scale-95 transition-all" style={{ backgroundColor:`${DRV_C}18`, color:DRV_C, border:`1px solid ${DRV_C}35` }}>
+                  <button className="flex-1 py-3 rounded-xl text-sm font-bold active:scale-95 transition-all" style={{ backgroundColor:`${DRV_C}18`, color:DRV_C, border:`1px solid ${DRV_C}35` }}>
                     En Route
                   </button>
                   <button onClick={() => { setScreen("enroute"); setTab("route"); toast.success("Navigation started", { duration:2000 }); }}
-                    className="flex-1 py-3 rounded-2xl text-sm font-bold active:scale-95 transition-all" style={{ backgroundColor:DRV_C, color:"white" }}>
+                    className="flex-1 py-3 rounded-xl text-sm font-bold active:scale-95 transition-all" style={{ backgroundColor:DRV_C, color:"white" }}>
                     Start Navigation →
                   </button>
                 </div>
-                <button className="w-full py-2.5 rounded-2xl text-sm flex items-center justify-center gap-2 active:scale-95"
+                <button className="w-full py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 active:scale-95"
                   style={{ backgroundColor:"var(--erp-surface-soft)", color:"rgba(11,30,63,0.66)" }}>
                   <Phone size={13} /> Call Operations
                 </button>
@@ -413,7 +413,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                   <circle cx="155" cy="165" r="22" fill={DRV_C} opacity="0.08" />
                 </svg>
                 {/* ETA overlay */}
-                <div className="absolute top-4 left-4 right-4 rounded-2xl p-3" style={{ backgroundColor:"rgba(0,0,0,0.75)", backdropFilter:"blur(12px)", border:"1px solid rgba(11,30,63,0.15)" }}>
+                <div className="absolute top-4 left-4 right-4 rounded-xl p-3" style={{ backgroundColor:"rgba(0,0,0,0.75)", backdropFilter:"blur(12px)", border:"1px solid rgba(11,30,63,0.15)" }}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-2xl font-black text-[var(--erp-text-strong)]">14 min</div>
@@ -436,11 +436,11 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
               {/* Status actions */}
               <div className="px-4 py-4 shrink-0" style={{ backgroundColor:"#0C1B33" }}>
                 <div className="flex gap-2 mb-2">
-                  <button className="flex-1 py-3 rounded-2xl text-sm font-bold active:scale-95" style={{ backgroundColor:`${DRV_C}18`, color:DRV_C, border:`1px solid ${DRV_C}30` }}>
+                  <button className="flex-1 py-3 rounded-xl text-sm font-bold active:scale-95" style={{ backgroundColor:`${DRV_C}18`, color:DRV_C, border:`1px solid ${DRV_C}30` }}>
                     En Route ●
                   </button>
                   <button onClick={() => { setScreen("arrived"); toast.success("Arrival marked!", { duration:2000 }); }}
-                    className="flex-1 py-3 rounded-2xl text-sm font-bold active:scale-95" style={{ backgroundColor:DRV_C, color:"white" }}>
+                    className="flex-1 py-3 rounded-xl text-sm font-bold active:scale-95" style={{ backgroundColor:DRV_C, color:"white" }}>
                     Arrived ✓
                   </button>
                 </div>
@@ -473,7 +473,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                 </div>
               </MCard>
               <button onClick={() => { toast.success("Trip completed — SAR 180 earned", { duration:3000 }); setScreen("home"); }}
-                className="w-full py-4 rounded-2xl text-sm font-black active:scale-95" style={{ backgroundColor:DRV_C, color:"white" }}>
+                className="w-full py-4 rounded-xl text-sm font-black active:scale-95" style={{ backgroundColor:DRV_C, color:"white" }}>
                 Complete Trip & Submit Report
               </button>
             </div>
@@ -494,7 +494,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
               ))}
               <div className="px-4 mt-4">
                 <button onClick={() => toast.info("Opening camera for upload…", { duration:2000 })}
-                  className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 active:scale-95"
+                  className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 active:scale-95"
                   style={{ backgroundColor:`${DRV_C}15`, color:DRV_C, border:`1px solid ${DRV_C}30` }}>
                   <Upload size={15} /> Upload New Document
                 </button>
@@ -545,7 +545,7 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
               <MHeader title="My Groups" sub="Rashidi Travel · Season 1446H" color={AGT_C}
                 right={<button onClick={() => toast.info("এই মডিউল এখনও কনফিগার করা হয়নি।")} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor:AGT_C }}><Plus size={16} style={{ color:"white" }} /></button>} />
               {/* Wallet quick-look */}
-              <div className="mx-4 mb-4 rounded-2xl p-4" style={{ background:`linear-gradient(135deg,${AGT_C} 0%,var(--erp-cat-purple) 100%)` }}>
+              <div className="mx-4 mb-4 rounded-xl p-4" style={{ background:`linear-gradient(135deg,${AGT_C} 0%,var(--erp-cat-purple) 100%)` }}>
                 <div className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color:"rgba(255,255,255,0.80)" }}>Wallet Balance</div>
                 <div className="text-3xl font-black text-white">SAR 59,600</div>
                 <div className="text-[10px] mt-1" style={{ color:"rgba(255,255,255,0.80)" }}>INV-1446-0091 outstanding · SAR 323,725</div>
@@ -603,7 +603,7 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
               ].map(s => <MRow key={s.label} icon={s.icon} label={s.label} sub={s.status} color={AGT_C} right={<MPill label={s.status.startsWith("SAR")?"OUTSTANDING":"DONE"} color={s.color} size="xs" />} />)}
               <div className="px-4 mt-4">
                 <button onClick={() => setScreen("ocr")}
-                  className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 active:scale-95"
+                  className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 active:scale-95"
                   style={{ backgroundColor:AGT_C, color:"white" }}>
                   <Camera size={15} /> Add Passenger (OCR)
                 </button>
@@ -660,7 +660,7 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
           {screen === "wallet" && (
             <div className="pt-2">
               <MHeader title="Wallet" sub="Rashidi Travel · Agent Account" color={AGT_C} />
-              <div className="mx-4 mb-4 rounded-2xl p-5" style={{ background:`linear-gradient(135deg,${AGT_C} 0%,#4F46E5 100%)` }}>
+              <div className="mx-4 mb-4 rounded-xl p-5" style={{ background:`linear-gradient(135deg,${AGT_C} 0%,#4F46E5 100%)` }}>
                 <div className="text-[9px] font-black uppercase tracking-widest mb-2" style={{ color:"rgba(255,255,255,0.86)" }}>Available Balance</div>
                 <div className="text-4xl font-black text-white mb-1">SAR 59,600</div>
                 <div className="text-[10px]" style={{ color:"rgba(255,255,255,0.80)" }}>Last topped up: SAR 180,000 · 15 Jul</div>
@@ -834,11 +834,11 @@ function OpsApp({ screen, setScreen }: { screen: OpsScreen; setScreen: (s: OpsSc
               </div>
               <div className="px-4 pb-4 space-y-2 mt-4">
                 <button onClick={() => toast.error("Calling driver...", { duration:2000 })}
-                  className="w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 active:scale-95" style={{ backgroundColor:"var(--erp-destructive)", color: "white" }}>
+                  className="w-full py-4 rounded-xl text-sm font-black flex items-center justify-center gap-2 active:scale-95" style={{ backgroundColor:"var(--erp-destructive)", color: "white" }}>
                   <Phone size={16} /> Call Driver Now
                 </button>
                 <button onClick={() => toast.success("Re-assignment initiated", { duration:2000 })}
-                  className="w-full py-3 rounded-2xl text-sm font-bold active:scale-95" style={{ backgroundColor:"rgba(239,68,68,0.12)", color:"#F87171", border:"1px solid rgba(239,68,68,0.25)" }}>
+                  className="w-full py-3 rounded-xl text-sm font-bold active:scale-95" style={{ backgroundColor:"rgba(239,68,68,0.12)", color:"#F87171", border:"1px solid rgba(239,68,68,0.25)" }}>
                   Re-assign & Dispatch New Vehicle
                 </button>
               </div>
@@ -978,11 +978,11 @@ function SupApp({ screen, setScreen }: { screen: SupScreen; setScreen: (s: SupSc
                 </MCard>
                 <div className="flex gap-2">
                   <button onClick={() => { toast.success("Approved and notified", { duration:2000 }); setScreen("approvals"); }}
-                    className="flex-1 py-3 rounded-2xl text-sm font-bold active:scale-95" style={{ backgroundColor:SUP_C, color:"white" }}>
+                    className="flex-1 py-3 rounded-xl text-sm font-bold active:scale-95" style={{ backgroundColor:SUP_C, color:"white" }}>
                     Approve ✓
                   </button>
                   <button onClick={() => { toast.error("Rejected", { duration:2000 }); setScreen("approvals"); }}
-                    className="flex-1 py-3 rounded-2xl text-sm font-bold active:scale-95" style={{ backgroundColor:"rgba(248,113,113,0.12)", color:"var(--erp-destructive)", border:"1px solid rgba(248,113,113,0.2)" }}>
+                    className="flex-1 py-3 rounded-xl text-sm font-bold active:scale-95" style={{ backgroundColor:"rgba(248,113,113,0.12)", color:"var(--erp-destructive)", border:"1px solid rgba(248,113,113,0.2)" }}>
                     Reject ✗
                   </button>
                 </div>
@@ -1190,9 +1190,9 @@ export default function MobileApps() {
 
           {/* App info panel */}
           <div className="w-72 shrink-0 space-y-4 pt-12">
-            <div className="rounded-2xl p-5" style={{ backgroundColor:"var(--erp-surface-soft)", border:`1px solid ${appColor}20` }}>
+            <div className="rounded-xl p-5" style={{ backgroundColor:"var(--erp-surface-soft)", border:`1px solid ${appColor}20` }}>
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ backgroundColor:`${appColor}18` }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor:`${appColor}18` }}>
                   <Smartphone size={18} style={{ color:appColor }} />
                 </div>
                 <div>
@@ -1211,7 +1211,7 @@ export default function MobileApps() {
             </div>
 
             {/* Other apps */}
-            <div className="rounded-2xl p-4" style={{ backgroundColor:"var(--erp-surface)", border:"1px solid rgba(11,30,63,0.11)" }}>
+            <div className="rounded-xl p-4" style={{ backgroundColor:"var(--erp-surface)", border:"1px solid rgba(11,30,63,0.11)" }}>
               <div className="text-[8px] font-black uppercase tracking-widest mb-3" style={{ color:"rgba(11,30,63,0.50)" }}>All Mobile Apps</div>
               {(["driver","agent","ops","sup"] as AppId[]).map(id => {
                 const m = APP_META[id];

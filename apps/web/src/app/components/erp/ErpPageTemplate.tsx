@@ -33,7 +33,7 @@ export function ErpPageTemplate({
 }: ErpPageTemplateProps) {
   return (
     <div
-      className={`p-4 sm:p-6 md:p-7 h-full overflow-y-auto overflow-x-hidden min-w-0 ${className ?? ""}`}
+      className={`p-4 sm:p-5 md:p-6 pb-14 h-full overflow-y-auto overflow-x-hidden min-w-0 ${className ?? ""}`}
       style={{ backgroundColor: ERP.canvas, scrollbarWidth: "thin" }}
     >
       <ErpPageHeader

@@ -575,7 +575,7 @@ function ComponentsSection() {
       </>}
       {modalOpen&&(
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{backgroundColor:"rgba(6,15,32,0.75)"}} onClick={()=>setModalOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" onClick={e=>e.stopPropagation()}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" onClick={e=>e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b" style={{borderColor:`${NAVY}10`}}>
               <div><div className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{color:GOLD}}>Visa Application</div><div className="font-bold text-base" style={{color:NAVY}}>Review — VA-1446-002</div></div>
               <button onClick={()=>setModalOpen(false)} className="p-1.5 rounded-lg hover:bg-[#EDE9E3]"><X size={16} style={{color:NAVY}}/></button>
@@ -679,7 +679,7 @@ export default function DesignSystem() {
       </aside>
       <main className="transition-all duration-300 pt-14 min-h-screen" style={{ marginLeft: sidebarOpen ? 220 : 0 }}>
         <div className="max-w-4xl mx-auto px-8 py-10">
-          <div className="rounded-2xl p-8 mb-12 relative overflow-hidden" style={{ backgroundColor: NAVY }}>
+          <div className="rounded-xl p-8 mb-12 relative overflow-hidden" style={{ backgroundColor: NAVY }}>
             <div className="absolute inset-0 opacity-5"><svg width="100%" height="100%"><pattern id="geo" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M30 0L60 15V45L30 60L0 45V15Z" fill="none" stroke={GOLD} strokeWidth="0.5"/><circle cx="30" cy="30" r="4" fill="none" stroke={GOLD} strokeWidth="0.5"/></pattern><rect width="100%" height="100%" fill="url(#geo)"/></svg></div>
             <div className="relative z-10 flex items-center justify-between flex-wrap gap-6">
               <div><div className="text-xs font-bold uppercase tracking-[0.25em] mb-2" style={{ color: GOLD }}>Master Design System · Release 1.0</div><h1 className="text-3xl font-bold text-white mb-2">TUBA AL HIJAZ ERP</h1><div className="text-base font-medium" style={{ color: "rgba(255,255,255,0.80)" }}>نظام إدارة موارد المؤسسة لخدمات الحج والعمرة</div><p className="text-sm max-w-xl mt-3" style={{ color: "rgba(255,255,255,0.72)" }}>Enterprise visual language for a premium, bilingual Arabic/English ground handling operations platform.</p></div>

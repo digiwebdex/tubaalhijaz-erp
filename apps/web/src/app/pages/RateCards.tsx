@@ -70,7 +70,7 @@ export default function RateCards() {
         ))}
       </div>
 
-      <div className="rounded-2xl p-4 mb-5 flex flex-wrap items-end gap-2" style={{ backgroundColor: "var(--erp-surface)", border: "1px solid rgba(11,30,63,0.11)" }}>
+      <div className="rounded-xl p-4 mb-5 flex flex-wrap items-end gap-2" style={{ backgroundColor: "var(--erp-surface)", border: "1px solid rgba(11,30,63,0.11)" }}>
         {formFields}
         <input type="number" placeholder="Price" value={String(form.price ?? "")} onChange={(e) => set("price", e.target.value)} className="px-3 py-2 text-xs rounded-lg w-28" style={inp} />
         <input type="text" placeholder="SAR" value={String(form.currency ?? "SAR")} onChange={(e) => set("currency", e.target.value)} className="px-3 py-2 text-xs rounded-lg w-16" style={inp} />
@@ -78,7 +78,7 @@ export default function RateCards() {
         <button onClick={create} className="px-4 py-2 text-xs font-bold rounded-lg" style={{ backgroundColor: GOLD, color: NAVY }}>Add rate</button>
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--erp-surface)", border: "1px solid rgba(11,30,63,0.11)" }}>
+      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "var(--erp-surface)", border: "1px solid rgba(11,30,63,0.11)" }}>
         {rows === null && !error ? <div className="p-5"><LoadingSkeleton rows={4} /></div>
           : error ? <div className="p-5"><ErrorState onRetry={() => load(kind)} /></div>
           : rows && rows.length === 0 ? <div className="p-5"><EmptyState title="No rate cards yet" hint="Add one above." /></div>
