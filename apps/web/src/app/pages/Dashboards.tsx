@@ -1042,9 +1042,9 @@ function SupplierDash() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 const LABELS: Record<DashScreen, string> = {
-  today: "আজকের কাজ",
-  ceo: "নির্বাহী",
-  reports: "রিপোর্ট",
+  today: "Today's Work",
+  ceo: "Executive",
+  reports: "Reports",
   ops: "Operations",
   visa: "Visa & Compliance",
   finance: "Finance",

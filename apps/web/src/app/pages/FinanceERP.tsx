@@ -2285,11 +2285,11 @@ function MofaBillScreen() {
 // ─── Main FinanceERP ──────────────────────────────────────────────────────────
 
 const LABELS: Record<FinScreen, string> = {
-  dashboard: "ফাইন্যান্স", income: "ইনকাম", expenses: "খরচ",
-  ledger: "লেজার", ar: "প্রাপ্য (AR)", ap: "প্রদেয় (AP)",
-  cash: "নগদ ও ব্যাংক", forex: "মাল্টি-কারেন্সি", invoices: "ইনভয়েস",
-  mofaBill: "MOFA বিল",
-  receipts: "রসিদ", statements: "স্টেটমেন্ট", pl: "লাভ-ক্ষতি", bs: "ব্যালেন্স শিট",
+  dashboard: "Finance", income: "Income", expenses: "Expenses",
+  ledger: "Ledgers", ar: "Receivables (AR)", ap: "Payables (AP)",
+  cash: "Cash & Bank", forex: "Multi-Currency", invoices: "Invoices",
+  mofaBill: "MOFA Bills",
+  receipts: "Receipts", statements: "Statements", pl: "Profit & Loss", bs: "Balance Sheet",
 };
 
 export default function FinanceERP() {

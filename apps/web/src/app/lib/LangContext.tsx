@@ -1,5 +1,6 @@
 // ─── Global Language Context ──────────────────────────────────────────────────
-// Bengali (বাংলা) is the DEFAULT. English is the alternative.
+// English is the DEFAULT — the Figma design is authored in English and is the
+// UI source of truth. Bengali (বাংলা) remains fully available via the header toggle.
 // One toggle anywhere in the app switches the entire UI simultaneously.
 //
 // Usage (any component):
@@ -16,13 +17,13 @@ interface LangContextValue {
 }
 
 const LangContext = createContext<LangContextValue>({
-  lang: "bn",
+  lang: "en",
   setLang: () => {},
   toggleLang: () => {},
 });
 
 export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>("bn");
+  const [lang, setLang] = useState<Lang>("en");
   const toggleLang = () => setLang(l => l === "bn" ? "en" : "bn");
   return (
     <LangContext.Provider value={{ lang, setLang, toggleLang }}>
