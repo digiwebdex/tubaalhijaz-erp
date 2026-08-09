@@ -337,7 +337,7 @@ function BoardState({ cols, demo, state, onRetry, title, hint }: {
 function BStat({ s, map }: { s: string; map: Record<string, { color:string; label?:string }> }) {
   const v = map[s] ?? map.SCHEDULED ?? { color: ERP.muted };
   return (
-    <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-[11px] font-black tracking-[0.14em] uppercase whitespace-nowrap"
+    <span className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[9px] font-bold tracking-[0.08em] uppercase whitespace-nowrap"
           style={{ backgroundColor: erpAlpha(v.color, 13), color: v.color }}>
       {"label" in v ? v.label as string : s}
     </span>
@@ -667,7 +667,7 @@ function GroupMaster({ apiGroups, demo, state, onRetry }: { apiGroups: ApiGroup[
 
   if (!demo && state === "error") {
     return (
-      <div className="p-7" style={{ fontFamily: fontFor(lang) }}>
+      <div className="px-6 pt-5 pb-14" style={{ fontFamily: fontFor(lang) }}>
         <ErrorState tone="light" lang={lang} onRetry={onRetry} />
       </div>
     );
@@ -795,11 +795,11 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
   return (
     <div style={{ backgroundColor:CR_BG, minHeight:"100%" }}>
       {/* Board header */}
-      <div className="flex items-center justify-between px-8 py-4" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:CR_SURFACE }}>
+      <div className="flex items-center justify-between px-[18px] py-3" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:CR_SURFACE }}>
         <div className="flex items-center gap-4">
           <PlaneLanding size={20} style={{ color:OPS }} />
           <div>
-            <div className="text-lg font-black text-[color:var(--erp-text-strong)] tracking-wide">ARRIVALS</div>
+            <div className="text-[12px] font-bold text-[color:var(--erp-text-strong)] tracking-wide">ARRIVALS</div>
             <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color:ERP.muted }}>Season 1446H · Ground Handling</div>
           </div>
         </div>
@@ -808,7 +808,7 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
             {[["ACTIVE",data.filter((a)=>active(a.status)).length,CAT.orange],
               ["DELAYED",data.filter((a)=>a.status==="DELAYED").length,ERP.warning],
               ["DELIVERED",data.filter((a)=>a.status==="DELIVERED").length,ERP.success]].map(([l,n,c])=>(
-              <span key={l as string} className="px-3 py-1 rounded-lg whitespace-nowrap" style={{ backgroundColor:`${erpAlpha(c as string, 9)}`, color:c as string }}>
+              <span key={l as string} className="whitespace-nowrap" style={{ color:c as string }}>
                 {l} <span className="font-black tabular-nums" style={{ fontFamily:"var(--font-mono)" }}>{ready ? (n as number) : "—"}</span>
               </span>
             ))}
@@ -825,7 +825,7 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
         <thead>
           <tr style={{ backgroundColor:ERP.surface, borderBottom:`1px solid ${ERP.border}` }}>
             {["FLIGHT","AIRLINE","ROUTE","ETA","PAX","GROUP / AGENT","VEHICLE · DRIVER","STATUS"].map((c,i) => (
-              <th key={c} className={`px-5 py-3 text-left text-[9px] font-black tracking-[0.15em] uppercase ${i===3||i===4?"text-center":""}`}
+              <th key={c} className={`px-[18px] py-[9px] text-left text-[9px] font-bold tracking-[0.08em] uppercase ${i===3||i===4?"text-center":""}`}
                   style={{ color:ERP.muted }}>{c}</th>
             ))}
           </tr>
@@ -840,23 +840,23 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
               <tr key={a.id}
                   style={{ borderBottom:`1px solid ${ERP.border}`, borderLeft:`3px solid ${isActive ? s.color : isDelay ? ERP.warning : "transparent"}`, opacity: isDone ? 0.55 : 1 }}
                   className="hover:bg-white/2">
-                <td className="px-5 py-4">
-                  <span className="text-xl font-black tracking-wide whitespace-nowrap" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{a.flight}</span>
+                <td className="px-[18px] py-1.5">
+                  <span className="text-[13px] font-bold tracking-wide whitespace-nowrap" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{a.flight}</span>
                 </td>
-                <td className="px-5 py-4 text-xs font-bold" style={{ color:ERP.navy }}><div className="truncate max-w-[10rem]" title={a.airline}>{a.airline}</div></td>
-                <td className="px-5 py-4 text-sm font-bold text-[color:var(--erp-text-strong)] whitespace-nowrap">{a.route}</td>
-                <td className="px-5 py-4 text-center">
-                  <span className="text-xl font-black whitespace-nowrap tabular-nums" style={{ color: isDelay ? ERP.warning : ERP.navy, fontFamily:"var(--font-mono)" }}>{a.eta}</span>
+                <td className="px-[18px] py-1.5 text-xs font-bold" style={{ color:ERP.navy }}><div className="truncate max-w-[10rem]" title={a.airline}>{a.airline}</div></td>
+                <td className="px-[18px] py-1.5 text-sm font-bold text-[color:var(--erp-text-strong)] whitespace-nowrap">{a.route}</td>
+                <td className="px-[18px] py-1.5 text-center">
+                  <span className="text-[13px] font-bold whitespace-nowrap tabular-nums" style={{ color: isDelay ? ERP.warning : ERP.navy, fontFamily:"var(--font-mono)" }}>{a.eta}</span>
                   {isDelay && <div className="text-[9px] font-bold mt-0.5" style={{ color:ERP.warning }}>DELAYED</div>}
                 </td>
-                <td className="px-5 py-4 text-center">
-                  <span className="text-3xl font-black tabular-nums" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{a.pax}</span>
+                <td className="px-[18px] py-1.5 text-center">
+                  <span className="text-[13px] font-bold tabular-nums" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{a.pax}</span>
                 </td>
-                <td className="px-5 py-4">
+                <td className="px-[18px] py-1.5">
                   <div className="text-[10px] font-black truncate max-w-[13rem]" title={a.group} style={{ color:OPS, fontFamily:"var(--font-mono)" }}>{a.group}</div>
                   <div className="text-xs text-[color:var(--erp-text-strong)] mt-0.5 truncate max-w-[13rem]" title={a.agent}>{a.agent}</div>
                 </td>
-                <td className="px-5 py-4">
+                <td className="px-[18px] py-1.5">
                   {a.vehicle !== "—" ? (
                     <>
                       <div className="text-xs font-black text-[color:var(--erp-text-strong)] truncate max-w-[11rem]" title={a.vehicle}>{a.vehicle}</div>
@@ -866,7 +866,7 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
                     <span className="text-xs whitespace-nowrap" style={{ color:ERP.mutedSoft }}>Not Assigned</span>
                   )}
                 </td>
-                <td className="px-5 py-4">
+                <td className="px-[18px] py-1.5">
                   {demo ? (
                     <BStat s={a.status} map={ARR_STAT} />
                   ) : (
@@ -874,7 +874,7 @@ function ArrivalBoard({ rows, connected, onRefresh, demo, state }: { rows: Fligh
                       value={a.status}
                       disabled={busyId === a.id}
                       onChange={(e) => void setFlightStatus(a.id, e.target.value as ArrivalStatus)}
-                      className="px-2 py-1.5 rounded-lg text-[10px] font-bold focus:outline-none"
+                      className="px-2.5 py-2 rounded-[5px] text-[10px] font-bold focus:outline-none"
                       style={{ backgroundColor: erpAlpha(ARR_STAT[a.status]?.color ?? ERP.muted, 13), color: ARR_STAT[a.status]?.color ?? ERP.navy, border: `1px solid ${ERP.border}` }}
                     >
                       {ARRIVAL_OPTS.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -923,11 +923,11 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
   };
   return (
     <div style={{ backgroundColor:CR_BG, minHeight:"100%" }}>
-      <div className="flex items-center justify-between px-8 py-4" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:CR_SURFACE }}>
+      <div className="flex items-center justify-between px-[18px] py-3" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:CR_SURFACE }}>
         <div className="flex items-center gap-4">
           <PlaneTakeoff size={20} style={{ color:ERP.info }} />
           <div>
-            <div className="text-lg font-black text-[color:var(--erp-text-strong)] tracking-wide">DEPARTURES</div>
+            <div className="text-[12px] font-bold text-[color:var(--erp-text-strong)] tracking-wide">DEPARTURES</div>
             <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color:ERP.muted }}>Season 1446H · Outbound Transfer</div>
           </div>
         </div>
@@ -936,7 +936,7 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
             {[["CHECK-IN", data.filter(d=>d.status==="CHECK_IN").length,ERP.success],
               ["DELAYED",  data.filter(d=>d.status==="DELAYED").length, ERP.warning],
               ["SCHEDULED",data.filter(d=>d.status==="SCHEDULED").length,ERP.muted]].map(([l,n,c])=>(
-              <span key={l as string} className="px-3 py-1 rounded-lg whitespace-nowrap" style={{ backgroundColor:`${erpAlpha(c as string, 9)}`, color:c as string }}>
+              <span key={l as string} className="whitespace-nowrap" style={{ color:c as string }}>
                 {l} <span className="font-black tabular-nums" style={{ fontFamily:"var(--font-mono)" }}>{ready ? (n as number) : "—"}</span>
               </span>
             ))}
@@ -949,7 +949,7 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
         <thead>
           <tr style={{ backgroundColor:ERP.surface, borderBottom:`1px solid ${ERP.border}` }}>
             {["FLIGHT","AIRLINE","ROUTE","DEP","PAX","GROUP / AGENT","VEHICLE · DRIVER","STATUS"].map((c,i) => (
-              <th key={c} className={`px-5 py-3 text-left text-[9px] font-black tracking-[0.15em] uppercase ${i===3||i===4?"text-center":""}`}
+              <th key={c} className={`px-[18px] py-[9px] text-left text-[9px] font-bold tracking-[0.08em] uppercase ${i===3||i===4?"text-center":""}`}
                   style={{ color:ERP.muted }}>{c}</th>
             ))}
           </tr>
@@ -964,22 +964,22 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
               <tr key={d.id}
                   style={{ borderBottom:`1px solid ${ERP.border}`, borderLeft:`3px solid ${isActive ? s.color : isDelay ? ERP.warning : "transparent"}`, opacity: isDone ? 0.55 : 1 }}
                   className="hover:bg-white/2">
-                <td className="px-5 py-4">
-                  <span className="text-xl font-black tracking-wide whitespace-nowrap" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{d.flight}</span>
+                <td className="px-[18px] py-1.5">
+                  <span className="text-[13px] font-bold tracking-wide whitespace-nowrap" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{d.flight}</span>
                 </td>
-                <td className="px-5 py-4 text-xs font-bold" style={{ color:ERP.navy }}><div className="truncate max-w-[10rem]" title={d.airline}>{d.airline}</div></td>
-                <td className="px-5 py-4 text-sm font-bold text-[color:var(--erp-text-strong)] whitespace-nowrap">{d.route}</td>
-                <td className="px-5 py-4 text-center">
-                  <span className="text-xl font-black whitespace-nowrap tabular-nums" style={{ color: isDelay ? ERP.warning : ERP.navy, fontFamily:"var(--font-mono)" }}>{d.dep}</span>
+                <td className="px-[18px] py-1.5 text-xs font-bold" style={{ color:ERP.navy }}><div className="truncate max-w-[10rem]" title={d.airline}>{d.airline}</div></td>
+                <td className="px-[18px] py-1.5 text-sm font-bold text-[color:var(--erp-text-strong)] whitespace-nowrap">{d.route}</td>
+                <td className="px-[18px] py-1.5 text-center">
+                  <span className="text-[13px] font-bold whitespace-nowrap tabular-nums" style={{ color: isDelay ? ERP.warning : ERP.navy, fontFamily:"var(--font-mono)" }}>{d.dep}</span>
                 </td>
-                <td className="px-5 py-4 text-center">
-                  <span className="text-3xl font-black tabular-nums" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{d.pax}</span>
+                <td className="px-[18px] py-1.5 text-center">
+                  <span className="text-[13px] font-bold tabular-nums" style={{ color:ERP.navy, fontFamily:"var(--font-mono)" }}>{d.pax}</span>
                 </td>
-                <td className="px-5 py-4">
+                <td className="px-[18px] py-1.5">
                   <div className="text-[10px] font-black truncate max-w-[13rem]" title={d.group} style={{ color:OPS, fontFamily:"var(--font-mono)" }}>{d.group}</div>
                   <div className="text-xs text-[color:var(--erp-text-strong)] mt-0.5 truncate max-w-[13rem]" title={d.agent}>{d.agent}</div>
                 </td>
-                <td className="px-5 py-4">
+                <td className="px-[18px] py-1.5">
                   {d.vehicle !== "—" ? (
                     <><div className="text-xs font-black text-[color:var(--erp-text-strong)] truncate max-w-[11rem]" title={d.vehicle}>{d.vehicle}</div>
                     <div className="text-[10px] mt-0.5 truncate max-w-[11rem]" title={d.driver} style={{ color:ERP.muted }}>{d.driver}</div></>
@@ -987,7 +987,7 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
                     <span className="text-xs whitespace-nowrap" style={{ color:ERP.mutedSoft }}>Not Assigned</span>
                   )}
                 </td>
-                <td className="px-5 py-4">
+                <td className="px-[18px] py-1.5">
                   {demo ? (
                     <BStat s={d.status} map={DEP_STAT} />
                   ) : (
@@ -995,7 +995,7 @@ function DepartureBoard({ rows, connected, demo, state, onRefresh }: { rows: Dep
                       value={d.status}
                       disabled={busyId === d.id}
                       onChange={(e) => void setFlightStatus(d.id, e.target.value as DepartureStatus)}
-                      className="px-2 py-1.5 rounded-lg text-[10px] font-bold focus:outline-none"
+                      className="px-2.5 py-2 rounded-[5px] text-[10px] font-bold focus:outline-none"
                       style={{ backgroundColor: erpAlpha(DEP_STAT[d.status]?.color ?? ERP.muted, 13), color: DEP_STAT[d.status]?.color ?? ERP.navy, border: `1px solid ${ERP.border}` }}
                     >
                       {DEP_OPTS.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -1106,11 +1106,11 @@ function DispatchBoard({ rows, connected, apiGroups, onRefresh, demo, state }: {
 
   return (
     <div style={{ backgroundColor:CR_BG, minHeight:"100%" }}>
-      <div className="flex items-center justify-between px-8 py-4" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:CR_SURFACE }}>
+      <div className="flex items-center justify-between px-[18px] py-3" style={{ borderBottom:`1px solid ${ERP.border}`, backgroundColor:CR_SURFACE }}>
         <div className="flex items-center gap-4">
           <Navigation size={20} style={{ color:OPS }} />
           <div>
-            <div className="text-lg font-black text-[color:var(--erp-text-strong)] tracking-wide">DISPATCH BOARD</div>
+            <div className="text-[12px] font-bold text-[color:var(--erp-text-strong)] tracking-wide">DISPATCH BOARD</div>
             <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color:ERP.muted }}>Live · {ready ? data.length : "—"} active orders</div>
           </div>
         </div>
@@ -1261,7 +1261,7 @@ function MeetAssist({ arrivals, maUpdate, demo, state, onRetry }: { arrivals: Fl
   };
 
   return (
-    <div className="p-7 grid grid-cols-5 gap-5 h-full">
+    <div className="px-6 pt-5 pb-14 grid grid-cols-5 gap-3 h-full">
       {/* Left: flight list */}
       <div className="col-span-2 space-y-2 overflow-y-auto" style={{ scrollbarWidth:"none" }}>
         <div className="text-[9px] font-black uppercase tracking-widest mb-3" style={{ color:ERP.muted }}>Active Arrivals</div>
@@ -1447,7 +1447,7 @@ function ZiyarahScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
   const ready = demo || state === "ready";
 
   return (
-    <div className="p-7">
+    <div className="px-6 pt-5 pb-14">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Ziyarah Scheduling & Tracking</h2>
@@ -1470,7 +1470,7 @@ function ZiyarahScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
         ) : rows.map((z) => {
           const statusColor = z.status === "COMPLETED" ? ERP.success : z.status === "CONFIRMED" ? ERP.success : ERP.info;
           return (
-            <div key={z.id} className="rounded-xl p-5" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}`, opacity: z.status === "COMPLETED" ? 0.6 : 1 }}>
+            <div key={z.id} className="rounded-xl p-4" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}`, opacity: z.status === "COMPLETED" ? 0.6 : 1 }}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
@@ -2051,7 +2051,7 @@ function LongStayScreen({ signal, apiGroups }: { signal: number; apiGroups: ApiG
 
   if (!demo && state === "error") {
     return (
-      <div className="p-7" style={{ fontFamily: fontFor(lang) }}>
+      <div className="px-6 pt-5 pb-14" style={{ fontFamily: fontFor(lang) }}>
         <ErrorState tone="light" lang={lang} onRetry={refresh} />
       </div>
     );
@@ -2287,13 +2287,13 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
       </div>
     );
     return (
-      <div className="p-7">
+      <div className="px-6 pt-5 pb-14">
         <div className="flex items-center gap-3 mb-5">
           <button onClick={() => setView("list")} className="text-xs font-bold" style={{ color:ERP.muted }}>← Back</button>
           <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Create New BRN</h2>
         </div>
         <div className="max-w-2xl space-y-4">
-          <div className="rounded-xl p-5 grid grid-cols-2 gap-4" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
+          <div className="rounded-xl p-4 grid grid-cols-2 gap-3" style={{ backgroundColor:ERP.surface, border:`1px solid ${ERP.border}` }}>
             <FF label="Group ID"><select value={cGroup || (opts[0]?.value ?? "")} onChange={(e)=>setCGroup(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}>{opts.map((o)=><option key={o.value} value={o.value} style={{ color:"black" }}>{o.label}</option>)}</select></FF>
             <FF label="Service Type"><select value={cService} onChange={(e)=>setCService(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none appearance-none" style={IS}><option>Hotel</option><option>Transport</option><option>Catering</option><option>Meet & Assist</option><option>Full Package</option></select></FF>
             <FF label="Date Required"><input type="date" value={cDate} onChange={(e)=>setCDate(e.target.value)} className="w-full px-3 py-2.5 text-xs rounded-xl focus:outline-none" style={IS} /></FF>
@@ -2309,7 +2309,7 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
   }
 
   return (
-    <div className="p-7">
+    <div className="px-6 pt-5 pb-14">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">BRN Management</h2>
@@ -2319,7 +2319,7 @@ function BRNManagement({ signal, apiGroups }: { signal: number; apiGroups: ApiGr
           <Plus size={12} /> New BRN
         </button>
       </div>
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-3 gap-3">
         {/* BRN list */}
         <div className="col-span-2 rounded-xl overflow-hidden" style={{ border:`1px solid ${ERP.border}` }}>
           <table className="w-full">
@@ -2493,7 +2493,7 @@ export default function OpsControl() {
     longstay:   <LongStayScreen signal={longStaySignal} apiGroups={apiGroups} />,
     brn:        <BRNManagement signal={brnSignal} apiGroups={apiGroups} />,
     vouchers:   (
-      <div className="p-7">
+      <div className="px-6 pt-5 pb-14">
         <EmptyState
           tone="light"
           title="ভাউচার জেনারেটর"
