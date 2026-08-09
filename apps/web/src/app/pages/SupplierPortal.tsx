@@ -170,7 +170,7 @@ function Card({ children, className = "" }: { children: ReactNode; className?: s
 
 function CardHead({ title, action }: { title: string; action?: ReactNode }) {
   return (
-    <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: `1px solid ${ERP.border}`, backgroundColor: ERP.surface }}>
+    <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: `1px solid ${ERP.border}`, backgroundColor: ERP.surfaceSoft }}>
       <span className="text-xs font-bold text-[color:var(--erp-text-strong)]">{title}</span>
       {action}
     </div>
@@ -196,7 +196,7 @@ function TypeSwitcher({ type, onChange }: { type: SupplierType; onChange: (t: Su
     { id: "catering",  label: "Catering",  icon: UtensilsCrossed },
   ];
   return (
-    <div className="flex items-center gap-3 px-7 shrink-0" style={{ backgroundColor: ERP.surface }}>
+    <div className="flex items-center gap-3 px-5 shrink-0" style={{ backgroundColor: ERP.surface, boxShadow: `inset 0 -1px 0 ${ERP.border}` }}>
       <span className="text-[9px] font-bold uppercase tracking-widest shrink-0" style={{ color: ERP.muted }}>Viewing as:</span>
       <ErpTabs
         active={type}
@@ -223,7 +223,7 @@ function DashboardScreen({ type, bookings, name, code, since, demo, state, onRet
 
   const idCol: ErpColumn<BookingRec> = { id: "id", header: "ID", cell: (b) => <span className="text-[9px] font-mono whitespace-nowrap" style={{ color, fontFamily: "var(--font-mono)" }}>{b.id}</span> };
   const groupCol: ErpColumn<BookingRec> = { id: "group", header: "Group", cell: (b) => <span className="text-[9px] whitespace-nowrap" style={{ color: ERP.muted, fontFamily: "var(--font-mono)" }}>{b.group}</span> };
-  const agentCol: ErpColumn<BookingRec> = { id: "agent", header: "Agent", cell: (b) => <div className="truncate max-w-[14rem] text-xs text-[color:var(--erp-text-strong)]" title={b.agent}>{b.agent}</div> };
+  const agentCol: ErpColumn<BookingRec> = { id: "agent", header: "Agent", cell: (b) => <div className="truncate max-w-[14rem] text-xs font-semibold text-[color:var(--erp-text-strong)]" title={b.agent}>{b.agent}</div> };
   const paxCol: ErpColumn<BookingRec> = { id: "pax", header: "Pax", align: "center", cell: (b) => <span className="text-xs font-bold tabular-nums" style={{ color: ERP.navy, fontFamily: "var(--font-mono)" }}>{b.pax}</span> };
   const amountCol: ErpColumn<BookingRec> = { id: "amount", header: "Amount", cell: (b) => <Amt value={b.amount} type="credit" /> };
   const statusCol: ErpColumn<BookingRec> = { id: "status", header: "Status", cell: (b) => <SBadge status={b.status} /> };
@@ -240,16 +240,16 @@ function DashboardScreen({ type, bookings, name, code, since, demo, state, onRet
   const pendingRows = bookings.filter((b) => b.status === "pending_acceptance");
 
   return (
-    <div className="p-7 space-y-5">
+    <div className="p-6 pb-14 space-y-5">
       {/* Supplier identity */}
       <div className="flex items-center gap-4 rounded-xl px-5 py-4" style={{ backgroundColor: `${erpAlpha(color, 6)}`, border: `1px solid ${erpAlpha(color, 15)}` }}>
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${erpAlpha(color, 13)}` }}>
-          <Icon size={22} style={{ color }} />
+        <div className="w-9 h-9 rounded-[9px] flex items-center justify-center shrink-0" style={{ backgroundColor: `${erpAlpha(color, 13)}` }}>
+          <Icon size={18} style={{ color }} />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2.5 mb-0.5">
             <h1 className="text-sm font-bold text-[color:var(--erp-text-strong)]">{name}</h1>
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: erpAlpha(ERP.success, 8), color: ERP.success }}>Active Supplier</span>
+            <span className="text-[9px] font-bold px-2 py-0.5 rounded-[5px] tracking-[0.06em]" style={{ backgroundColor: erpAlpha(ERP.success, 8), color: ERP.success }}>Active Supplier</span>
           </div>
           <div className="text-[10px]" style={{ color: ERP.muted }}>
             Code: <span style={{ color, fontFamily: "var(--font-mono)" }}>{code}</span>
@@ -265,25 +265,20 @@ function DashboardScreen({ type, bookings, name, code, since, demo, state, onRet
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-2.5">
         {[
           { label: "Pending Acceptance", value: ready ? String(pending) : "—",              accent: color,       icon: Clock,       note: "Require your action" },
           { label: "Confirmed Bookings", value: ready ? String(confirmed) : "—",             accent: ERP.success, icon: CheckCircle, note: "Upcoming season" },
           { label: "Season Revenue",     value: ready ? `SAR ${revenue.toLocaleString()}` : "—", accent: ERP.success, icon: TrendingUp, note: "Confirmed bookings" },
           { label: "Total Bookings",     value: ready ? String(bookings.length) : "—",        accent: GOLD,        icon: Wallet,      note: "This season" },
-        ].map((k) => {
-          const KIcon = k.icon;
-          return (
-            <ErpStatCard
-              key={k.label}
-              label={k.label}
-              value={k.value}
-              accent={k.accent}
-              hint={k.note}
-              icon={<KIcon size={16} style={{ color: k.accent }} />}
-            />
-          );
-        })}
+        ].map((k) => (
+          <ErpStatCard
+            key={k.label}
+            label={k.label}
+            value={k.value}
+            accent={k.accent}
+          />
+        ))}
       </div>
 
       {/* Pending bookings action required */}
@@ -387,7 +382,7 @@ function BookingsScreen({ type, bookings, live, onRefresh, demo, state }: { type
   ];
 
   return (
-    <div className="p-7 grid grid-cols-5 gap-5 h-full">
+    <div className="p-6 grid grid-cols-5 gap-5 h-full">
       {/* LEFT: Booking list */}
       <div className="col-span-2 space-y-2 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
         <div className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: ERP.muted }}>Pending Acceptance</div>
@@ -463,7 +458,7 @@ function BookingsScreen({ type, bookings, live, onRefresh, demo, state }: { type
                 ["Settlement",     `SAR ${selected.amount.toLocaleString()}`],
               ].map(([l, v], i) => (
                 <div key={l} className="px-5 py-3 min-w-0" style={{ borderBottom: i < 4 ? `1px solid ${ERP.border}` : undefined, borderRight: i % 2 === 0 ? `1px solid ${ERP.border}` : undefined }}>
-                  <div className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: ERP.muted }}>{l}</div>
+                  <div className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color: ERP.muted }}>{l}</div>
                   <div className="text-xs font-semibold text-[color:var(--erp-text-strong)] truncate" title={v}>{v}</div>
                 </div>
               ))}
@@ -633,7 +628,7 @@ function VouchersScreen({ type, bookings, live, demo, state }: { type: SupplierT
   ];
 
   return (
-    <div className="p-7 grid grid-cols-5 gap-6">
+    <div className="p-6 pb-14 grid grid-cols-5 gap-6">
       <div className="col-span-3 space-y-4">
         <div>
           <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Voucher Upload</h2>
@@ -667,7 +662,7 @@ function VouchersScreen({ type, bookings, live, demo, state }: { type: SupplierT
             onChange={(e) => { const f = e.target.files?.[0]; if (f) setFile(f); e.target.value = ""; }}
           />
           {!file ? (
-            <div onClick={() => fileInput.current?.click()} className="flex flex-col items-center gap-3 p-6 rounded-xl cursor-pointer" style={{ border: `2px dashed ${erpAlpha(color, 21)}`, backgroundColor: `${erpAlpha(color, 2)}` }}>
+            <div onClick={() => fileInput.current?.click()} className="flex flex-col items-center gap-3 p-7 rounded-xl cursor-pointer" style={{ border: `1.5px dashed ${ERP.border}`, backgroundColor: `${erpAlpha(color, 2)}` }}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${erpAlpha(color, 9)}` }}><Upload size={18} style={{ color }} /></div>
               <div className="text-center">
                 <div className="text-xs font-semibold text-[color:var(--erp-text-strong)]">Drop voucher PDF or image</div>
@@ -788,7 +783,7 @@ function InvoicesScreen({ type, bookings, live, demo, state }: { type: SupplierT
   ];
 
   return (
-    <div className="p-7 grid grid-cols-5 gap-6">
+    <div className="p-6 pb-14 grid grid-cols-5 gap-6">
       <div className="col-span-3 space-y-4">
         <div>
           <h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Invoice Upload</h2>
@@ -835,7 +830,7 @@ function InvoicesScreen({ type, bookings, live, demo, state }: { type: SupplierT
             onChange={(e) => { const f = e.target.files?.[0]; if (f) setFile(f); e.target.value = ""; }}
           />
           {!file ? (
-            <div onClick={() => fileInput.current?.click()} className="flex flex-col items-center gap-3 p-6 rounded-xl cursor-pointer" style={{ border: `2px dashed ${erpAlpha(color, 21)}`, backgroundColor: `${erpAlpha(color, 2)}` }}>
+            <div onClick={() => fileInput.current?.click()} className="flex flex-col items-center gap-3 p-7 rounded-xl cursor-pointer" style={{ border: `1.5px dashed ${ERP.border}`, backgroundColor: `${erpAlpha(color, 2)}` }}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${erpAlpha(color, 9)}` }}><Upload size={18} style={{ color }} /></div>
               <div className="text-center"><div className="text-xs font-semibold text-[color:var(--erp-text-strong)]">Upload signed invoice PDF</div><div className="text-[10px] mt-0.5" style={{ color: ERP.muted }}>PDF only · Max 10 MB</div></div>
             </div>
@@ -877,7 +872,7 @@ function InvoicesScreen({ type, bookings, live, demo, state }: { type: SupplierT
 
 function StatementScreen(_p: { type: SupplierType; demo: boolean }) {
   return (
-    <div className="p-7">
+    <div className="p-6 pb-14">
       <div className="mb-5"><h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Statement — Supplier View</h2><p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Running balance of booking settlements and platform fees</p></div>
       <div className="rounded-xl p-8" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
         <EmptyState title="সাপ্লায়ার স্টেটমেন্ট" hint="এই মডিউল এখনও কনফিগার করা হয়নি। বুকিং, ভাউচার ও চালান অন্য ট্যাবে লাইভ।" />
@@ -888,7 +883,7 @@ function StatementScreen(_p: { type: SupplierType; demo: boolean }) {
 
 function PaymentsScreen(_p: { type: SupplierType; demo: boolean }) {
   return (
-    <div className="p-7">
+    <div className="p-6 pb-14">
       <div className="mb-5"><h2 className="text-sm font-bold text-[color:var(--erp-text-strong)]">Payments &amp; Payouts</h2><p className="text-xs mt-0.5" style={{ color: ERP.muted }}>Disbursements and bank-settlement details</p></div>
       <div className="rounded-xl p-8" style={{ backgroundColor: ERP.surfaceSoft, border: `1px solid ${ERP.border}` }}>
         <EmptyState title="পেমেন্ট ও পেআউট" hint="এই মডিউল এখনও কনফিগার করা হয়নি।" />
