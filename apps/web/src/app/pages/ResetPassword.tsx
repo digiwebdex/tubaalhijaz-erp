@@ -4,9 +4,9 @@ import { toast } from "sonner";
 import { Loader2, ArrowLeft, CheckCircle2, ShieldCheck } from "lucide-react";
 import { api, ApiError } from "../lib/api";
 
-const GOLD = "#C9A24B";
-const NAVY = "#0B1E3F";
-const inputStyle = { backgroundColor: "#F5F7FA", border: "1px solid rgba(11,30,63,0.15)", color: NAVY } as const;
+const GOLD = "var(--erp-accent)";
+const NAVY = "var(--erp-text-strong)";
+const inputStyle = { backgroundColor: "var(--erp-canvas)", border: "1px solid rgba(11,30,63,0.15)", color: NAVY } as const;
 
 /** Password recovery. `?token=…` → set a new password; otherwise → request a reset link. */
 export default function ResetPassword() {
@@ -55,8 +55,8 @@ export default function ResetPassword() {
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "#F5F7FA" }}>
-      <div className="w-full max-w-md rounded-2xl p-8 shadow-sm" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "var(--erp-canvas)" }}>
+      <div className="w-full max-w-md rounded-2xl p-8 shadow-sm" style={{ backgroundColor: "var(--erp-surface)", border: "1px solid rgba(11,30,63,0.11)" }}>
         <div className="flex items-center gap-2 mb-6">
           <ShieldCheck size={22} style={{ color: GOLD }} />
           <span className="text-sm font-bold" style={{ color: NAVY }}>TUBA AL HIJAZ</span>
@@ -74,7 +74,7 @@ export default function ResetPassword() {
           </form>
         ) : sent ? (
           <div className="text-center py-4">
-            <CheckCircle2 size={40} className="mx-auto mb-3" style={{ color: "#16A34A" }} />
+            <CheckCircle2 size={40} className="mx-auto mb-3" style={{ color: "var(--erp-success)" }} />
             <h1 className="text-lg font-bold mb-1" style={{ color: NAVY }}>Check your email</h1>
             <p className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>If an account exists for that email, a reset link has been sent. It expires in 30 minutes.</p>
           </div>

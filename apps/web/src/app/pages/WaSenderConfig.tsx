@@ -91,7 +91,7 @@ export default function WaSenderConfig() {
                     <div><b>{lang === "bn" ? "ফলাফল" : "Result"}:</b> {testRes.success ? "✓ delivered" : "✕ failed"} {testRes.status ? `(${testRes.status})` : ""}</div>
                     {testRes.recipient && <div className="font-mono">→ {testRes.recipient}</div>}
                     {testRes.providerId && <div className="font-mono">id: {testRes.providerId}</div>}
-                    {testRes.error && <div style={{ color: "#B91C1C" }}>{testRes.error}</div>}
+                    {testRes.error && <div style={{ color: "var(--erp-destructive)" }}>{testRes.error}</div>}
                   </div>
                 )}
               </div>

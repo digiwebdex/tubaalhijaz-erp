@@ -18,8 +18,8 @@ import {
 // ─── Module constants ─────────────────────────────────────────────────────────
 
 const I18N_MOD  = "#DB2777";
-const NAVY      = "#0A1628";
-const CARD_BG   = "#FFFFFF";
+const NAVY      = "var(--erp-text-strong)";
+const CARD_BG   = "var(--erp-surface)";
 const BORDER    = "rgba(11,30,63,0.11)";
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
@@ -41,9 +41,9 @@ function SecHead({ n, title, sub, color = I18N_MOD }: { n: string; title: string
     <div style={{ marginBottom:28 }}>
       <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
         <span style={{ fontSize:10, fontWeight:900, padding:"3px 10px", borderRadius:999, backgroundColor:`${color}20`, color, fontFamily:"var(--font-mono)" }}>{n}</span>
-        <div style={{ flex:1, height:1, backgroundColor:"#F5F7FA" }} />
+        <div style={{ flex:1, height:1, backgroundColor:"var(--erp-canvas)" }} />
       </div>
-      <h2 style={{ margin:"0 0 6px", fontSize:22, fontWeight:900, color:"#0B1E3F" }}>{title}</h2>
+      <h2 style={{ margin:"0 0 6px", fontSize:22, fontWeight:900, color:"var(--erp-text-strong)" }}>{title}</h2>
       <p style={{ margin:0, fontSize:12, color:"rgba(11,30,63,0.66)", lineHeight:1.6 }}>{sub}</p>
     </div>
   );
@@ -51,7 +51,7 @@ function SecHead({ n, title, sub, color = I18N_MOD }: { n: string; title: string
 
 function BiLabel({ label, note }: { label: string; note?: string }) {
   return (
-    <div style={{ padding:"6px 12px", borderRadius:"8px 8px 0 0", backgroundColor:"#FBFCFD", borderBottom:"1px solid rgba(11,30,63,0.11)", display:"flex", alignItems:"center", gap:8 }}>
+    <div style={{ padding:"6px 12px", borderRadius:"8px 8px 0 0", backgroundColor:"var(--erp-surface-soft)", borderBottom:"1px solid rgba(11,30,63,0.11)", display:"flex", alignItems:"center", gap:8 }}>
       <span style={{ fontSize:9, fontWeight:900, color:"rgba(11,30,63,0.58)", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>{label}</span>
       {note && <span style={{ fontSize:8, color:"rgba(11,30,63,0.50)" }}>{note}</span>}
     </div>
@@ -93,7 +93,7 @@ export function LangToggle({ lang, onToggle, size = "md" }: {
   const FS = size === "sm" ? 9 : size === "lg" ? 13 : 11;
   return (
     <div onClick={onToggle} role="button" aria-label="Toggle language"
-      style={{ display:"inline-flex", alignItems:"center", borderRadius:999, border:"1px solid rgba(11,30,63,0.15)", backgroundColor:"#F5F7FA", cursor:"pointer", padding:PAD, userSelect:"none" as const, gap: size==="sm" ? 2 : 3 }}>
+      style={{ display:"inline-flex", alignItems:"center", borderRadius:999, border:"1px solid rgba(11,30,63,0.15)", backgroundColor:"var(--erp-canvas)", cursor:"pointer", padding:PAD, userSelect:"none" as const, gap: size==="sm" ? 2 : 3 }}>
       {(["bn","en"] as Lang[]).map(l => (
         <span key={l} style={{
           padding: ITEM_PAD, borderRadius:999,
@@ -125,20 +125,20 @@ function BT({ k, lang, style: extra }: { k: StringKey; lang: Lang; style?: CSSPr
 // ─── ③ Status Pill — bilingual ────────────────────────────────────────────────
 
 const STATUS_COLORS: Partial<Record<StringKey, string>> = {
-  approved:   "#16A34A",
-  pending:    "#B45309",
-  inProgress: "#06B6D4",
-  completed:  "#16A34A",
-  cancelled:  "#9CA3AF",
-  active:     "#16A34A",
-  onDuty:     "#16A34A",
-  archived:   "#475569",
-  delayed:    "#EF4444",
-  urgent:     "#EF4444",
-  atGate:     "#16A34A",
-  enRoute:    "#06B6D4",
-  inStay:     "#9333EA",
-  scheduled:  "#9CA3AF",
+  approved:   "var(--erp-success)",
+  pending:    "var(--erp-warning)",
+  inProgress: "var(--erp-cat-sky)",
+  completed:  "var(--erp-success)",
+  cancelled:  "var(--erp-muted-soft)",
+  active:     "var(--erp-success)",
+  onDuty:     "var(--erp-success)",
+  archived:   "var(--erp-muted)",
+  delayed:    "var(--erp-destructive)",
+  urgent:     "var(--erp-destructive)",
+  atGate:     "var(--erp-success)",
+  enRoute:    "var(--erp-cat-sky)",
+  inStay:     "var(--erp-cat-purple)",
+  scheduled:  "var(--erp-muted-soft)",
 };
 
 export function StatusPill({ k, lang, size = "sm" }: { k: StringKey; lang: Lang; size?: "xs"|"sm" }) {
@@ -168,8 +168,8 @@ export function BiBtn({ k, lang, variant = "primary", color = I18N_MOD, size = "
   const styles: Record<BtnVariant, CSSProperties> = {
     primary:   { backgroundColor: color,                    color:"white",                 border:"none" },
     secondary: { backgroundColor:`${color}18`,              color,                        border:`1px solid ${color}35` },
-    ghost:     { backgroundColor:"#FBFCFD",  color:"rgba(11,30,63,0.86)", border:"1px solid rgba(11,30,63,0.15)" },
-    danger:    { backgroundColor:"rgba(239,68,68,0.12)",    color:"#DC2626",              border:"1px solid rgba(239,68,68,0.25)" },
+    ghost:     { backgroundColor:"var(--erp-surface-soft)",  color:"rgba(11,30,63,0.86)", border:"1px solid rgba(11,30,63,0.15)" },
+    danger:    { backgroundColor:"rgba(239,68,68,0.12)",    color:"var(--erp-destructive)",              border:"1px solid rgba(239,68,68,0.25)" },
   };
   return (
     <button onClick={onClick} style={{
@@ -194,11 +194,11 @@ export function BiInput({ labelKey, placeholderKey, lang, error = false }: {
       <label style={{ fontSize:11, fontWeight:700, color:"rgba(11,30,63,0.86)", fontFamily:fontFor(lang), lineHeight:lineHeightFor(lang,"body") }}>
         {t(labelKey, lang)}
       </label>
-      <div style={{ padding:"10px 14px", borderRadius:10, backgroundColor:"#FBFCFD", border:`1px solid ${error?"rgba(239,68,68,0.5)":"rgba(11,30,63,0.38)"}`, fontSize:12, color:"rgba(11,30,63,0.50)", fontFamily:fontFor(lang), lineHeight:lineHeightFor(lang,"body") }}>
+      <div style={{ padding:"10px 14px", borderRadius:10, backgroundColor:"var(--erp-surface-soft)", border:`1px solid ${error?"rgba(239,68,68,0.5)":"rgba(11,30,63,0.38)"}`, fontSize:12, color:"rgba(11,30,63,0.50)", fontFamily:fontFor(lang), lineHeight:lineHeightFor(lang,"body") }}>
         {t(placeholderKey, lang)}
       </div>
       {error && (
-        <span style={{ fontSize:10, color:"#DC2626", fontFamily:fontFor(lang) }}>
+        <span style={{ fontSize:10, color:"var(--erp-destructive)", fontFamily:fontFor(lang) }}>
           {t("required", lang)}
         </span>
       )}
@@ -225,7 +225,7 @@ function SideNavItem({ icon: Icon, k, lang, active = false, color = I18N_MOD }: 
 
 function TableHeader({ cols, lang }: { cols: StringKey[]; lang: Lang }) {
   return (
-    <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols.length},1fr)`, padding:"8px 16px", backgroundColor:"#FBFCFD" }}>
+    <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols.length},1fr)`, padding:"8px 16px", backgroundColor:"var(--erp-surface-soft)" }}>
       {cols.map(k => (
         <span key={k} style={{ fontSize:9, fontWeight:900, color:"rgba(11,30,63,0.58)", textTransform:"uppercase" as const, letterSpacing:"0.07em", fontFamily:fontFor(lang) }}>
           {t(k, lang)}
@@ -268,7 +268,7 @@ function Stepper({ steps, active, lang, color = I18N_MOD }: {
           <div key={k} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", position:"relative" as const }}>
             {/* connector line */}
             {i < steps.length - 1 && (
-              <div style={{ position:"absolute" as const, left:"50%", top:12, width:"100%", height:2, backgroundColor: isDone ? color : "#EEF1F6", zIndex:0, transformOrigin:"left" }} />
+              <div style={{ position:"absolute" as const, left:"50%", top:12, width:"100%", height:2, backgroundColor: isDone ? color : "var(--erp-border)", zIndex:0, transformOrigin:"left" }} />
             )}
             {/* circle */}
             <div style={{ width:24, height:24, borderRadius:12, zIndex:1, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", backgroundColor: isDone ? color : isNow ? `${color}25` : "rgba(11,30,63,0.38)", border:`2px solid ${isDone || isNow ? color : "rgba(11,30,63,0.38)"}` }}>
@@ -300,7 +300,7 @@ export function KpiCard({ labelKey, value, subValue, lang, color = I18N_MOD, del
       <div style={{ fontSize:10, fontWeight:700, color:"rgba(11,30,63,0.58)", fontFamily:fontFor(lang), lineHeight:lineHeightFor(lang,"body"), marginBottom:10 }}>
         {t(labelKey, lang)}
       </div>
-      <div style={{ fontSize:28, fontWeight:900, color:"#0B1E3F", fontFamily: lang === "bn" ? "var(--font-bengali)" : "var(--font-mono)", lineHeight:1.1 }}>
+      <div style={{ fontSize:28, fontWeight:900, color:"var(--erp-text-strong)", fontFamily: lang === "bn" ? "var(--font-bengali)" : "var(--font-mono)", lineHeight:1.1 }}>
         {dispValue}
       </div>
       {subValue && (
@@ -310,8 +310,8 @@ export function KpiCard({ labelKey, value, subValue, lang, color = I18N_MOD, del
       )}
       {dispDelta && (
         <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:8 }}>
-          <ArrowUpRight size={11} style={{ color:"#16A34A" }} />
-          <span style={{ fontSize:10, fontWeight:700, color:"#16A34A", fontFamily:fontFor(lang) }}>
+          <ArrowUpRight size={11} style={{ color:"var(--erp-success)" }} />
+          <span style={{ fontSize:10, fontWeight:700, color:"var(--erp-success)", fontFamily:fontFor(lang) }}>
             {dispDelta}% {t("increase", lang)}
           </span>
         </div>
@@ -349,7 +349,7 @@ function TypographyScreen() {
             {[400,600,700,800,900].map(w => (
               <div key={w} style={{ marginBottom:14 }}>
                 <div style={{ fontSize:9, color:"rgba(11,30,63,0.50)", fontFamily:"var(--font-mono)", marginBottom:4 }}>weight {w}</div>
-                <div style={{ fontSize:22, fontWeight:w, fontFamily:"var(--font-bengali)", color:"#0B1E3F", lineHeight: lineHeightFor("bn","heading") }}>
+                <div style={{ fontSize:22, fontWeight:w, fontFamily:"var(--font-bengali)", color:"var(--erp-text-strong)", lineHeight: lineHeightFor("bn","heading") }}>
                   তুবা আল হিজাজ · উমরাহ ও হজ
                 </div>
               </div>
@@ -362,7 +362,7 @@ function TypographyScreen() {
             {[400,600,700,800,900].map(w => (
               <div key={w} style={{ marginBottom:14 }}>
                 <div style={{ fontSize:9, color:"rgba(11,30,63,0.50)", fontFamily:"var(--font-mono)", marginBottom:4 }}>weight {w}</div>
-                <div style={{ fontSize:22, fontWeight:w, fontFamily:"var(--font-sans)", color:"#0B1E3F", lineHeight: lineHeightFor("en","heading") }}>
+                <div style={{ fontSize:22, fontWeight:w, fontFamily:"var(--font-sans)", color:"var(--erp-text-strong)", lineHeight: lineHeightFor("en","heading") }}>
                   TUBA AL HIJAZ · Umrah & Hajj
                 </div>
               </div>
@@ -373,24 +373,24 @@ function TypographyScreen() {
 
       {/* Key line-height note */}
       <InfoNote>
-        <strong style={{ color:"#E2B966" }}>Line-height rule:</strong> Bengali body text requires <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>line-height: 1.75</code> to accommodate matras (ি, ী, ু, ূ) and consonant conjuncts above the headline. English body uses <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>1.5</code>. Headings use 1.6 (Bengali) and 1.35 (English). The <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>lineHeightFor(lang, level)</code> helper in <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>lib/i18n.ts</code> returns the correct value.
+        <strong style={{ color:"var(--erp-gold-hov)" }}>Line-height rule:</strong> Bengali body text requires <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>line-height: 1.75</code> to accommodate matras (ি, ী, ু, ূ) and consonant conjuncts above the headline. English body uses <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>1.5</code>. Headings use 1.6 (Bengali) and 1.35 (English). The <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>lineHeightFor(lang, level)</code> helper in <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>lib/i18n.ts</code> returns the correct value.
       </InfoNote>
 
       {/* Full type scale */}
       <div style={{ marginTop:36 }}>
-        <div style={{ display:"grid", gridTemplateColumns:"70px 1fr 1fr", gap:0, padding:"8px 16px", backgroundColor:"#FBFCFD", borderRadius:"8px 8px 0 0", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"70px 1fr 1fr", gap:0, padding:"8px 16px", backgroundColor:"var(--erp-surface-soft)", borderRadius:"8px 8px 0 0", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
           {["Token","বাংলা — Noto Sans Bengali","English — Plus Jakarta Sans"].map(h => (
             <span key={h} style={{ fontSize:9, fontWeight:900, color:"rgba(11,30,63,0.50)", textTransform:"uppercase" as const, letterSpacing:"0.07em" }}>{h}</span>
           ))}
         </div>
         {TYPE_SCALE.map((row, i) => (
-          <div key={row.token} style={{ display:"grid", gridTemplateColumns:"70px 1fr 1fr", gap:0, padding:"14px 16px", borderBottom:"1px solid rgba(11,30,63,0.08)", backgroundColor:i%2===0?"transparent":"#EEF1F6", alignItems:"start" }}>
+          <div key={row.token} style={{ display:"grid", gridTemplateColumns:"70px 1fr 1fr", gap:0, padding:"14px 16px", borderBottom:"1px solid rgba(11,30,63,0.08)", backgroundColor:i%2===0?"transparent":"var(--erp-border)", alignItems:"start" }}>
             <div style={{ display:"flex", flexDirection:"column" as const, gap:4, paddingTop:4 }}>
               <Chip label={row.token} />
               <span style={{ fontSize:8, color:"rgba(11,30,63,0.50)", fontFamily:"var(--font-mono)" }}>{row.enSize}px / {row.enWeight}</span>
             </div>
             <div style={{ paddingRight:24 }}>
-              <div style={{ fontSize:row.bnSize, fontWeight:row.bnWeight, fontFamily:"var(--font-bengali)", color:"#0B1E3F", lineHeight: row.bnSize >= 24 ? lineHeightFor("bn","heading") : lineHeightFor("bn","body") }}>
+              <div style={{ fontSize:row.bnSize, fontWeight:row.bnWeight, fontFamily:"var(--font-bengali)", color:"var(--erp-text-strong)", lineHeight: row.bnSize >= 24 ? lineHeightFor("bn","heading") : lineHeightFor("bn","body") }}>
                 {row.bnText}
               </div>
             </div>
@@ -420,7 +420,7 @@ function ToggleScreen() {
         <BiCard>
           <BiLabel label="Small · top bar compact" />
           <div style={{ padding:"20px", display:"flex", flexDirection:"column" as const, gap:16 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:12, padding:"8px 12px", borderRadius:8, backgroundColor:"#FBFCFD", justifyContent:"flex-end" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12, padding:"8px 12px", borderRadius:8, backgroundColor:"var(--erp-surface-soft)", justifyContent:"flex-end" }}>
               <span style={{ fontSize:10, color:"rgba(11,30,63,0.58)" }}>TUBA AL HIJAZ</span>
               <div style={{ flex:1 }} />
               <LangToggle lang={demoLang} onToggle={() => setDemoLang(l => l === "bn" ? "en" : "bn")} size="sm" />
@@ -432,7 +432,7 @@ function ToggleScreen() {
         <BiCard>
           <BiLabel label="Medium · default" />
           <div style={{ padding:"20px", display:"flex", flexDirection:"column" as const, gap:16 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", borderRadius:8, backgroundColor:"#FBFCFD" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", borderRadius:8, backgroundColor:"var(--erp-surface-soft)" }}>
               <Globe size={14} style={{ color:"rgba(11,30,63,0.58)" }} />
               <LangToggle lang={demoLang} onToggle={() => setDemoLang(l => l === "bn" ? "en" : "bn")} size="md" />
             </div>
@@ -443,9 +443,9 @@ function ToggleScreen() {
         <BiCard>
           <BiLabel label="Large · mobile settings" />
           <div style={{ padding:"20px", display:"flex", flexDirection:"column" as const, gap:16 }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 14px", borderRadius:10, backgroundColor:"#FBFCFD" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 14px", borderRadius:10, backgroundColor:"var(--erp-surface-soft)" }}>
               <div>
-                <div style={{ fontSize:12, fontWeight:700, color:"#0B1E3F", fontFamily:fontFor(demoLang) }}>
+                <div style={{ fontSize:12, fontWeight:700, color:"var(--erp-text-strong)", fontFamily:fontFor(demoLang) }}>
                   {demoLang === "bn" ? "ভাষা" : "Language"}
                 </div>
                 <div style={{ fontSize:9, color:"rgba(11,30,63,0.58)", marginTop:2 }}>
@@ -461,7 +461,7 @@ function ToggleScreen() {
 
       {/* Live demo strip */}
       <div style={{ borderRadius:16, border:"1px solid rgba(11,30,63,0.11)", overflow:"hidden", marginBottom:28 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:14, padding:"12px 20px", backgroundColor:"#FBFCFD", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:14, padding:"12px 20px", backgroundColor:"var(--erp-surface-soft)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
           <span style={{ fontSize:11, fontWeight:700, color:"rgba(11,30,63,0.66)" }}>Live toggle demo</span>
           <div style={{ flex:1 }} />
           <LangToggle lang={demoLang} onToggle={() => setDemoLang(l => l === "bn" ? "en" : "bn")} />
@@ -487,7 +487,7 @@ function ToggleScreen() {
             <div style={{ display:"flex", flexWrap:"wrap" as const, gap:8 }}>
               <BiBtn k="save"    lang={demoLang} variant="primary"   />
               <BiBtn k="cancel"  lang={demoLang} variant="secondary" />
-              <BiBtn k="approve" lang={demoLang} variant="primary" color="#16A34A" />
+              <BiBtn k="approve" lang={demoLang} variant="primary" color="var(--erp-success)" />
               <BiBtn k="reject"  lang={demoLang} variant="danger"    />
             </div>
           </div>
@@ -495,7 +495,7 @@ function ToggleScreen() {
       </div>
 
       <InfoNote>
-        <strong style={{ color:"#E2B966" }}>Implementation rule:</strong> The toggle is a <em>client-side state swap</em> — no network request, no page reload. Pass <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>lang</code> as a prop from the top-level page state (or a React context) down to every component. All string keys route through <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>t(key, lang)</code>, all numerals through <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>toLocalNum(n, lang)</code>. The font switches via <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>fontFor(lang)</code>.
+        <strong style={{ color:"var(--erp-gold-hov)" }}>Implementation rule:</strong> The toggle is a <em>client-side state swap</em> — no network request, no page reload. Pass <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>lang</code> as a prop from the top-level page state (or a React context) down to every component. All string keys route through <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>t(key, lang)</code>, all numerals through <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>toLocalNum(n, lang)</code>. The font switches via <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>fontFor(lang)</code>.
       </InfoNote>
     </div>
   );
@@ -516,7 +516,7 @@ function NumeralsScreen() {
           <div style={{ display:"grid", gridTemplateColumns:"repeat(10,1fr)", gap:8, marginBottom:16 }}>
             {[0,1,2,3,4,5,6,7,8,9].map(d => (
               <div key={d} style={{ textAlign:"center" as const }}>
-                <div style={{ fontSize:28, fontWeight:900, fontFamily:"var(--font-bengali)", color:"#0B1E3F", lineHeight:1.3 }}>{"০১২৩৪৫৬৭৮৯"[d]}</div>
+                <div style={{ fontSize:28, fontWeight:900, fontFamily:"var(--font-bengali)", color:"var(--erp-text-strong)", lineHeight:1.3 }}>{"০১২৩৪৫৬৭৮৯"[d]}</div>
                 <div style={{ fontSize:11, color:"rgba(11,30,63,0.50)", fontFamily:"var(--font-mono)" }}>{d}</div>
               </div>
             ))}
@@ -527,7 +527,7 @@ function NumeralsScreen() {
               {[["924","৯২৪"],["8,450,000","৮,৪৫,০০০০"],["19.3%","১৯.৩%"],["08:45","০৮:৪৫"],["1,247","১,২৪৭"]].map(([en,bn]) => (
                 <div key={en} style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
                   <span style={{ fontSize:12, color:"rgba(11,30,63,0.66)", fontFamily:"var(--font-mono)" }}>{en}</span>
-                  <span style={{ fontSize:14, fontWeight:700, fontFamily:"var(--font-bengali)", color:"#0B1E3F" }}>{bn}</span>
+                  <span style={{ fontSize:14, fontWeight:700, fontFamily:"var(--font-bengali)", color:"var(--erp-text-strong)" }}>{bn}</span>
                 </div>
               ))}
             </div>
@@ -536,7 +536,7 @@ function NumeralsScreen() {
               {([[16,7,2025],[1,1,1446],[28,8,2025],[31,12,2025]] as [number,number,number][]).map(([d,m,y]) => (
                 <div key={`${d}${m}${y}`} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 0", borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
                   <span style={{ fontSize:10, color:"rgba(11,30,63,0.58)", fontFamily:"var(--font-mono)" }}>{localDate(d,m,y,"en")}</span>
-                  <span style={{ fontSize:12, fontWeight:700, fontFamily:"var(--font-bengali)", color:"#0B1E3F" }}>{localDate(d,m,y,"bn")}</span>
+                  <span style={{ fontSize:12, fontWeight:700, fontFamily:"var(--font-bengali)", color:"var(--erp-text-strong)" }}>{localDate(d,m,y,"bn")}</span>
                 </div>
               ))}
             </div>
@@ -551,10 +551,10 @@ function NumeralsScreen() {
           <LangToggle lang={lang} onToggle={() => setLang(l => l === "bn" ? "en" : "bn")} />
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
-          <KpiCard labelKey="ytdRevenue"    value="8,450,000" subValue="SAR 8.45M" lang={lang} color="#16A34A" delta="12.4" />
-          <KpiCard labelKey="activePax"     value="924"                            lang={lang} color="#06B6D4" delta="8.1"  />
-          <KpiCard labelKey="activeGroups"  value="8"                              lang={lang} color="#9333EA"              />
-          <KpiCard labelKey="netMargin"     value="19.3%"                          lang={lang} color="#C9A24B" delta="2.1"  />
+          <KpiCard labelKey="ytdRevenue"    value="8,450,000" subValue="SAR 8.45M" lang={lang} color="var(--erp-success)" delta="12.4" />
+          <KpiCard labelKey="activePax"     value="924"                            lang={lang} color="var(--erp-cat-sky)" delta="8.1"  />
+          <KpiCard labelKey="activeGroups"  value="8"                              lang={lang} color="var(--erp-cat-purple)"              />
+          <KpiCard labelKey="netMargin"     value="19.3%"                          lang={lang} color="var(--erp-accent)" delta="2.1"  />
         </div>
       </div>
 
@@ -568,8 +568,8 @@ function NumeralsScreen() {
                 <div style={{ fontSize:9, color:"rgba(11,30,63,0.58)", marginBottom:6, fontFamily:fontFor(l), textTransform:"uppercase" as const, letterSpacing:"0.06em" }}>
                   {l === "bn" ? "যাত্রার তারিখ" : "Travel Date"}
                 </div>
-                <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", borderRadius:10, backgroundColor:"#FBFCFD", border:`1px solid ${I18N_MOD}40` }}>
-                  <span style={{ fontSize:14, fontWeight:700, fontFamily:fontFor(l), color:"#0B1E3F", lineHeight: lineHeightFor(l,"body") }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", borderRadius:10, backgroundColor:"var(--erp-surface-soft)", border:`1px solid ${I18N_MOD}40` }}>
+                  <span style={{ fontSize:14, fontWeight:700, fontFamily:fontFor(l), color:"var(--erp-text-strong)", lineHeight: lineHeightFor(l,"body") }}>
                     {localDate(16, 7, 2025, l)}
                   </span>
                   <div style={{ flex:1 }} />
@@ -599,7 +599,7 @@ function NumeralsScreen() {
       </div>
 
       <InfoNote>
-        <strong style={{ color:"#E2B966" }}>Bengali numeral encoding:</strong> Use <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>toLocalNum(n, lang)</code> from <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>lib/i18n.ts</code> on every number displayed in the UI. Applies to: KPI values, pagination, seat numbers, pax counts, dates, times, and invoice amounts. Never hardcode Bengali digits in JSX — always convert programmatically so the English toggle shows Western digits automatically.
+        <strong style={{ color:"var(--erp-gold-hov)" }}>Bengali numeral encoding:</strong> Use <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>toLocalNum(n, lang)</code> from <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>lib/i18n.ts</code> on every number displayed in the UI. Applies to: KPI values, pagination, seat numbers, pax counts, dates, times, and invoice amounts. Never hardcode Bengali digits in JSX — always convert programmatically so the English toggle shows Western digits automatically.
       </InfoNote>
     </div>
   );
@@ -629,10 +629,10 @@ function ComponentsScreen() {
               <div style={{ padding:"20px", display:"flex", flexWrap:"wrap" as const, gap:10 }}>
                 <BiBtn k="save"         lang={l} variant="primary"   />
                 <BiBtn k="cancel"       lang={l} variant="secondary" />
-                <BiBtn k="approve"      lang={l} variant="primary" color="#16A34A" />
+                <BiBtn k="approve"      lang={l} variant="primary" color="var(--erp-success)" />
                 <BiBtn k="reject"       lang={l} variant="danger"    />
-                <BiBtn k="newGroup"     lang={l} variant="primary" color="#9333EA" />
-                <BiBtn k="addPassenger" lang={l} variant="secondary" color="#9333EA" />
+                <BiBtn k="newGroup"     lang={l} variant="primary" color="var(--erp-cat-purple)" />
+                <BiBtn k="addPassenger" lang={l} variant="secondary" color="var(--erp-cat-purple)" />
                 <BiBtn k="viewMore"     lang={l} variant="ghost"     />
                 <BiBtn k="signOut"      lang={l} variant="ghost"     />
               </div>
@@ -648,7 +648,7 @@ function ComponentsScreen() {
           ))}
         </div>
         <InfoNote>
-          <strong style={{ color:"#E2B966" }}>Width rule:</strong> Buttons use <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>width: auto</code> and <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>padding: 0 Xpx</code> — never a fixed pixel width. Bengali labels are 30–60% longer than English equivalents. The button grows to fit. In flex rows, use <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>flex-wrap: wrap</code> so rows reflow gracefully at both widths.
+          <strong style={{ color:"var(--erp-gold-hov)" }}>Width rule:</strong> Buttons use <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>width: auto</code> and <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>padding: 0 Xpx</code> — never a fixed pixel width. Bengali labels are 30–60% longer than English equivalents. The button grows to fit. In flex rows, use <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>flex-wrap: wrap</code> so rows reflow gracefully at both widths.
         </InfoNote>
       </div>
 
@@ -742,7 +742,7 @@ function ComponentsScreen() {
           ))}
         </div>
         <InfoNote>
-          <strong style={{ color:"#E2B966" }}>Stepper note:</strong> Bengali step labels are taller due to line-height 1.75. Allow <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>min-height</code> on the label area below each step circle so the stepper baseline stays aligned across both scripts. Step numbers use <code style={{ backgroundColor:"#F5F7FA", padding:"0 4px", borderRadius:3 }}>toLocalNum(i+1, lang)</code>.
+          <strong style={{ color:"var(--erp-gold-hov)" }}>Stepper note:</strong> Bengali step labels are taller due to line-height 1.75. Allow <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>min-height</code> on the label area below each step circle so the stepper baseline stays aligned across both scripts. Step numbers use <code style={{ backgroundColor:"var(--erp-canvas)", padding:"0 4px", borderRadius:3 }}>toLocalNum(i+1, lang)</code>.
         </InfoNote>
       </div>
     </div>
@@ -753,39 +753,39 @@ function ComponentsScreen() {
 
 function MiniDash({ lang, color = "#DC4E2A" }: { lang: Lang; color?: string }) {
   const BN = lang === "bn";
-  const bg = "#FFFFFF";
+  const bg = "var(--erp-surface)";
   return (
     <div style={{ borderRadius:16, overflow:"hidden", border:"1px solid rgba(11,30,63,0.15)", backgroundColor:bg }}>
       {/* Module header */}
-      <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", backgroundColor:"#FBFCFD", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", backgroundColor:"var(--erp-surface-soft)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
         <div style={{ width:28, height:28, borderRadius:8, backgroundColor:`${color}20`, display:"flex", alignItems:"center", justifyContent:"center" }}>
           <Zap size={14} style={{ color }} />
         </div>
-        <span style={{ fontSize:13, fontWeight:900, color:"#0B1E3F", fontFamily:fontFor(lang) }}>
+        <span style={{ fontSize:13, fontWeight:900, color:"var(--erp-text-strong)", fontFamily:fontFor(lang) }}>
           {BN ? "সিইও ড্যাশবোর্ড" : "CEO Dashboard"}
         </span>
         <div style={{ flex:1 }} />
         {/* Language toggle */}
         <LangToggle lang={lang} onToggle={() => {}} size="sm" />
         {/* User avatar */}
-        <div style={{ width:26, height:26, borderRadius:8, backgroundColor:"#F5F7FA", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ width:26, height:26, borderRadius:8, backgroundColor:"var(--erp-canvas)", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <span style={{ fontSize:8, fontWeight:900, color:"rgba(11,30,63,0.76)" }}>AO</span>
         </div>
       </div>
       {/* KPI row */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, padding:"14px 14px 0" }}>
         {([
-          ["ytdRevenue",  "৮.৪৫ মি / 8.45M",  "#16A34A", "12.4"],
-          ["activePax",   "৯২৪ / 924",          "#06B6D4", "8.1"],
-          ["activeGroups","৮ / 8",               "#9333EA", undefined],
-          ["netMargin",   "১৯.৩% / 19.3%",       "#C9A24B", "2.1"],
+          ["ytdRevenue",  "৮.৪৫ মি / 8.45M",  "var(--erp-success)", "12.4"],
+          ["activePax",   "৯২৪ / 924",          "var(--erp-cat-sky)", "8.1"],
+          ["activeGroups","৮ / 8",               "var(--erp-cat-purple)", undefined],
+          ["netMargin",   "১৯.৩% / 19.3%",       "var(--erp-accent)", "2.1"],
         ] as [StringKey,string,string,string|undefined][]).map(([k,v,c,d]) => {
           const val = toLocalNum(v.split(" / ")[BN?0:1], lang);
           return (
-            <div key={k} style={{ padding:"12px", borderRadius:12, backgroundColor:"#FBFCFD", borderTop:`2px solid ${c}` }}>
+            <div key={k} style={{ padding:"12px", borderRadius:12, backgroundColor:"var(--erp-surface-soft)", borderTop:`2px solid ${c}` }}>
               <div style={{ fontSize:9, color:"rgba(11,30,63,0.58)", fontFamily:fontFor(lang), lineHeight:1.6, marginBottom:6 }}>{t(k, lang)}</div>
-              <div style={{ fontSize:18, fontWeight:900, color:"#0B1E3F", fontFamily:lang==="bn"?"var(--font-bengali)":"var(--font-mono)", lineHeight:1.1 }}>{val}</div>
-              {d && <div style={{ fontSize:9, color:"#16A34A", marginTop:4 }}>↑ {toLocalNum(d, lang)}% {t("increase",lang)}</div>}
+              <div style={{ fontSize:18, fontWeight:900, color:"var(--erp-text-strong)", fontFamily:lang==="bn"?"var(--font-bengali)":"var(--font-mono)", lineHeight:1.1 }}>{val}</div>
+              {d && <div style={{ fontSize:9, color:"var(--erp-success)", marginTop:4 }}>↑ {toLocalNum(d, lang)}% {t("increase",lang)}</div>}
             </div>
           );
         })}
@@ -839,14 +839,14 @@ function PreviewScreen() {
               <div style={{ width:8, height:8, borderRadius:4, backgroundColor:I18N_MOD }} />
               <span style={{ fontSize:10, fontWeight:900, color:"rgba(11,30,63,0.66)", fontFamily:"var(--font-bengali)" }}>বাংলা (ডিফল্ট)</span>
             </div>
-            <MiniDash lang="bn" color="#9333EA" />
+            <MiniDash lang="bn" color="var(--erp-cat-purple)" />
           </div>
           <div>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
-              <div style={{ width:8, height:8, borderRadius:4, backgroundColor:"#E4E9F0" }} />
+              <div style={{ width:8, height:8, borderRadius:4, backgroundColor:"var(--erp-border)" }} />
               <span style={{ fontSize:10, fontWeight:900, color:"rgba(11,30,63,0.66)" }}>English (Alternative)</span>
             </div>
-            <MiniDash lang="en" color="#06B6D4" />
+            <MiniDash lang="en" color="var(--erp-cat-sky)" />
           </div>
         </div>
       </div>
@@ -855,7 +855,7 @@ function PreviewScreen() {
       <div style={{ borderRadius:16, padding:"20px 24px", backgroundColor:`${I18N_MOD}10`, border:`1px solid ${I18N_MOD}30` }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
           <Globe size={16} style={{ color:I18N_MOD }} />
-          <span style={{ fontSize:13, fontWeight:900, color:"#0B1E3F" }}>Default State Rule — All screens from this point forward</span>
+          <span style={{ fontSize:13, fontWeight:900, color:"var(--erp-text-strong)" }}>Default State Rule — All screens from this point forward</span>
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
           {[
@@ -864,7 +864,7 @@ function PreviewScreen() {
             ["3. Font","Apply `fontFamily: fontFor(lang)` to every text node. Apply `lineHeight: lineHeightFor(lang, level)` to body text and headings."],
             ["4. Numerals","Wrap every number display in `toLocalNum(n, lang)`. Wrap every date in `localDate(d,m,y,lang)`. Never hardcode Bengali digits."],
           ].map(([t,d]) => (
-            <div key={t as string} style={{ padding:"12px 14px", borderRadius:10, backgroundColor:"#FBFCFD" }}>
+            <div key={t as string} style={{ padding:"12px 14px", borderRadius:10, backgroundColor:"var(--erp-surface-soft)" }}>
               <div style={{ fontSize:10, fontWeight:900, color:I18N_MOD, marginBottom:5 }}>{t}</div>
               <div style={{ fontSize:10, color:"rgba(11,30,63,0.76)", lineHeight:1.65 }}>{d}</div>
             </div>

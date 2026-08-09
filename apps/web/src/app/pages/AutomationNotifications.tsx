@@ -22,8 +22,8 @@ import { downloadCsv } from "../lib/exportCsv";
 
 const AUTO  = "#8B5CF6";
 const WA_C  = "#25D366";
-const EM_C  = "#EF4444";
-const IS: CSSProperties = { backgroundColor:"#F5F7FA", border:"1px solid rgba(11,30,63,0.15)", color:"#0B1E3F" };
+const EM_C  = "var(--erp-destructive)";
+const IS: CSSProperties = { backgroundColor:"var(--erp-canvas)", border:"1px solid rgba(11,30,63,0.15)", color:"var(--erp-text-strong)" };
 
 type AutomScreen = "rules"|"notifications"|"log"|"dropdown";
 
@@ -132,7 +132,7 @@ const RULES: UiRule[] = [
   { id:"R12", cat:"Esc",     name:"Emergency Alert Dispatch",      trigger:"Emergency flag raised",   condition:"Always — no filter",                      actions:["WhatsApp blast all managers","Emergency email chain","Create URGENT in-app notif","Log incident"],enabled:true,  runs:3,    lastRun:"5d ago"  },
 ];
 
-const CAT_COLOR: Record<string,string> = { Agent:"#0EA5E9", Group:"#10B981", Visa:"#0D9488", Hotel:"#2563EB", Finance:"#16A34A", Docs:"#F59E0B", Sys:"#6B7280", Esc:EM_C };
+const CAT_COLOR: Record<string,string> = { Agent:"#0EA5E9", Group:"#10B981", Visa:"var(--erp-cat-teal)", Hotel:"var(--erp-info)", Finance:"var(--erp-success)", Docs:"var(--erp-warning)", Sys:"var(--erp-muted)", Esc:EM_C };
 
 // ─── Mock data: notification events & templates ───────────────────────────────
 
@@ -214,14 +214,14 @@ function mapInApp(n: NotifLog): typeof IN_APP[number] {
 function Toggle({ on, onToggle, busy }: { on:boolean; onToggle:()=>void; busy?:boolean }) {
   return (
     <button disabled={busy} onClick={e=>{ e.stopPropagation(); onToggle(); }} className="relative inline-flex w-9 h-5 rounded-full shrink-0 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
-      style={{ backgroundColor:on?AUTO:"#EEF1F6" }}>
+      style={{ backgroundColor:on?AUTO:"var(--erp-border)" }}>
       <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200" style={{ left:on?"calc(100% - 1.125rem)":"0.125rem" }} />
     </button>
   );
 }
 
 function ChBadge({ ch }: { ch:string }) {
-  const map: Record<string,[string,string]> = { WhatsApp:[WA_C,"WA"], Email:["#2563EB","EM"], "In-App":[AUTO,"APP"] };
+  const map: Record<string,[string,string]> = { WhatsApp:[WA_C,"WA"], Email:["var(--erp-info)","EM"], "In-App":[AUTO,"APP"] };
   const [c,l] = map[ch] ?? [AUTO, ch.substring(0,3).toUpperCase()];
   return <span className="inline-flex px-1.5 py-0.5 rounded text-[8px] font-black" style={{ backgroundColor:`${c}18`, color:c }}>{l}</span>;
 }
@@ -241,7 +241,7 @@ function ABtn({ label, color, icon:Icon, onClick, disabled }: { label:string; co
       icon={Icon ? <Icon size={14} /> : undefined}
       onClick={onClick}
       disabled={disabled}
-      style={color ? { backgroundColor: color, color: "#0B1E3F" } : undefined}
+      style={color ? { backgroundColor: color, color: "var(--erp-text-strong)" } : undefined}
     >
       {label}
     </ErpButton>
@@ -266,7 +266,7 @@ function FlowBlock({ step, color, icon:Icon, items, editing }: { step:string; co
         <Icon size={13} style={{ color }} />
         <span className="text-[9px] font-black uppercase tracking-widest" style={{ color }}>{step}</span>
       </div>
-      <div className="p-3 space-y-1.5" style={{ backgroundColor:"#FFFFFF" }}>
+      <div className="p-3 space-y-1.5" style={{ backgroundColor:"var(--erp-surface)" }}>
         {items.map((item, i) => (
           editing ? (
             <div key={i} className="flex items-center gap-1.5">
@@ -274,7 +274,7 @@ function FlowBlock({ step, color, icon:Icon, items, editing }: { step:string; co
               <button style={{ color:"rgba(11,30,63,0.50)" }} className="text-xs">×</button>
             </div>
           ) : (
-            <div key={i} className="px-2.5 py-1.5 rounded-lg text-[10px] text-[#0B1E3F]" style={{ backgroundColor:`${color}10`, border:`1px solid ${color}20` }}>
+            <div key={i} className="px-2.5 py-1.5 rounded-lg text-[10px] text-[var(--erp-text-strong)]" style={{ backgroundColor:`${color}10`, border:`1px solid ${color}20` }}>
               {item}
             </div>
           )
@@ -398,13 +398,13 @@ function RulesScreen() {
             if (!catRules.length) return null;
             return (
               <div key={cat}>
-                <div className="px-4 py-2 text-[9px] font-black uppercase tracking-widest sticky top-0" style={{ backgroundColor:"#FBFCFD", color:"rgba(11,30,63,0.50)" }}>{cat}</div>
+                <div className="px-4 py-2 text-[9px] font-black uppercase tracking-widest sticky top-0" style={{ backgroundColor:"var(--erp-surface-soft)", color:"rgba(11,30,63,0.50)" }}>{cat}</div>
                 {catRules.map(r=>(
                   <button key={r.id} onClick={()=>setSelId(r.id)}
                     className="w-full text-left flex items-start gap-3 px-4 py-3 transition-all"
                     style={{ backgroundColor:selId===r.id?`${AUTO}08`:"transparent", borderLeft:`3px solid ${selId===r.id?AUTO:"transparent"}`, borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold text-[#0B1E3F] truncate">{r.name}</div>
+                      <div className="text-xs font-semibold text-[var(--erp-text-strong)] truncate">{r.name}</div>
                       <div className="text-[9px] mt-0.5 truncate" style={{ color:"rgba(11,30,63,0.58)" }}>↯ {r.trigger}</div>
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className="text-[9px] font-mono" style={{ color:"rgba(11,30,63,0.50)", fontFamily:"var(--font-mono)" }}>{r.runs} runs · {r.lastRun}</span>
@@ -417,7 +417,7 @@ function RulesScreen() {
             );
           })}
         </div>
-        <div className="px-4 py-2.5 shrink-0" style={{ borderTop:"1px solid rgba(11,30,63,0.11)", backgroundColor:"#FFFFFF" }}>
+        <div className="px-4 py-2.5 shrink-0" style={{ borderTop:"1px solid rgba(11,30,63,0.11)", backgroundColor:"var(--erp-surface)" }}>
           <div className="flex items-center gap-3 text-[9px]" style={{ color:"rgba(11,30,63,0.50)" }}>
             <Activity size={11} style={{ color:AUTO }} />
             <span>{rules.filter(r=>enabledMap[r.id]!==false).length} active · {rules.reduce((s,r)=>s+r.runs,0).toLocaleString()} total runs</span>
@@ -428,19 +428,19 @@ function RulesScreen() {
       {/* Right: Rule builder */}
       <div className="col-span-3 flex flex-col overflow-hidden">
         {/* Rule header */}
-        <div className="flex items-center gap-3 px-6 py-4 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"#FFFFFF" }}>
+        <div className="flex items-center gap-3 px-6 py-4 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"var(--erp-surface)" }}>
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor:`${CAT_COLOR[rule.cat]??AUTO}18` }}>
             <Zap size={14} style={{ color:CAT_COLOR[rule.cat]??AUTO }} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-[#0B1E3F] truncate" title={rule.name}>{rule.name}</div>
+            <div className="text-sm font-bold text-[var(--erp-text-strong)] truncate" title={rule.name}>{rule.name}</div>
             <div className="text-[9px] mt-0.5 truncate" style={{ color:"rgba(11,30,63,0.58)" }}>
               {rule.id} · {rule.runs} runs · Last: {rule.lastRun}
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <ABtn label={editing?"Save":"Edit Flow"} color={AUTO} icon={editing?undefined:Settings} disabled={savingFlow} onClick={()=>{ const wasEditing=editing; setEditing(e=>!e); if(wasEditing){ if(!isLoggedIn()||!rule._id){ erpToast.success("Flow saved"); return; } setSavingFlow(true); api.patch(`/automation/rules/${rule._id}`,{ name:rule.name, category:rule.cat, trigger:rule.trigger, conditionExpr:rule.condition }).then(refresh).then(()=>erpToast.success("Flow saved")).catch(e=>erpToast.error(e instanceof ApiError?e.message:"Failed to save")).finally(()=>setSavingFlow(false)); } }} />
-            <ABtn label="Test Run" color="#16A34A" icon={Play} />
+            <ABtn label="Test Run" color="var(--erp-success)" icon={Play} />
             <Trash2 size={14} onClick={()=>{ if(!isLoggedIn()||!rule._id){ erpToast.info(`Rule deleted: ${rule.name}`); return; } api.delete(`/automation/rules/${rule._id}`).then(()=>{ erpToast.success(`Rule deleted: ${rule.name}`); refresh(); }).catch(e=>erpToast.error(e instanceof ApiError?e.message:"Failed to delete")); }} style={{ color:"rgba(11,30,63,0.38)" }} className="cursor-pointer hover:text-red-400 ml-1" />
           </div>
         </div>
@@ -449,9 +449,9 @@ function RulesScreen() {
         <div className="flex-1 overflow-y-auto p-6" style={{ scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }}>
           {/* Flow */}
           <div className="flex items-stretch gap-0 mb-5">
-            <FlowBlock step="Trigger"    color="#F59E0B" icon={Zap}       items={[rule.trigger]}         editing={editing} />
+            <FlowBlock step="Trigger"    color="var(--erp-warning)" icon={Zap}       items={[rule.trigger]}         editing={editing} />
             <FlowArrow />
-            <FlowBlock step="Condition"  color="#6366F1" icon={GitBranch} items={[rule.condition]}       editing={editing} />
+            <FlowBlock step="Condition"  color="var(--erp-cat-purple)" icon={GitBranch} items={[rule.condition]}       editing={editing} />
             <FlowArrow />
             <FlowBlock step="Actions"    color="#10B981" icon={Play}      items={rule.actions}           editing={editing} />
           </div>
@@ -461,10 +461,10 @@ function RulesScreen() {
             {[
               { l:"Total Runs",    v:rule.runs.toLocaleString(),  c:AUTO      },
               { l:"Last Executed", v:rule.lastRun,                c:"rgba(11,30,63,0.76)" },
-              { l:"Avg Duration",  v:"340ms",                     c:"#16A34A" },
-              { l:"Success Rate",  v:"98.4%",                     c:"#16A34A" },
+              { l:"Avg Duration",  v:"340ms",                     c:"var(--erp-success)" },
+              { l:"Success Rate",  v:"98.4%",                     c:"var(--erp-success)" },
             ].map(k=>(
-              <div key={k.l} className="px-3 py-2.5 rounded-xl" style={{ backgroundColor:"#FBFCFD", border:"1px solid rgba(11,30,63,0.11)" }}>
+              <div key={k.l} className="px-3 py-2.5 rounded-xl" style={{ backgroundColor:"var(--erp-surface-soft)", border:"1px solid rgba(11,30,63,0.11)" }}>
                 <div className="text-sm font-black" style={{ color:k.c, fontFamily:"var(--font-mono)" }}>{k.v}</div>
                 <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.50)" }}>{k.l}</div>
               </div>
@@ -473,8 +473,8 @@ function RulesScreen() {
 
           {/* Mini run log */}
           <div className="rounded-xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
-            <div className="flex items-center justify-between px-4 py-2.5" style={{ backgroundColor:"#FFFFFF", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
-              <span className="text-[10px] font-bold text-[#0B1E3F]">Recent Executions</span>
+            <div className="flex items-center justify-between px-4 py-2.5" style={{ backgroundColor:"var(--erp-surface)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+              <span className="text-[10px] font-bold text-[var(--erp-text-strong)]">Recent Executions</span>
               <RefreshCw size={11} style={{ color:"rgba(11,30,63,0.50)" }} />
             </div>
             {recentLoading ? (
@@ -488,7 +488,7 @@ function RulesScreen() {
                 <span className="text-[9px] w-28 shrink-0 whitespace-nowrap" style={{ color:"rgba(11,30,63,0.58)", fontFamily:"var(--font-mono)" }}>{e.t}</span>
                 <span className="flex-1 min-w-0 truncate text-[10px]" title={rule.name} style={{ color:"rgba(11,30,63,0.66)" }}>{rule.name}</span>
                 <span className="text-[9px] mr-3 font-mono shrink-0 whitespace-nowrap tabular-nums" style={{ color:"rgba(11,30,63,0.50)", fontFamily:"var(--font-mono)" }}>{e.dur}</span>
-                <span className="text-[9px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor:e.s==="OK"?`#4ADE8018`:e.s==="WARN"?`#FDE68A18`:`${EM_C}18`, color:e.s==="OK"?"#16A34A":e.s==="WARN"?"#B45309":EM_C }}>{e.s}</span>
+                <span className="text-[9px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor:e.s==="OK"?`#4ADE8018`:e.s==="WARN"?`#FDE68A18`:`${EM_C}18`, color:e.s==="OK"?"var(--erp-success)":e.s==="WARN"?"var(--erp-warning)":EM_C }}>{e.s}</span>
               </div>
             ))}
           </div>
@@ -585,7 +585,7 @@ function NotificationsScreen() {
       .finally(() => setSavingTmpl(false));
   };
 
-  const tabColor: Record<NCTab,string> = { whatsapp:WA_C, email:"#2563EB", inapp:AUTO };
+  const tabColor: Record<NCTab,string> = { whatsapp:WA_C, email:"var(--erp-info)", inapp:AUTO };
   const tabIcon: Record<NCTab, typeof Bell> = { whatsapp:MessageCircle, email:Mail, inapp:Inbox };
 
   if (loading) return <div className="p-6"><LoadingSkeleton tone="light" rows={6} /></div>;
@@ -599,7 +599,7 @@ function NotificationsScreen() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Tab bar */}
-      <div className="flex items-center gap-1 px-6 py-3 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"#FFFFFF" }}>
+      <div className="flex items-center gap-1 px-6 py-3 shrink-0" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"var(--erp-surface)" }}>
         {(["whatsapp","email","inapp"] as NCTab[]).map(t=>{
           const TI = tabIcon[t];
           return (
@@ -621,7 +621,7 @@ function NotificationsScreen() {
       <div className="grid grid-cols-5 flex-1 overflow-hidden">
         {/* Event list */}
         <div className="col-span-2 overflow-y-auto" style={{ borderRight:"1px solid rgba(11,30,63,0.11)", scrollbarWidth:"thin" }}>
-          <div className="px-4 py-2.5 sticky top-0" style={{ backgroundColor:"#FBFCFD", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+          <div className="px-4 py-2.5 sticky top-0" style={{ backgroundColor:"var(--erp-surface-soft)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
             <div className="grid grid-cols-5 text-[8px] font-black uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.50)" }}>
               <span className="col-span-2">Event Type</span>
               <span className="text-center">WA</span>
@@ -642,7 +642,7 @@ function NotificationsScreen() {
                 <div className="col-span-2 flex items-center gap-2 min-w-0">
                   {isEm && <AlertTriangle size={11} className="shrink-0" style={{ color:EM_C }} />}
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold truncate" title={e.label} style={{ color:isEm?EM_C:"#0B1E3F" }}>{e.label}</div>
+                    <div className="text-xs font-semibold truncate" title={e.label} style={{ color:isEm?EM_C:"var(--erp-text-strong)" }}>{e.label}</div>
                     {isEm && <span className="text-[8px] font-black" style={{ color:EM_C }}>HIGH PRIORITY</span>}
                   </div>
                 </div>
@@ -660,7 +660,7 @@ function NotificationsScreen() {
         <div className="col-span-3 overflow-y-auto p-5" style={{ scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="text-xs font-bold text-[#0B1E3F]">{evt.label} — {tab==="whatsapp"?"WhatsApp Template":tab==="email"?"Email Template":"In-App Template"}</div>
+              <div className="text-xs font-bold text-[var(--erp-text-strong)]">{evt.label} — {tab==="whatsapp"?"WhatsApp Template":tab==="email"?"Email Template":"In-App Template"}</div>
               {evt.priority==="emergency" && (
                 <div className="flex items-center gap-1 mt-1">
                   <AlertTriangle size={10} style={{ color:EM_C }} />
@@ -679,9 +679,9 @@ function NotificationsScreen() {
             <div className="rounded-2xl overflow-hidden" style={{ backgroundColor:"#F0F7F2" }}>
               {/* WA header */}
               <div className="flex items-center gap-3 px-4 py-3" style={{ backgroundColor:"#F0F7F3" }}>
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-black text-[#0B1E3F]" style={{ backgroundColor:WA_C }}>TH</div>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-black text-[var(--erp-text-strong)]" style={{ backgroundColor:WA_C }}>TH</div>
                 <div>
-                  <div className="text-xs font-bold text-[#0B1E3F]">TUBA AL HIJAZ</div>
+                  <div className="text-xs font-bold text-[var(--erp-text-strong)]">TUBA AL HIJAZ</div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-[9px]" style={{ color:WA_C }}>Business Account</span>
                     <span className="text-[9px] font-black px-1.5 py-0.5 rounded" style={{ backgroundColor:`${WA_C}20`, color:WA_C }}>VERIFIED ✓</span>
@@ -716,7 +716,7 @@ function NotificationsScreen() {
           {/* Email preview */}
           {tab==="email" && (
             <div className="rounded-2xl overflow-hidden shadow-xl" style={{ fontFamily:"var(--font-sans)" }}>
-              <div className="h-1.5" style={{ background:"linear-gradient(90deg,#C9A24B,#E8C87A,#C9A24B)" }} />
+              <div className="h-1.5" style={{ background:"linear-gradient(90deg,var(--erp-accent),#E8C87A,var(--erp-accent))" }} />
               <div className="bg-white px-6 py-5">
                 <div className="flex items-start justify-between mb-4 pb-4" style={{ borderBottom:"1px solid #E5E7EB" }}>
                   <div>
@@ -753,14 +753,14 @@ function NotificationsScreen() {
                     <div>Account: {"{{agent_name}}"}</div>
                   </div>
                   <div className="pt-2">
-                    <button className="px-4 py-2 rounded-lg text-xs font-bold text-[#0B1E3F]" style={{ backgroundColor:evt.id==="emergency"?EM_C:AUTO }}>
+                    <button className="px-4 py-2 rounded-lg text-xs font-bold text-[var(--erp-text-strong)]" style={{ backgroundColor:evt.id==="emergency"?EM_C:AUTO }}>
                       {evt.id==="emergency"?"Contact Ops Manager":"View in Portal →"}
                     </button>
                   </div>
                   <p className="text-[9px] text-gray-400 pt-2 border-t border-gray-100">This is an automated message. Do not reply to this email. Contact support at ops@tubalhijaz.sa</p>
                 </div>
               </div>
-              <div className="h-1" style={{ background:"linear-gradient(90deg,#C9A24B,#E8C87A,#C9A24B)" }} />
+              <div className="h-1" style={{ background:"linear-gradient(90deg,var(--erp-accent),#E8C87A,var(--erp-accent))" }} />
             </div>
           )}
 
@@ -782,7 +782,7 @@ function NotificationsScreen() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       {evt.id==="emergency" && <span className="text-[8px] font-black px-2 py-0.5 rounded-full" style={{ backgroundColor:`${EM_C}20`, color:EM_C }}>EMERGENCY</span>}
-                      <span className="text-xs font-bold" style={{ color:evt.id==="emergency"?EM_C:"#0B1E3F" }}>{evt.label}</span>
+                      <span className="text-xs font-bold" style={{ color:evt.id==="emergency"?EM_C:"var(--erp-text-strong)" }}>{evt.label}</span>
                       <span className="ml-auto text-[9px]" style={{ color:"rgba(11,30,63,0.50)" }}>just now</span>
                     </div>
                     <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.76)" }}>
@@ -795,17 +795,17 @@ function NotificationsScreen() {
                       <button className="px-3 py-1.5 rounded-lg text-[9px] font-bold" style={{ backgroundColor:`${evt.id==="emergency"?EM_C:AUTO}18`, color:evt.id==="emergency"?EM_C:AUTO }}>
                         {evt.id==="emergency"?"Take Action":"View Details"}
                       </button>
-                      <button className="px-3 py-1.5 rounded-lg text-[9px] font-bold" style={{ backgroundColor:"#F5F7FA", color:"rgba(11,30,63,0.58)" }}>Dismiss</button>
+                      <button className="px-3 py-1.5 rounded-lg text-[9px] font-bold" style={{ backgroundColor:"var(--erp-canvas)", color:"rgba(11,30,63,0.58)" }}>Dismiss</button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="mt-3 p-3 rounded-xl" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.11)" }}>
+              <div className="mt-3 p-3 rounded-xl" style={{ backgroundColor:"var(--erp-surface)", border:"1px solid rgba(11,30,63,0.11)" }}>
                 <div className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color:"rgba(11,30,63,0.50)" }}>Delivery Settings</div>
                 {[["Show badge on bell icon","on"],["Play notification sound","on"],["Show toast (3 sec)","on"],["Persist in log","on"]].map(([l,v])=>(
                   <div key={l} className="flex justify-between items-center py-1.5" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
                     <span className="text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}>{l}</span>
-                    <span className="text-[9px] font-black" style={{ color:"#16A34A" }}>{v}</span>
+                    <span className="text-[9px] font-black" style={{ color:"var(--erp-success)" }}>{v}</span>
                   </div>
                 ))}
               </div>
@@ -861,7 +861,7 @@ function LogScreen() {
       cell: (n) => (
         <div className="flex items-center gap-1.5">
           {n.priority === "emergency" && <AlertTriangle size={10} style={{ color: EM_C }} />}
-          <span className="text-xs font-semibold" style={{ color: n.priority === "emergency" ? EM_C : "#0B1E3F" }}>{n.event}</span>
+          <span className="text-xs font-semibold" style={{ color: n.priority === "emergency" ? EM_C : "var(--erp-text-strong)" }}>{n.event}</span>
         </div>
       ),
     },
@@ -910,7 +910,7 @@ function LogScreen() {
                     size="sm"
                     variant={chFilter === c ? "primary" : "outline"}
                     onClick={() => { setChFilter(c); setPage(1); }}
-                    style={chFilter === c ? { backgroundColor: AUTO, color: "#0B1E3F" } : undefined}
+                    style={chFilter === c ? { backgroundColor: AUTO, color: "var(--erp-text-strong)" } : undefined}
                   >
                     {c}
                   </ErpButton>
@@ -961,15 +961,15 @@ function DropdownDemoScreen() {
   return (
     <div className="p-7">
       <div className="mb-5">
-        <h2 className="text-sm font-bold text-[#0B1E3F]">In-App Notification Dropdown</h2>
+        <h2 className="text-sm font-bold text-[var(--erp-text-strong)]">In-App Notification Dropdown</h2>
         <p className="text-xs mt-1" style={{ color:"rgba(11,30,63,0.58)" }}>Expanded state — this panel mounts when the bell icon in the top bar is clicked. Emergency alerts appear pinned at the top with distinct red styling.</p>
       </div>
 
       {/* Simulated top bar context */}
-      <div className="rounded-2xl flex items-center justify-between px-5 py-3 mb-2" style={{ backgroundColor:"#FBFCFD", border:"1px solid rgba(11,30,63,0.11)" }}>
+      <div className="rounded-2xl flex items-center justify-between px-5 py-3 mb-2" style={{ backgroundColor:"var(--erp-surface-soft)", border:"1px solid rgba(11,30,63,0.11)" }}>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor:AUTO }} />
-          <span className="text-[10px] font-bold text-[#0B1E3F]">TUBA AL HIJAZ ERP</span>
+          <span className="text-[10px] font-bold text-[var(--erp-text-strong)]">TUBA AL HIJAZ ERP</span>
           <ChevronRight size={10} style={{ color:"rgba(11,30,63,0.38)" }} />
           <span className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>Finance Dashboard</span>
         </div>
@@ -980,7 +980,7 @@ function DropdownDemoScreen() {
               <BellRing size={14} style={{ color:AUTO }} />
             </div>
             {unread > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center text-[#0B1E3F]" style={{ backgroundColor:EM_C }}>
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center text-[var(--erp-text-strong)]" style={{ backgroundColor:EM_C }}>
                 {unread}
               </span>
             )}
@@ -990,15 +990,15 @@ function DropdownDemoScreen() {
 
       {/* Arrow indicator */}
       <div className="flex justify-end pr-5 mb-px">
-        <div className="w-3 h-2 border-l border-r border-t rounded-t-sm" style={{ borderColor:"rgba(11,30,63,0.15)", backgroundColor:"#FBFCFD" }} />
+        <div className="w-3 h-2 border-l border-r border-t rounded-t-sm" style={{ borderColor:"rgba(11,30,63,0.15)", backgroundColor:"var(--erp-surface-soft)" }} />
       </div>
 
       {/* Dropdown panel */}
-      <div className="ml-auto max-w-sm rounded-2xl overflow-hidden" style={{ backgroundColor:"#F5F7FA", border:"1px solid rgba(11,30,63,0.15)", boxShadow:"0 24px 64px rgba(0,0,0,0.6)" }}>
+      <div className="ml-auto max-w-sm rounded-2xl overflow-hidden" style={{ backgroundColor:"var(--erp-canvas)", border:"1px solid rgba(11,30,63,0.15)", boxShadow:"0 24px 64px rgba(0,0,0,0.6)" }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"#FBFCFD" }}>
+        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)", backgroundColor:"var(--erp-surface-soft)" }}>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#0B1E3F]">Notifications</span>
+            <span className="text-xs font-bold text-[var(--erp-text-strong)]">Notifications</span>
             {unread>0 && <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full" style={{ backgroundColor:`${EM_C}20`, color:EM_C }}>{unread} new</span>}
           </div>
           <button onClick={()=>setNotifs(n=>n.map(x=>({...x,read:true})))} className="text-[9px] font-bold" style={{ color:AUTO }}>Mark all read</button>
@@ -1030,10 +1030,10 @@ function DropdownDemoScreen() {
                           🚨 EMERGENCY
                         </span>
                       )}
-                      <span className="text-[10px] font-bold truncate" style={{ color:isEm?EM_C:"#0B1E3F" }}>{n.label}</span>
+                      <span className="text-[10px] font-bold truncate" style={{ color:isEm?EM_C:"var(--erp-text-strong)" }}>{n.label}</span>
                       <span className="ml-auto text-[9px] shrink-0" style={{ color:"rgba(11,30,63,0.50)" }}>{n.time} ago</span>
                     </div>
-                    <div className="text-[10px] leading-relaxed line-clamp-2" style={{ color:isEm?"#DC2626":"rgba(11,30,63,0.66)" }}>
+                    <div className="text-[10px] leading-relaxed line-clamp-2" style={{ color:isEm?"var(--erp-destructive)":"rgba(11,30,63,0.66)" }}>
                       {n.body}
                     </div>
                     {isEm && (
@@ -1050,7 +1050,7 @@ function DropdownDemoScreen() {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 text-center" style={{ borderTop:"1px solid rgba(11,30,63,0.11)", backgroundColor:"#FFFFFF" }}>
+        <div className="px-4 py-3 text-center" style={{ borderTop:"1px solid rgba(11,30,63,0.11)", backgroundColor:"var(--erp-surface)" }}>
           <button className="text-[10px] font-bold" style={{ color:AUTO }}>View all notifications →</button>
         </div>
       </div>

@@ -7,7 +7,7 @@ import { api, isLoggedIn } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 
-const AUD = "#0F766E";
+const AUD = "var(--erp-cat-teal)";
 const ACTIONS = ["", "CREATE", "UPDATE", "DELETE", "APPROVE", "REJECT", "PROCESS", "REVIEW", "EXPORT", "LOGIN"];
 const MODULES = ["", "Workflow", "Groups", "Passengers", "Services", "Finance", "OCR", "Uploads", "Flights", "Impersonation", "Security", "RateCards", "Companies"];
 
@@ -88,11 +88,11 @@ export default function AuditCenter() {
             </div>
             <div>
               <div className="font-bold uppercase tracking-widest mb-1" style={{ color: AUD }}>{lang === "bn" ? "পূর্বের মান" : "Before"}</div>
-              <pre className="rounded p-2 overflow-x-auto" style={{ background: "#F5F7FA", maxHeight: 200 }}>{view.before ? JSON.stringify(view.before, null, 2) : "—"}</pre>
+              <pre className="rounded p-2 overflow-x-auto" style={{ background: "var(--erp-canvas)", maxHeight: 200 }}>{view.before ? JSON.stringify(view.before, null, 2) : "—"}</pre>
             </div>
             <div>
               <div className="font-bold uppercase tracking-widest mb-1" style={{ color: AUD }}>{lang === "bn" ? "নতুন মান" : "After"}</div>
-              <pre className="rounded p-2 overflow-x-auto" style={{ background: "#F5F7FA", maxHeight: 200 }}>{view.after ? JSON.stringify(view.after, null, 2) : "—"}</pre>
+              <pre className="rounded p-2 overflow-x-auto" style={{ background: "var(--erp-canvas)", maxHeight: 200 }}>{view.after ? JSON.stringify(view.after, null, 2) : "—"}</pre>
             </div>
           </div>
         </ErpDrawer>

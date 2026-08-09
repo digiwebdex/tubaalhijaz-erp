@@ -15,8 +15,8 @@ import {
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 
-const OCR = "#6366F1"; // indigo — OCR module accent (unchanged Figma token)
-const NAVY = "#0B1E3F";
+const OCR = "var(--erp-cat-purple)"; // indigo — OCR module accent (unchanged Figma token)
+const NAVY = "var(--erp-text-strong)";
 
 // ─── Types (match the real /ocr backend) ──────────────────────────────────────
 interface OcrField { field: string; value: string | null; confidence: number; low: boolean; overriddenValue?: string | null }
@@ -78,10 +78,10 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // ─── Small UI atoms (Figma design tokens) ─────────────────────────────────────
 function ConfBar({ pct }: { pct: number }) {
-  const c = pct >= 90 ? "#16A34A" : pct >= 60 ? "#B45309" : "#DC2626";
+  const c = pct >= 90 ? "var(--erp-success)" : pct >= 60 ? "var(--erp-warning)" : "var(--erp-destructive)";
   return (
     <div className="flex items-center gap-1.5">
-      <div className="w-14 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "#EEF1F6" }}>
+      <div className="w-14 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--erp-border)" }}>
         <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: c }} />
       </div>
       <span className="text-[9px] font-bold" style={{ color: c, fontFamily: "var(--font-mono)" }}>{pct}%</span>
@@ -192,9 +192,9 @@ function OcrReviewBody({ doc, defaultGroupId, groups, onDone }: {
             : { backgroundColor: "#DC26260D", border: "1px solid #DC262630" }
       }>
         {isNusuk
-          ? <FileText size={15} style={{ color: "#2563EB" }} />
-          : mrzOk ? <ShieldCheck size={15} style={{ color: "#16A34A" }} /> : <ShieldAlert size={15} style={{ color: "#DC2626" }} />}
-        <span className="text-xs font-semibold" style={{ color: isNusuk ? "#2563EB" : mrzOk ? "#16A34A" : "#DC2626" }}>
+          ? <FileText size={15} style={{ color: "var(--erp-info)" }} />
+          : mrzOk ? <ShieldCheck size={15} style={{ color: "var(--erp-success)" }} /> : <ShieldAlert size={15} style={{ color: "var(--erp-destructive)" }} />}
+        <span className="text-xs font-semibold" style={{ color: isNusuk ? "var(--erp-info)" : mrzOk ? "var(--erp-success)" : "var(--erp-destructive)" }}>
           {isNusuk
             ? "Nusuk Group List → approve opens / updates Group Number"
             : mrzOk ? "MRZ validated — check digits pass" : doc.mrzDiscrepancy ? "MRZ discrepancy — verify fields before approving" : "No MRZ read — verify manually"}
@@ -207,8 +207,8 @@ function OcrReviewBody({ doc, defaultGroupId, groups, onDone }: {
       {/* Duplicate warning — T001-06 attach path for Excel Mutamer twin */}
       {!isNusuk && dup && (
         <div className="flex items-start gap-2.5 px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#B4530912", border: "1px solid #B4530930" }}>
-          <Copy size={14} style={{ color: "#B45309" }} className="mt-0.5 shrink-0" />
-          <div className="text-[11px]" style={{ color: "#B45309" }}>
+          <Copy size={14} style={{ color: "var(--erp-warning)" }} className="mt-0.5 shrink-0" />
+          <div className="text-[11px]" style={{ color: "var(--erp-warning)" }}>
             {doc.duplicateOfPassengerId
               ? "This passport is already on an existing Mutamer (e.g. Excel import). Attach OCR to that Mutamer — do not create a duplicate."
               : "A pending OCR document with this passport already exists. Review before approving."}
@@ -225,12 +225,12 @@ function OcrReviewBody({ doc, defaultGroupId, groups, onDone }: {
           return (
             <div key={c.key} className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: i < canon.length - 1 ? "1px solid rgba(11,30,63,0.07)" : undefined, backgroundColor: low ? "#DC26260A" : undefined }}>
               <div className="w-28 shrink-0 text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.5)" }}>
-                {c.label}{c.required && <span style={{ color: "#DC2626" }}> *</span>}
+                {c.label}{c.required && <span style={{ color: "var(--erp-destructive)" }}> *</span>}
               </div>
               {c.kind === "sex" ? (
                 <select value={vals.sex ?? ""} onChange={(e) => setVals((v) => ({ ...v, sex: e.target.value }))} disabled={done || !canReview}
                   className="flex-1 px-2.5 py-1.5 text-xs rounded-lg focus:outline-none disabled:opacity-70"
-                  style={{ backgroundColor: "#F5F7FA", border: `1px solid ${low ? "#DC262640" : "rgba(11,30,63,0.12)"}`, color: NAVY }}>
+                  style={{ backgroundColor: "var(--erp-canvas)", border: `1px solid ${low ? "#DC262640" : "rgba(11,30,63,0.12)"}`, color: NAVY }}>
                   <option value="">— Select —</option>
                   <option value="M">Male</option>
                   <option value="F">Female</option>
@@ -240,11 +240,11 @@ function OcrReviewBody({ doc, defaultGroupId, groups, onDone }: {
                   onChange={(e) => setVals((v) => ({ ...v, [c.key]: e.target.value }))} disabled={done || !canReview}
                   placeholder={backed ? undefined : "Manual entry"}
                   className="flex-1 px-2.5 py-1.5 text-xs rounded-lg focus:outline-none disabled:opacity-70"
-                  style={{ backgroundColor: "#F5F7FA", border: `1px solid ${low ? "#DC262640" : "rgba(11,30,63,0.12)"}`, color: c.kind === "date" ? "rgba(11,30,63,0.76)" : NAVY }} />
+                  style={{ backgroundColor: "var(--erp-canvas)", border: `1px solid ${low ? "#DC262640" : "rgba(11,30,63,0.12)"}`, color: c.kind === "date" ? "rgba(11,30,63,0.76)" : NAVY }} />
               )}
               <div className="shrink-0 w-24 text-right">
                 {backed
-                  ? <div className="flex items-center justify-end gap-1">{low && <AlertCircle size={12} style={{ color: "#DC2626" }} />}<ConfBar pct={Math.round((ex.confidence ?? 0) * 100)} /></div>
+                  ? <div className="flex items-center justify-end gap-1">{low && <AlertCircle size={12} style={{ color: "var(--erp-destructive)" }} />}<ConfBar pct={Math.round((ex.confidence ?? 0) * 100)} /></div>
                   : <span className="text-[9px] font-semibold uppercase tracking-wide" style={{ color: "rgba(11,30,63,0.4)" }}>Manual entry</span>}
               </div>
             </div>
@@ -255,7 +255,7 @@ function OcrReviewBody({ doc, defaultGroupId, groups, onDone }: {
       {/* Raw OCR text — collapsible read-only reference for transcribing an incomplete scan */}
       {rawText.trim() !== "" && (
         <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(11,30,63,0.11)" }}>
-          <button type="button" onClick={() => setShowRaw((v) => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-left" style={{ backgroundColor: "#FBFCFD" }}>
+          <button type="button" onClick={() => setShowRaw((v) => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-left" style={{ backgroundColor: "var(--erp-surface-soft)" }}>
             <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(11,30,63,0.58)" }}>Raw OCR text (reference)</span>
             <ChevronDown size={13} style={{ color: "rgba(11,30,63,0.5)", transform: showRaw ? "rotate(180deg)" : undefined }} />
           </button>
@@ -269,10 +269,10 @@ function OcrReviewBody({ doc, defaultGroupId, groups, onDone }: {
       {doc.documentType === "PASSPORT" && !done && (
         <div>
           <label className="text-[9px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: "rgba(11,30,63,0.5)" }}>
-            Passport → Mutamer · target Group <span style={{ color: "#DC2626" }}>*</span>
+            Passport → Mutamer · target Group <span style={{ color: "var(--erp-destructive)" }}>*</span>
           </label>
           {defaultGroupId ? (
-            <div className="px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: "#F5F7FA", border: "1px solid rgba(11,30,63,0.12)", color: NAVY }}>
+            <div className="px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: "var(--erp-canvas)", border: "1px solid rgba(11,30,63,0.12)", color: NAVY }}>
               {groups.find((g) => g.id === (defaultGroupId ?? ""))?.code
                 ?? doc.group?.code
                 ?? "This group"}
@@ -282,7 +282,7 @@ function OcrReviewBody({ doc, defaultGroupId, groups, onDone }: {
             </div>
           ) : (
             <>
-              <select value={groupId} onChange={(e) => setGroupId(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg focus:outline-none" style={{ backgroundColor: "#F5F7FA", border: "1px solid rgba(11,30,63,0.12)", color: NAVY }}>
+              <select value={groupId} onChange={(e) => setGroupId(e.target.value)} className="w-full px-3 py-2 text-xs rounded-lg focus:outline-none" style={{ backgroundColor: "var(--erp-canvas)", border: "1px solid rgba(11,30,63,0.12)", color: NAVY }}>
                 <option value="">— Select a Group (required) —</option>
                 {groups.map((g) => <option key={g.id} value={g.id}>{g.code} — {g.name}</option>)}
               </select>
@@ -294,10 +294,10 @@ function OcrReviewBody({ doc, defaultGroupId, groups, onDone }: {
         </div>
       )}
 
-      {err && <div className="px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>{err}</div>}
+      {err && <div className="px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "var(--erp-destructive)" }}>{err}</div>}
 
       {done ? (
-        <div className="text-center text-xs py-1" style={{ color: approved ? "#16A34A" : "#DC2626" }}>
+        <div className="text-center text-xs py-1" style={{ color: approved ? "var(--erp-success)" : "var(--erp-destructive)" }}>
           {approved
             ? (isNusuk
               ? `✓ Approved — Group ${doc.group?.code ?? "linked"} from Nusuk list.`
@@ -309,12 +309,12 @@ function OcrReviewBody({ doc, defaultGroupId, groups, onDone }: {
       ) : canReview ? (
         <div className="flex flex-col gap-2">
           {doc.documentType === "PASSPORT" && doc.duplicateOfPassengerId && (
-            <button disabled={busy} onClick={attachExisting} className="w-full py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 flex items-center justify-center gap-2" style={{ backgroundColor: "#0D9488", color: "white" }}>
+            <button disabled={busy} onClick={attachExisting} className="w-full py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 flex items-center justify-center gap-2" style={{ backgroundColor: "var(--erp-cat-teal)", color: "white" }}>
               {busy ? <Loader2 size={13} className="animate-spin" /> : <Link2 size={13} />} Attach OCR to existing Mutamer
             </button>
           )}
           <div className="flex gap-2.5">
-            <button disabled={busy} onClick={() => void reject()} className="px-4 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50" style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#DC2626", backgroundColor: "rgba(239,68,68,0.06)" }}>Reject</button>
+            <button disabled={busy} onClick={() => void reject()} className="px-4 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50" style={{ border: "1px solid rgba(239,68,68,0.3)", color: "var(--erp-destructive)", backgroundColor: "rgba(239,68,68,0.06)" }}>Reject</button>
             <button
               disabled={busy || (!!doc.duplicateOfPassengerId && doc.documentType === "PASSPORT")}
               onClick={approve}
@@ -328,7 +328,7 @@ function OcrReviewBody({ doc, defaultGroupId, groups, onDone }: {
           </div>
         </div>
       ) : (
-        <div className="text-center text-xs py-2 px-3 rounded-xl" style={{ color: "rgba(11,30,63,0.66)", backgroundColor: "#F5F7FA", border: "1px solid rgba(11,30,63,0.1)" }}>
+        <div className="text-center text-xs py-2 px-3 rounded-xl" style={{ color: "rgba(11,30,63,0.66)", backgroundColor: "var(--erp-canvas)", border: "1px solid rgba(11,30,63,0.1)" }}>
           {isNusuk
             ? "Submitted for ops review. Staff with OCR review access approve to open the Group Number."
             : "Submitted for ops review. Staff with OCR review access approve into the selected Group."}
@@ -420,7 +420,7 @@ export function OcrIntakeModal({ groupId, groups: groupsIn, onClose, onApproved,
             <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => void onFile(e.target.files?.[0])} />
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${OCR}18` }}><Upload size={20} style={{ color: OCR }} /></div>
             <div className="text-center">
-              <div className="text-sm font-semibold text-[#0B1E3F]">
+              <div className="text-sm font-semibold text-[var(--erp-text-strong)]">
                 {isNusuk ? "Click to choose a Nusuk Groups List image or PDF" : "Click to choose a passport image or PDF"}
               </div>
               <div className="text-xs mt-0.5" style={{ color: "rgba(11,30,63,0.58)" }}>
@@ -438,7 +438,7 @@ export function OcrIntakeModal({ groupId, groups: groupsIn, onClose, onApproved,
       {phase === "processing" && (
         <div className="flex flex-col items-center gap-3 py-10 text-center">
           <Loader2 size={30} className="animate-spin" style={{ color: OCR }} />
-          <div className="text-sm font-semibold text-[#0B1E3F]">Processing… (~7 seconds)</div>
+          <div className="text-sm font-semibold text-[var(--erp-text-strong)]">Processing… (~7 seconds)</div>
           <div className="text-xs max-w-[320px]" style={{ color: "rgba(11,30,63,0.58)" }}>Reading the document, extracting fields and validating the MRZ checksum. This runs on the server.</div>
         </div>
       )}
@@ -502,10 +502,10 @@ function OCRCenterBody() {
     return mf && mq;
   });
   const kpis = [
-    { l: "In Review", v: all.filter((r) => r.reviewStatus === "IN_REVIEW").length, c: "#2563EB" },
-    { l: "Processing", v: all.filter((r) => r.reviewStatus === "PENDING").length, c: "#B45309" },
-    { l: "Approved", v: all.filter((r) => r.reviewStatus === "APPROVED").length, c: "#16A34A" },
-    { l: "Flagged", v: all.filter((r) => r.mrzDiscrepancy || r.duplicateOfId || r.duplicateOfPassengerId).length, c: "#DC2626" },
+    { l: "In Review", v: all.filter((r) => r.reviewStatus === "IN_REVIEW").length, c: "var(--erp-info)" },
+    { l: "Processing", v: all.filter((r) => r.reviewStatus === "PENDING").length, c: "var(--erp-warning)" },
+    { l: "Approved", v: all.filter((r) => r.reviewStatus === "APPROVED").length, c: "var(--erp-success)" },
+    { l: "Flagged", v: all.filter((r) => r.mrzDiscrepancy || r.duplicateOfId || r.duplicateOfPassengerId).length, c: "var(--erp-destructive)" },
   ];
 
   const tableState: ReactNode = !authed ? <EmptyState tone="light" title="Sign in" hint="OCR documents are per-account." />
@@ -555,8 +555,8 @@ function OCRCenterBody() {
       cell: (r) => {
         const flag = r.mrzDiscrepancy || r.duplicateOfId || r.duplicateOfPassengerId;
         return flag
-          ? <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#DC262615", color: "#DC2626" }}><AlertCircle size={9} /> {r.mrzDiscrepancy ? "MRZ" : "Dup"}</span>
-          : <Check size={12} style={{ color: "#16A34A" }} />;
+          ? <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#DC262615", color: "var(--erp-destructive)" }}><AlertCircle size={9} /> {r.mrzDiscrepancy ? "MRZ" : "Dup"}</span>
+          : <Check size={12} style={{ color: "var(--erp-success)" }} />;
       },
     },
     { id: "created", header: lang === "bn" ? "তৈরি" : "Created", cell: (r) => fmtDate(r.createdAt) },
@@ -574,7 +574,7 @@ function OCRCenterBody() {
         primaryAction={
           <div className="flex items-center gap-2">
             {nusukEnabled && (
-              <div className="flex gap-0.5 p-1 rounded-xl" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
+              <div className="flex gap-0.5 p-1 rounded-xl" style={{ backgroundColor: "var(--erp-surface-soft)", border: "1px solid rgba(11,30,63,0.11)" }}>
                 {([
                   { k: "PASSPORT" as const, label: "Passport" },
                   { k: "NUSUK_GROUP_LIST" as const, label: "Group List" },
@@ -612,7 +612,7 @@ function OCRCenterBody() {
           <div className="flex flex-col gap-3 w-full">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {kpis.map((k) => (
-                <div key={k.l} className="rounded-xl p-3" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+                <div key={k.l} className="rounded-xl p-3" style={{ backgroundColor: "var(--erp-surface)", border: "1px solid rgba(11,30,63,0.11)" }}>
                   <div className="text-lg font-bold font-mono" style={{ color: k.c }}>{loading || error ? "—" : k.v}</div>
                   <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.58)" }}>{k.l}</div>
                 </div>
@@ -645,7 +645,7 @@ function OCRCenterBody() {
         footer={<ErpPagination page={page} pageSize={pageSize} total={filtered.length} onPageChange={setPage} lang={lang} />}
       >
         {tableState ? (
-          <div className="rounded-xl p-2" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>{tableState}</div>
+          <div className="rounded-xl p-2" style={{ backgroundColor: "var(--erp-surface)", border: "1px solid rgba(11,30,63,0.11)" }}>{tableState}</div>
         ) : (
           <ErpDataTable
             columns={columns}

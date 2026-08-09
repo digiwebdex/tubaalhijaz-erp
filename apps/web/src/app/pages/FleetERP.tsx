@@ -19,9 +19,9 @@ import { fontFor } from "@tuba/shared";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const FLEET = "#475569";   // slate — matches GLOBAL_MODS fleet entry
+const FLEET = "var(--erp-muted)";   // slate — matches GLOBAL_MODS fleet entry
 const FUEL_C = "#0EA5E9";  // fuel bar
-const MAINT_C = "#D97706"; // maintenance bar
+const MAINT_C = "var(--erp-warning)"; // maintenance bar
 
 type FleetScreen =
   | "dashboard" | "vehicles" | "drivers" | "compliance" | "fuel"
@@ -110,24 +110,24 @@ interface Dispatch {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const IS: CSSProperties = { backgroundColor:"#F5F7FA", border:"1px solid rgba(11,30,63,0.15)", color:"#0B1E3F" };
-const CARD: CSSProperties = { backgroundColor:"#FBFCFD", border:"1px solid rgba(11,30,63,0.11)" };
-const PANEL: CSSProperties = { backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.11)" };
+const IS: CSSProperties = { backgroundColor:"var(--erp-canvas)", border:"1px solid rgba(11,30,63,0.15)", color:"var(--erp-text-strong)" };
+const CARD: CSSProperties = { backgroundColor:"var(--erp-surface-soft)", border:"1px solid rgba(11,30,63,0.11)" };
+const PANEL: CSSProperties = { backgroundColor:"var(--erp-surface)", border:"1px solid rgba(11,30,63,0.11)" };
 
 const fmtDate = (iso:string|null|undefined) =>
   iso ? new Date(iso).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" }) : "—";
 const money = (v:number|null|undefined) => `SAR ${(v ?? 0).toLocaleString()}`;
 
 const STAT_C: Record<string,string> = {
-  ACTIVE:"#16A34A", AVAILABLE:"#16A34A", ASSIGNED:"#16A34A", CONFIRMED:"#16A34A", PREVENTIVE:"#16A34A",
-  ON_TRIP:"#2563EB", INSPECTION:"#2563EB", SCHEDULED:"#2563EB",
-  MAINTENANCE:"#B45309", PENDING:"#B45309",
-  RETIRED:"#94A3B8", IDLE:"#94A3B8", OFF:"#94A3B8", INACTIVE:"#94A3B8",
-  EXPIRED:"#DC2626", CANCELLED:"#DC2626", REPAIR:"#DC2626",
+  ACTIVE:"var(--erp-success)", AVAILABLE:"var(--erp-success)", ASSIGNED:"var(--erp-success)", CONFIRMED:"var(--erp-success)", PREVENTIVE:"var(--erp-success)",
+  ON_TRIP:"var(--erp-info)", INSPECTION:"var(--erp-info)", SCHEDULED:"var(--erp-info)",
+  MAINTENANCE:"var(--erp-warning)", PENDING:"var(--erp-warning)",
+  RETIRED:"var(--erp-muted-soft)", IDLE:"var(--erp-muted-soft)", OFF:"var(--erp-muted-soft)", INACTIVE:"var(--erp-muted-soft)",
+  EXPIRED:"var(--erp-destructive)", CANCELLED:"var(--erp-destructive)", REPAIR:"var(--erp-destructive)",
 };
 
 function sevColor(s:string|null|undefined):string {
-  return s==="EXPIRED" ? "#DC2626" : s==="CRITICAL" ? "#D97706" : s==="WARNING" ? "#94A3B8" : "rgba(11,30,63,0.66)";
+  return s==="EXPIRED" ? "var(--erp-destructive)" : s==="CRITICAL" ? "var(--erp-warning)" : s==="WARNING" ? "var(--erp-muted-soft)" : "rgba(11,30,63,0.66)";
 }
 
 function fleetStatusKind(s: string): ErpStatusKind {
@@ -153,7 +153,7 @@ function SevChip({ s }:{ s:string }) {
 function TH({ cols }:{ cols:string[] }) {
   return (
     <thead>
-      <tr style={{ backgroundColor:"#FBFCFD", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+      <tr style={{ backgroundColor:"var(--erp-surface-soft)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
         {cols.map(c => (
           <th key={c} className="px-4 py-2.5 text-left text-[9px] font-black uppercase tracking-widest whitespace-nowrap" style={{ color:"rgba(11,30,63,0.50)" }}>{c}</th>
         ))}
@@ -170,7 +170,7 @@ function FKpi({ label, value, sub, color, icon:Icon }:{ label:string; value:stri
           <Icon size={16} style={{ color }} />
         </div>
       </div>
-      <div className="text-xl font-black text-[#0B1E3F] mb-0.5" style={{ fontFamily:"var(--font-mono)" }}>{value}</div>
+      <div className="text-xl font-black text-[var(--erp-text-strong)] mb-0.5" style={{ fontFamily:"var(--font-mono)" }}>{value}</div>
       <div className="text-xs" style={{ color:"rgba(11,30,63,0.66)" }}>{label}</div>
       {sub && <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.50)" }}>{sub}</div>}
     </div>
@@ -186,7 +186,7 @@ function ActionBtn({ label, color, icon:Icon, onClick, disabled }:{ label:string
       icon={Icon ? <Icon size={14} /> : undefined}
       onClick={onClick}
       disabled={disabled}
-      style={color ? { backgroundColor: color, color: "#0B1E3F" } : undefined}
+      style={color ? { backgroundColor: color, color: "var(--erp-text-strong)" } : undefined}
     >
       {label}
     </ErpButton>
@@ -385,16 +385,16 @@ function DashboardScreen() {
     <div className="p-7 space-y-5">
       <div className="grid grid-cols-4 gap-4">
         <FKpi label="Total Vehicles"    value={String(d.fleet.total)}       sub={`${d.fleet.retired} retired`}              color={FLEET}     icon={Truck} />
-        <FKpi label="Active"            value={String(d.fleet.active)}      sub="On the road / idle"                        color="#16A34A"   icon={Navigation} />
-        <FKpi label="In Maintenance"    value={String(d.fleet.maintenance)} sub="Workshop / off-road"                       color="#B45309"   icon={Wrench} />
-        <FKpi label="Drivers Available" value={String(driversAvail)}        sub={`${d.drivers.ON_TRIP ?? 0} on trip`}        color="#2563EB"   icon={Users} />
+        <FKpi label="Active"            value={String(d.fleet.active)}      sub="On the road / idle"                        color="var(--erp-success)"   icon={Navigation} />
+        <FKpi label="In Maintenance"    value={String(d.fleet.maintenance)} sub="Workshop / off-road"                       color="var(--erp-warning)"   icon={Wrench} />
+        <FKpi label="Drivers Available" value={String(driversAvail)}        sub={`${d.drivers.ON_TRIP ?? 0} on trip`}        color="var(--erp-info)"   icon={Users} />
       </div>
 
       <div className="grid grid-cols-3 gap-5">
         <div className="col-span-2 rounded-2xl p-5" style={PANEL}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="text-xs font-bold text-[#0B1E3F]">Operating Cost — Last 6 Months</div>
+              <div className="text-xs font-bold text-[var(--erp-text-strong)]">Operating Cost — Last 6 Months</div>
               <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>Fuel vs Maintenance (SAR)</div>
             </div>
             <div className="flex gap-2">
@@ -408,21 +408,21 @@ function DashboardScreen() {
         <div className="space-y-4">
           <div className="rounded-2xl p-5" style={CARD}>
             <div className="flex items-center justify-between mb-3">
-              <div className="text-xs font-bold text-[#0B1E3F]">Fleet Utilization</div>
+              <div className="text-xs font-bold text-[var(--erp-text-strong)]">Fleet Utilization</div>
               <Gauge size={14} style={{ color:FLEET }} />
             </div>
-            <div className="text-3xl font-black text-[#0B1E3F] mb-2" style={{ fontFamily:"var(--font-mono)" }}>{d.utilization.pct}%</div>
-            <div className="h-2.5 rounded-full overflow-hidden mb-2" style={{ backgroundColor:"#F5F7FA" }}>
-              <div className="h-full rounded-full" style={{ width:`${Math.min(100,d.utilization.pct)}%`, background:`linear-gradient(90deg,${FLEET},#64748B)` }} />
+            <div className="text-3xl font-black text-[var(--erp-text-strong)] mb-2" style={{ fontFamily:"var(--font-mono)" }}>{d.utilization.pct}%</div>
+            <div className="h-2.5 rounded-full overflow-hidden mb-2" style={{ backgroundColor:"var(--erp-canvas)" }}>
+              <div className="h-full rounded-full" style={{ width:`${Math.min(100,d.utilization.pct)}%`, background:`linear-gradient(90deg,${FLEET},var(--erp-muted))` }} />
             </div>
             <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>{d.utilization.activeDispatch} vehicles on active dispatch</div>
           </div>
           <div className="rounded-2xl p-5 flex items-center gap-4" style={{ backgroundColor:"#DC262610", border:"1px solid #DC262630" }}>
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor:"#DC262622" }}>
-              <AlertTriangle size={18} style={{ color:"#DC2626" }} />
+              <AlertTriangle size={18} style={{ color:"var(--erp-destructive)" }} />
             </div>
             <div>
-              <div className="text-xl font-black text-[#0B1E3F]" style={{ fontFamily:"var(--font-mono)" }}>{d.expiring.total}</div>
+              <div className="text-xl font-black text-[var(--erp-text-strong)]" style={{ fontFamily:"var(--font-mono)" }}>{d.expiring.total}</div>
               <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}>{d.expiring.critical} critical / expired</div>
             </div>
           </div>
@@ -430,8 +430,8 @@ function DashboardScreen() {
       </div>
 
       <div className="rounded-2xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
-        <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor:"#FFFFFF", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
-          <span className="text-xs font-bold text-[#0B1E3F]">Expiring Soon</span>
+        <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor:"var(--erp-surface)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+          <span className="text-xs font-bold text-[var(--erp-text-strong)]">Expiring Soon</span>
           <span className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>Documents · Licenses · Insurance</span>
         </div>
         <div>
@@ -443,7 +443,7 @@ function DashboardScreen() {
               <div className="flex items-center gap-3 min-w-0">
                 <span className="w-1.5 h-8 rounded-full shrink-0" style={{ backgroundColor:sevColor(it.severity) }} />
                 <div className="min-w-0">
-                  <div className="text-xs font-semibold text-[#0B1E3F] truncate" title={it.subject}>{it.subject}</div>
+                  <div className="text-xs font-semibold text-[var(--erp-text-strong)] truncate" title={it.subject}>{it.subject}</div>
                   <div className="text-[9px] truncate" title={`${it.kind.replace(/_/g," ")} · ${it.detail}`} style={{ color:"rgba(11,30,63,0.58)" }}>{it.kind.replace(/_/g," ")} · {it.detail}</div>
                 </div>
               </div>
@@ -516,12 +516,12 @@ function VehicleDetailDrawer({ id, onClose, onChanged, isLive }:{ id:string; onC
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" style={{ backgroundColor:"rgba(3,8,20,0.6)" }} onClick={onClose}>
-      <div className="w-[440px] h-full overflow-y-auto" style={{ backgroundColor:"#FFFFFF", borderLeft:"1px solid rgba(11,30,63,0.15)", scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }} onClick={e=>e.stopPropagation()}>
-        <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4" style={{ backgroundColor:"#FFFFFF", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+      <div className="w-[440px] h-full overflow-y-auto" style={{ backgroundColor:"var(--erp-surface)", borderLeft:"1px solid rgba(11,30,63,0.15)", scrollbarWidth:"thin", scrollbarColor:"rgba(11,30,63,0.38) transparent" }} onClick={e=>e.stopPropagation()}>
+        <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4" style={{ backgroundColor:"var(--erp-surface)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor:`${FLEET}22` }}><Truck size={15} style={{ color:FLEET }} /></div>
             <div>
-              <div className="text-sm font-black text-[#0B1E3F]">{detail?.code ?? "…"}</div>
+              <div className="text-sm font-black text-[var(--erp-text-strong)]">{detail?.code ?? "…"}</div>
               <div className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{detail?.type} · {detail?.plateNo ?? "no plate"}</div>
             </div>
           </div>
@@ -534,7 +534,7 @@ function VehicleDetailDrawer({ id, onClose, onChanged, isLive }:{ id:string; onC
           <div className="grid grid-cols-3 gap-2">
             {[["Seats", detail.seats ?? "—"],["Owner", detail.supplier?.name ?? detail.owner ?? "OWNED"],["Docs", detail.documents.length]].map(([l,v])=>(
               <div key={l as string} className="rounded-xl p-3" style={CARD}>
-                <div className="text-xs font-bold text-[#0B1E3F] truncate">{v}</div>
+                <div className="text-xs font-bold text-[var(--erp-text-strong)] truncate">{v}</div>
                 <div className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{l}</div>
               </div>
             ))}
@@ -550,15 +550,15 @@ function VehicleDetailDrawer({ id, onClose, onChanged, isLive }:{ id:string; onC
               <textarea rows={2} value={notes} onChange={e=>setNotes(e.target.value)} className={`${inputCls} resize-none`} style={IS} placeholder="Operational notes…" />
             </Field>
             <div className="flex gap-2">
-              <button onClick={()=>void save()} className="flex-1 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-all" style={{ backgroundColor:FLEET, color:"#0B1E3F" }}>Save Changes</button>
-              <button onClick={()=>void remove()} className="px-3 rounded-xl active:scale-95 transition-all" style={{ backgroundColor:"#DC262618", border:"1px solid #DC262633", color:"#DC2626" }}><Trash2 size={14} /></button>
+              <button onClick={()=>void save()} className="flex-1 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-all" style={{ backgroundColor:FLEET, color:"var(--erp-text-strong)" }}>Save Changes</button>
+              <button onClick={()=>void remove()} className="px-3 rounded-xl active:scale-95 transition-all" style={{ backgroundColor:"#DC262618", border:"1px solid #DC262633", color:"var(--erp-destructive)" }}><Trash2 size={14} /></button>
             </div>
           </div>
 
           <DrawerSection title="Documents" icon={FileText}>
             {detail.documents.length === 0 ? <Empty /> : detail.documents.map(doc => (
               <div key={doc.id} className="flex items-center justify-between py-2" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
-                <div><div className="text-[11px] text-[#0B1E3F]">{doc.type.replace(/_/g," ")}</div><div className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{doc.docNo ?? "—"}</div></div>
+                <div><div className="text-[11px] text-[var(--erp-text-strong)]">{doc.type.replace(/_/g," ")}</div><div className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{doc.docNo ?? "—"}</div></div>
                 <div className="text-[10px] font-mono" style={{ color:"rgba(11,30,63,0.66)" }}>{fmtDate(doc.expiryDate)}</div>
               </div>
             ))}
@@ -567,7 +567,7 @@ function VehicleDetailDrawer({ id, onClose, onChanged, isLive }:{ id:string; onC
           <DrawerSection title="Insurance" icon={Shield}>
             {detail.insurancePolicies.length === 0 ? <Empty /> : detail.insurancePolicies.map(p => (
               <div key={p.id} className="flex items-center justify-between py-2" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
-                <div><div className="text-[11px] text-[#0B1E3F]">{p.provider}</div><div className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{p.policyNo}</div></div>
+                <div><div className="text-[11px] text-[var(--erp-text-strong)]">{p.provider}</div><div className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{p.policyNo}</div></div>
                 <div className="text-right"><div className="text-[10px] font-mono" style={{ color:"rgba(11,30,63,0.66)" }}>{fmtDate(p.endDate)}</div><Chip s={p.status} /></div>
               </div>
             ))}
@@ -577,7 +577,7 @@ function VehicleDetailDrawer({ id, onClose, onChanged, isLive }:{ id:string; onC
             {detail.fuelLogs.length === 0 ? <Empty /> : detail.fuelLogs.slice(0,3).map(f => (
               <div key={f.id} className="flex items-center justify-between py-2" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
                 <div className="text-[10px] font-mono" style={{ color:"rgba(11,30,63,0.66)" }}>{fmtDate(f.date)}</div>
-                <div className="text-[11px] text-[#0B1E3F]">{f.liters} L · {money(f.cost)}</div>
+                <div className="text-[11px] text-[var(--erp-text-strong)]">{f.liters} L · {money(f.cost)}</div>
               </div>
             ))}
           </DrawerSection>
@@ -585,7 +585,7 @@ function VehicleDetailDrawer({ id, onClose, onChanged, isLive }:{ id:string; onC
           <DrawerSection title="Recent Maintenance" icon={Wrench}>
             {detail.maintenanceRecords.length === 0 ? <Empty /> : detail.maintenanceRecords.slice(0,3).map(m => (
               <div key={m.id} className="flex items-center justify-between py-2" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
-                <div><div className="text-[11px] text-[#0B1E3F]">{m.description}</div><div className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{fmtDate(m.date)} · {m.workshop ?? "—"}</div></div>
+                <div><div className="text-[11px] text-[var(--erp-text-strong)]">{m.description}</div><div className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{fmtDate(m.date)} · {m.workshop ?? "—"}</div></div>
                 <Chip s={m.type} />
               </div>
             ))}
@@ -594,7 +594,7 @@ function VehicleDetailDrawer({ id, onClose, onChanged, isLive }:{ id:string; onC
           <DrawerSection title="Last Location" icon={MapPin}>
             {detail.locations.length === 0 ? <Empty /> : (
               <div className="py-2">
-                <div className="text-[11px] text-[#0B1E3F]">{detail.locations[0].label ?? "Unknown"}</div>
+                <div className="text-[11px] text-[var(--erp-text-strong)]">{detail.locations[0].label ?? "Unknown"}</div>
                 <div className="text-[9px] font-mono" style={{ color:"rgba(11,30,63,0.58)" }}>{detail.locations[0].lat?.toFixed(4)}, {detail.locations[0].lng?.toFixed(4)} · {fmtDate(detail.locations[0].at)}</div>
               </div>
             )}
@@ -676,7 +676,7 @@ function VehicleMasterScreen() {
         title={lang === "bn" ? "যানবাহন মাস্টার" : "Vehicle Master"}
         subtitle={lang === "bn" ? "ফ্লিট যানবাহন · বিদ্যমান API" : "Fleet vehicles · existing API"}
         primaryAction={
-          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowAdd(true)} style={{ backgroundColor: FLEET, color: "#0B1E3F" }}>
+          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowAdd(true)} style={{ backgroundColor: FLEET, color: "var(--erp-text-strong)" }}>
             {lang === "bn" ? "যানবাহন যোগ" : "Add Vehicle"}
           </ErpButton>
         }
@@ -830,7 +830,7 @@ function DriverMasterScreen() {
     { id: "name", header: lang === "bn" ? "ড্রাইভার" : "Driver",
       cell: (d) => (
         <div>
-          <div className="text-xs font-semibold text-[#0B1E3F]">{d.name}</div>
+          <div className="text-xs font-semibold text-[var(--erp-text-strong)]">{d.name}</div>
           {d.nameBn && <div className="text-[9px]" style={{ color: "rgba(11,30,63,0.58)", fontFamily: "var(--font-bengali)" }}>{d.nameBn}</div>}
         </div>
       ),
@@ -839,7 +839,7 @@ function DriverMasterScreen() {
     { id: "license", header: lang === "bn" ? "লাইসেন্স" : "License No", cell: (d) => <span className="font-mono">{d.licenseNo ?? "—"}</span> },
     { id: "expiry", header: lang === "bn" ? "মেয়াদ" : "License Expiry", cell: (d) => <SevCell date={d.licenseExpiry} days={d.licenseDays} severity={d.licenseSeverity} /> },
     { id: "status", header: lang === "bn" ? "স্ট্যাটাস" : "Status", cell: (d) => <Chip s={d.status} /> },
-    { id: "rating", header: lang === "bn" ? "রেটিং" : "Rating", cell: (d) => <span style={{ color: "#B45309" }}>{d.rating ? `★ ${d.rating.toFixed(1)}` : "—"}</span> },
+    { id: "rating", header: lang === "bn" ? "রেটিং" : "Rating", cell: (d) => <span style={{ color: "var(--erp-warning)" }}>{d.rating ? `★ ${d.rating.toFixed(1)}` : "—"}</span> },
     { id: "actions", header: "",
       cell: (d) => (
         <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
@@ -859,7 +859,7 @@ function DriverMasterScreen() {
         title={lang === "bn" ? "ড্রাইভার মাস্টার" : "Driver Master"}
         subtitle={lang === "bn" ? "ফ্লিট ড্রাইভার · বিদ্যমান API" : "Fleet drivers · existing API"}
         primaryAction={
-          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowAdd(true)} style={{ backgroundColor: FLEET, color: "#0B1E3F" }}>
+          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowAdd(true)} style={{ backgroundColor: FLEET, color: "var(--erp-text-strong)" }}>
             {lang === "bn" ? "ড্রাইভার যোগ" : "Add Driver"}
           </ErpButton>
         }
@@ -1040,13 +1040,13 @@ function ComplianceScreen() {
   return (
     <div className="p-7 space-y-5">
       <div className="rounded-2xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
-        <div className="flex items-center justify-between px-5 py-3 gap-3 flex-wrap" style={{ backgroundColor:"#FFFFFF", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+        <div className="flex items-center justify-between px-5 py-3 gap-3 flex-wrap" style={{ backgroundColor:"var(--erp-surface)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
           <div className="flex items-center gap-2">
             <ShieldCheck size={14} style={{ color:FLEET }} />
-            <span className="text-xs font-bold text-[#0B1E3F]">Unified Expiry Feed</span>
+            <span className="text-xs font-bold text-[var(--erp-text-strong)]">Unified Expiry Feed</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 rounded-xl p-0.5" style={{ backgroundColor:"#FBFCFD" }}>
+            <div className="flex items-center gap-1 rounded-xl p-0.5" style={{ backgroundColor:"var(--erp-surface-soft)" }}>
               {[7,30,90].map(dd => (
                 <button key={dd} onClick={()=>setDays(dd)} className="px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ backgroundColor:days===dd?`${FLEET}30`:"transparent", color:days===dd?FLEET:"rgba(11,30,63,0.58)" }}>{dd}d</button>
               ))}
@@ -1067,7 +1067,7 @@ function ComplianceScreen() {
               ) : items.map((it, i) => (
                 <tr key={`${it.kind}-${it.refId}-${i}`} className="hover:bg-white/2" style={{ borderBottom:i<items.length-1?"1px solid rgba(11,30,63,0.08)":undefined }}>
                   <td className="px-4 py-3 text-[9px] font-black" style={{ color:FLEET }}>{it.kind.replace(/_/g," ")}</td>
-                  <td className="px-4 py-3 text-xs font-semibold text-[#0B1E3F]">{it.subject}</td>
+                  <td className="px-4 py-3 text-xs font-semibold text-[var(--erp-text-strong)]">{it.subject}</td>
                   <td className="px-4 py-3 text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}>{it.detail}</td>
                   <td className="px-4 py-3 text-[10px] font-mono" style={{ color:"rgba(11,30,63,0.76)", fontFamily:"var(--font-mono)" }}>{fmtDate(it.expiryDate)}</td>
                   <td className="px-4 py-3 text-[10px] font-bold" style={{ color:sevColor(it.severity) }}>{it.daysLeft < 0 ? `${Math.abs(it.daysLeft)}d overdue` : `${it.daysLeft}d`}</td>
@@ -1080,10 +1080,10 @@ function ComplianceScreen() {
       </div>
 
       <div className="rounded-2xl overflow-hidden" style={{ border:"1px solid rgba(11,30,63,0.11)" }}>
-        <div className="flex items-center justify-between px-5 py-3 gap-3 flex-wrap" style={{ backgroundColor:"#FFFFFF", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
+        <div className="flex items-center justify-between px-5 py-3 gap-3 flex-wrap" style={{ backgroundColor:"var(--erp-surface)", borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
           <div className="flex items-center gap-2">
             <FileText size={14} style={{ color:FLEET }} />
-            <span className="text-xs font-bold text-[#0B1E3F]">Vehicle Documents</span>
+            <span className="text-xs font-bold text-[var(--erp-text-strong)]">Vehicle Documents</span>
           </div>
           <div className="flex items-center gap-2">
             <select value={effVehicle} onChange={e=>setSelVehicle(e.target.value)} className="px-3 py-2 rounded-xl text-[10px] focus:outline-none appearance-none" style={IS}>
@@ -1106,12 +1106,12 @@ function ComplianceScreen() {
                 <EmptyRow cols={6} title="No documents on record" hint="Add registration, inspection or permit documents for this vehicle." />
               ) : docRows.map((doc, i) => (
                 <tr key={doc.id} className="hover:bg-white/2" style={{ borderBottom:i<docRows.length-1?"1px solid rgba(11,30,63,0.08)":undefined }}>
-                  <td className="px-4 py-3 text-xs font-semibold text-[#0B1E3F]">{doc.type.replace(/_/g," ")}</td>
+                  <td className="px-4 py-3 text-xs font-semibold text-[var(--erp-text-strong)]">{doc.type.replace(/_/g," ")}</td>
                   <td className="px-4 py-3 text-[10px] font-mono" style={{ color:"rgba(11,30,63,0.66)", fontFamily:"var(--font-mono)" }}>{doc.docNo ?? "—"}</td>
                   <td className="px-4 py-3 text-[10px] font-mono" style={{ color:"rgba(11,30,63,0.66)", fontFamily:"var(--font-mono)" }}>{fmtDate(doc.issueDate)}</td>
                   <td className="px-4 py-3 text-[10px] font-mono" style={{ color:"rgba(11,30,63,0.76)", fontFamily:"var(--font-mono)" }}>{fmtDate(doc.expiryDate)}</td>
                   <td className="px-4 py-3 text-[10px]" title={doc.notes ?? undefined} style={{ color:"rgba(11,30,63,0.58)" }}>{doc.notes ?? "—"}</td>
-                  <td className="px-4 py-3"><button disabled={deletingDoc===doc.id} onClick={()=>void deleteDoc(doc.id)} className="p-1.5 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor:"#DC262618" }}><Trash2 size={12} style={{ color:"#DC2626" }} /></button></td>
+                  <td className="px-4 py-3"><button disabled={deletingDoc===doc.id} onClick={()=>void deleteDoc(doc.id)} className="p-1.5 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor:"#DC262618" }}><Trash2 size={12} style={{ color:"var(--erp-destructive)" }} /></button></td>
                 </tr>
               ))}
             </tbody>
@@ -1225,7 +1225,7 @@ function FuelScreen() {
         title={lang === "bn" ? "জ্বালানি লগ" : "Fuel Log"}
         subtitle={`${lang === "bn" ? "মোট" : "Total"}: ${money(costTotal)} · ${rows.length} ${lang === "bn" ? "এন্ট্রি" : "entries"}`}
         primaryAction={
-          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowAdd(true)} style={{ backgroundColor: FLEET, color: "#0B1E3F" }}>
+          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowAdd(true)} style={{ backgroundColor: FLEET, color: "var(--erp-text-strong)" }}>
             {lang === "bn" ? "জ্বালানি লগ" : "Log Fuel"}
           </ErpButton>
         }
@@ -1356,7 +1356,7 @@ function MaintenanceScreen() {
         title={lang === "bn" ? "রক্ষণাবেক্ষণ" : "Maintenance"}
         subtitle={`${lang === "bn" ? "মোট খরচ" : "Total spend"}: ${money(costTotal)}`}
         primaryAction={
-          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowAdd(true)} style={{ backgroundColor: FLEET, color: "#0B1E3F" }}>
+          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowAdd(true)} style={{ backgroundColor: FLEET, color: "var(--erp-text-strong)" }}>
             {lang === "bn" ? "রেকর্ড যোগ" : "Add Record"}
           </ErpButton>
         }
@@ -1513,7 +1513,7 @@ function InsuranceScreen() {
         title={lang === "bn" ? "বীমা" : "Insurance"}
         subtitle={`${rows.length} ${lang === "bn" ? "পলিসি · মেয়াদ নজরদারি" : "policies · end-date monitored"}`}
         primaryAction={
-          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowAdd(true)} style={{ backgroundColor: FLEET, color: "#0B1E3F" }}>
+          <ErpButton variant="primary" icon={<Plus size={14} />} onClick={() => setShowAdd(true)} style={{ backgroundColor: FLEET, color: "var(--erp-text-strong)" }}>
             {lang === "bn" ? "পলিসি যোগ" : "Add Policy"}
           </ErpButton>
         }
@@ -1651,7 +1651,7 @@ function GpsScreen() {
   return (
     <div className="p-7">
       <div className="flex items-center justify-between mb-4">
-        <div><h2 className="text-sm font-bold text-[#0B1E3F]">GPS Map</h2><p className="text-xs mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>{pins.length} vehicles positioned · Makkah–Madinah–Jeddah corridor</p></div>
+        <div><h2 className="text-sm font-bold text-[var(--erp-text-strong)]">GPS Map</h2><p className="text-xs mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>{pins.length} vehicles positioned · Makkah–Madinah–Jeddah corridor</p></div>
         <ActionBtn label="Refresh" icon={RefreshCw} onClick={refresh} />
       </div>
 
@@ -1677,14 +1677,14 @@ function GpsScreen() {
               </div>
             )}
             {pins.map(p => {
-              const c = STAT_C[p.status] ?? "#9CA3AF";
+              const c = STAT_C[p.status] ?? "var(--erp-muted-soft)";
               const active = selId === p.id;
               return (
                 <button key={p.id} onClick={()=>setSelId(p.id)} className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group" style={{ left:`${projX(p.lng)}%`, top:`${projY(p.lat)}%`, zIndex:active?20:10 }}>
                   <div className="flex items-center justify-center rounded-full transition-all" style={{ width:active?28:22, height:active?28:22, backgroundColor:`${c}30`, border:`2px solid ${c}` }}>
                     <MapPin size={active?13:11} style={{ color:c }} />
                   </div>
-                  <span className="text-[8px] font-black mt-0.5 px-1 rounded whitespace-nowrap" style={{ color:"#0B1E3F", backgroundColor:"rgba(255,255,255,0.85)", fontFamily:"var(--font-mono)" }}>{p.code}</span>
+                  <span className="text-[8px] font-black mt-0.5 px-1 rounded whitespace-nowrap" style={{ color:"var(--erp-text-strong)", backgroundColor:"rgba(255,255,255,0.85)", fontFamily:"var(--font-mono)" }}>{p.code}</span>
                 </button>
               );
             })}
@@ -1695,14 +1695,14 @@ function GpsScreen() {
           {selected && (
             <div className="rounded-2xl p-4" style={CARD}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-black text-[#0B1E3F]" style={{ fontFamily:"var(--font-mono)" }}>{selected.code}</span>
+                <span className="text-xs font-black text-[var(--erp-text-strong)]" style={{ fontFamily:"var(--font-mono)" }}>{selected.code}</span>
                 <Chip s={selected.status} />
               </div>
               <div className="space-y-1 text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}>
                 <div>{selected.label ?? "Unknown location"}</div>
                 <div className="font-mono" style={{ fontFamily:"var(--font-mono)" }}>{selected.lat.toFixed(4)}, {selected.lng.toFixed(4)}</div>
                 <div className="flex items-center gap-1"><Clock size={9} /> {fmtDate(selected.at)}</div>
-                {selected.activeDispatch && <div style={{ color:"#16A34A" }}>● On active dispatch</div>}
+                {selected.activeDispatch && <div style={{ color:"var(--erp-success)" }}>● On active dispatch</div>}
               </div>
             </div>
           )}
@@ -1710,7 +1710,7 @@ function GpsScreen() {
           <div className="rounded-2xl p-4" style={PANEL}>
             <div className="flex items-center gap-2 mb-3">
               <Navigation size={13} style={{ color:FLEET }} />
-              <span className="text-xs font-bold text-[#0B1E3F]">Simulate Location</span>
+              <span className="text-xs font-bold text-[var(--erp-text-strong)]">Simulate Location</span>
             </div>
             <div className="space-y-3">
               <Field label="Vehicle"><select value={effSim} onChange={e=>setSimVehicle(e.target.value)} className={inputSelCls} style={IS}>{vehList.map(v=><option key={v.id} value={v.id}>{v.code} · {v.type}</option>)}</select></Field>
@@ -1721,10 +1721,10 @@ function GpsScreen() {
               <Field label="Label"><input value={label} onChange={e=>setLabel(e.target.value)} className={inputCls} style={IS} placeholder="Makkah Haram" /></Field>
               <div className="flex flex-wrap gap-1.5">
                 {PRESETS.map(p => (
-                  <button key={p.label} onClick={()=>applyPreset(p)} className="px-2 py-1 rounded-lg text-[9px] font-bold" style={{ backgroundColor:"#FBFCFD", color:"rgba(11,30,63,0.76)", border:"1px solid rgba(11,30,63,0.11)" }}>{p.label}</button>
+                  <button key={p.label} onClick={()=>applyPreset(p)} className="px-2 py-1 rounded-lg text-[9px] font-bold" style={{ backgroundColor:"var(--erp-surface-soft)", color:"rgba(11,30,63,0.76)", border:"1px solid rgba(11,30,63,0.11)" }}>{p.label}</button>
                 ))}
               </div>
-              <button disabled={updating} onClick={()=>void simulate()} className="w-full py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor:FLEET, color:"#0B1E3F" }}>Update Location</button>
+              <button disabled={updating} onClick={()=>void simulate()} className="w-full py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed" style={{ backgroundColor:FLEET, color:"var(--erp-text-strong)" }}>Update Location</button>
             </div>
           </div>
         </div>
@@ -1753,7 +1753,7 @@ function DispatchScreen() {
   return (
     <div className="p-7">
       <div className="mb-4">
-        <h2 className="text-sm font-bold text-[#0B1E3F]">Dispatch Assignment</h2>
+        <h2 className="text-sm font-bold text-[var(--erp-text-strong)]">Dispatch Assignment</h2>
         <p className="text-xs mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>Assigning a vehicle + driver broadcasts live to the Ops board.</p>
       </div>
       <div className="space-y-3">
@@ -1767,7 +1767,7 @@ function DispatchScreen() {
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor:`${FLEET}22` }}><Route size={18} style={{ color:FLEET }} /></div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-black text-[#0B1E3F]" style={{ fontFamily:"var(--font-mono)" }}>{o.code}</span>
+                    <span className="text-sm font-black text-[var(--erp-text-strong)]" style={{ fontFamily:"var(--font-mono)" }}>{o.code}</span>
                     <Chip s={o.status} />
                   </div>
                   <div className="text-[11px] mt-0.5 truncate" title={`${o.routeFrom ?? "—"} → ${o.routeTo ?? "—"}`} style={{ color:"rgba(11,30,63,0.76)" }}>{o.routeFrom ?? "—"} → {o.routeTo ?? "—"}</div>
@@ -1777,7 +1777,7 @@ function DispatchScreen() {
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <div className="text-[9px] uppercase tracking-widest" style={{ color:"rgba(11,30,63,0.50)" }}>Assigned</div>
-                  <div className="text-[11px] font-bold text-[#0B1E3F]">{o.vehicle?.code ?? "— no vehicle"}</div>
+                  <div className="text-[11px] font-bold text-[var(--erp-text-strong)]">{o.vehicle?.code ?? "— no vehicle"}</div>
                   <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}>{o.driver?.name ?? "— no driver"}</div>
                 </div>
                 <button onClick={()=>setAssigning(a => a===o.id ? null : o.id)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold active:scale-95 transition-all" style={{ backgroundColor:`${FLEET}22`, color:FLEET, border:`1px solid ${FLEET}40` }}>
@@ -1817,7 +1817,7 @@ function AssignForm({ dispatch, vehicles, drivers, onDone }:{ dispatch:Dispatch;
     <div className="mt-4 pt-4 grid grid-cols-3 gap-3 items-end" style={{ borderTop:"1px solid rgba(11,30,63,0.11)" }}>
       <Field label="Vehicle"><select value={vehicleId} onChange={e=>setVehicleId(e.target.value)} className={inputSelCls} style={IS}><option value="">Select vehicle…</option>{vehicles.filter(v=>v.status!=="RETIRED").map(v=><option key={v.id} value={v.id}>{v.code} · {v.type} · {v.status}</option>)}</select></Field>
       <Field label="Driver"><select value={driverId} onChange={e=>setDriverId(e.target.value)} className={inputSelCls} style={IS}><option value="">Select driver…</option>{drivers.map(d=><option key={d.id} value={d.id}>{d.name} · {d.status}</option>)}</select></Field>
-      <button disabled={saving} onClick={()=>void assign()} className="py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-all disabled:opacity-60" style={{ backgroundColor:FLEET, color:"#0B1E3F" }}>Confirm Assignment</button>
+      <button disabled={saving} onClick={()=>void assign()} className="py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-all disabled:opacity-60" style={{ backgroundColor:FLEET, color:"var(--erp-text-strong)" }}>Confirm Assignment</button>
     </div>
   );
 }

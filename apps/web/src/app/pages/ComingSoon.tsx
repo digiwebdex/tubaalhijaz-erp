@@ -2,7 +2,7 @@ import { useLocation, Link } from "react-router";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 
 // Honest "not in this release" page. No fabricated data.
-const NAVY = "#0B1E3F";
+const NAVY = "var(--erp-text-strong)";
 const GOLD = "#C6A15B";
 
 const TITLES: Record<string, { bn: string; en: string }> = {

@@ -1958,7 +1958,7 @@ function GroupWizard({ onBack, onDone, onCreated }: {
                   className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
                   style={{
                     backgroundColor: step > n ? erpAlpha(ERP.success, 13) : step === n ? NAVY : ERP.surfaceSoft,
-                    color: step > n ? ERP.success : step === n ? "#fff" : ERP.muted,
+                    color: step > n ? ERP.success : step === n ? "var(--erp-surface)" : ERP.muted,
                   }}
                 >
                   {step > n ? "✓" : n}

@@ -156,7 +156,7 @@ function StageNode({ stage, status, selected, onClick, groupCount }: {
       {/* Group count badge */}
       {groupCount > 0 && (
         <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-[8px] font-black flex items-center justify-center z-10"
-          style={{ backgroundColor: stage.color, color:"#fff", boxShadow:`0 0 0 2px ${ERP.canvas}` }}>
+          style={{ backgroundColor: stage.color, color:"var(--erp-surface)", boxShadow:`0 0 0 2px ${ERP.canvas}` }}>
           {groupCount}
         </div>
       )}

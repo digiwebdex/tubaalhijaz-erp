@@ -7,7 +7,7 @@ import { api, ApiError, isLoggedIn } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 
-const TM = "#0F766E";
+const TM = "var(--erp-cat-teal)";
 const CHANNELS = ["WHATSAPP", "EMAIL", "IN_APP"] as const;
 const LANGS = ["bn", "en"] as const;
 type Channel = typeof CHANNELS[number];

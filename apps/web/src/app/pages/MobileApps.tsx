@@ -13,12 +13,12 @@ import { ERPShell, type NavItem, type IconFC } from "../components/ERPShell";
 // ─── Module constants ─────────────────────────────────────────────────────────
 
 const MOB   = "#E11D48";
-const DRV_C = "#EA580C";
-const AGT_C = "#9333EA";
+const DRV_C = "var(--erp-cat-orange)";
+const AGT_C = "var(--erp-cat-purple)";
 const OPS_C = "#DC4E2A";
-const SUP_C = "#0D9488";
-const NAVY  = "#0B1E3F";
-const GOLD  = "#C9A24B";
+const SUP_C = "var(--erp-cat-teal)";
+const NAVY  = "var(--erp-text-strong)";
+const GOLD  = "var(--erp-accent)";
 
 type AppId       = "driver" | "agent" | "ops" | "sup";
 type DriverScreen = "home" | "trip" | "enroute" | "arrived" | "docs";
@@ -82,7 +82,7 @@ function MPill({ label, color, size = "sm" }: { label: string; color: string; si
 // Mobile card wrapper
 function MCard({ children, color, className = "" }: { children: ReactNode; color?: string; className?: string }) {
   return (
-    <div className={`rounded-2xl overflow-hidden ${className}`} style={{ backgroundColor:"#FBFCFD", border:`1px solid ${color ? color+"20" : "rgba(11,30,63,0.38)"}` }}>
+    <div className={`rounded-2xl overflow-hidden ${className}`} style={{ backgroundColor:"var(--erp-surface-soft)", border:`1px solid ${color ? color+"20" : "rgba(11,30,63,0.38)"}` }}>
       {children}
     </div>
   );
@@ -109,7 +109,7 @@ function MRow({ icon: Icon, label, sub, right, color, onClick }: {
         <Icon size={16} style={{ color }} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[13px] font-semibold text-[#0B1E3F] truncate">{label}</div>
+        <div className="text-[13px] font-semibold text-[var(--erp-text-strong)] truncate">{label}</div>
         {sub && <div className="text-[10px] mt-0.5 truncate" style={{ color:"rgba(11,30,63,0.58)" }}>{sub}</div>}
       </div>
       {right ?? <ChevronRight size={13} style={{ color:"rgba(11,30,63,0.38)", flexShrink:0 }} />}
@@ -124,12 +124,12 @@ function MHeader({ title, sub, back, color, right }: {
   return (
     <div className="flex items-center gap-3 px-4 pb-3 pt-2 shrink-0">
       {back && (
-        <button onClick={back} className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor:"#F5F7FA" }}>
+        <button onClick={back} className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor:"var(--erp-canvas)" }}>
           <ChevronLeft size={16} style={{ color:"rgba(11,30,63,0.86)" }} />
         </button>
       )}
       <div className="flex-1 min-w-0">
-        <div className="text-base font-black text-[#0B1E3F] truncate">{title}</div>
+        <div className="text-base font-black text-[var(--erp-text-strong)] truncate">{title}</div>
         {sub && <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>{sub}</div>}
       </div>
       {right}
@@ -177,7 +177,7 @@ function MobCameraCapture({ onCapture, onCancel, color }: { onCapture: () => voi
       <div className="flex-1 flex items-center justify-center relative overflow-hidden" style={{ background:"linear-gradient(135deg,#0a0a14 0%,#0d1020 100%)" }}>
         {/* Ambient passport glow */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div style={{ width:300, height:210, borderRadius:8, background:"#FFFFFF" }} />
+          <div style={{ width:300, height:210, borderRadius:8, background:"var(--erp-surface)" }} />
         </div>
 
         {/* Passport frame overlay */}
@@ -185,7 +185,7 @@ function MobCameraCapture({ onCapture, onCancel, color }: { onCapture: () => voi
           {/* Corner markers */}
           {([["top-0 left-0","border-t-[3px] border-l-[3px]"],["top-0 right-0","border-t-[3px] border-r-[3px]"],["bottom-0 left-0","border-b-[3px] border-l-[3px]"],["bottom-0 right-0","border-b-[3px] border-r-[3px]"]] as [string,string][]).map(([pos,cls]) => (
             <div key={pos} className={`absolute ${pos} w-8 h-8 rounded-sm ${cls} transition-all`}
-              style={{ borderColor: done ? "#16A34A" : scanning ? color : "rgba(255,255,255,0.55)" }} />
+              style={{ borderColor: done ? "var(--erp-success)" : scanning ? color : "rgba(255,255,255,0.55)" }} />
           ))}
 
           {/* Scan line */}
@@ -196,8 +196,8 @@ function MobCameraCapture({ onCapture, onCancel, color }: { onCapture: () => voi
           {/* Done checkmark */}
           {done && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor:"rgba(74,222,128,0.2)", border:"2px solid #16A34A" }}>
-                <CheckCircle size={28} style={{ color:"#16A34A" }} />
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor:"rgba(74,222,128,0.2)", border:"2px solid var(--erp-success)" }}>
+                <CheckCircle size={28} style={{ color:"var(--erp-success)" }} />
               </div>
             </div>
           )}
@@ -206,29 +206,29 @@ function MobCameraCapture({ onCapture, onCancel, color }: { onCapture: () => voi
           {!scanning && !done && (
             <div className="absolute inset-4 space-y-2.5 pt-2">
               {[60,80,55,70,45].map((w,i) => (
-                <div key={i} className="h-1 rounded-full" style={{ width:`${w}%`, backgroundColor:"#F5F7FA" }} />
+                <div key={i} className="h-1 rounded-full" style={{ width:`${w}%`, backgroundColor:"var(--erp-canvas)" }} />
               ))}
             </div>
           )}
         </div>
 
         {/* Instruction */}
-        <div className="absolute bottom-6 left-0 right-0 text-center text-xs" style={{ color: done ? "#16A34A" : "rgba(255,255,255,0.80)" }}>
+        <div className="absolute bottom-6 left-0 right-0 text-center text-xs" style={{ color: done ? "var(--erp-success)" : "rgba(255,255,255,0.80)" }}>
           {done ? "Passport captured successfully" : scanning ? "Scanning…" : "Align passport data page within the frame"}
         </div>
       </div>
 
       {/* Controls */}
       <div className="flex items-center justify-between px-8 pb-6 pt-4" style={{ backgroundColor:"#0a0a14" }}>
-        <button onClick={onCancel} className="w-12 h-12 rounded-full flex items-center justify-center active:scale-90" style={{ backgroundColor:"#F5F7FA" }}>
+        <button onClick={onCancel} className="w-12 h-12 rounded-full flex items-center justify-center active:scale-90" style={{ backgroundColor:"var(--erp-canvas)" }}>
           <X size={18} style={{ color:"rgba(11,30,63,0.76)" }} />
         </button>
         <button onClick={fire} disabled={done}
           className="w-16 h-16 rounded-full flex items-center justify-center shadow-xl active:scale-90 transition-all"
-          style={{ backgroundColor: done ? "#16A34A" : color, boxShadow:`0 0 20px ${color}50` }}>
+          style={{ backgroundColor: done ? "var(--erp-success)" : color, boxShadow:`0 0 20px ${color}50` }}>
           {done ? <CheckCircle size={28} style={{ color:"white" }} /> : <Camera size={24} style={{ color:"white" }} />}
         </button>
-        <button className="w-12 h-12 rounded-full flex items-center justify-center active:scale-90" style={{ backgroundColor:"#F5F7FA" }}>
+        <button className="w-12 h-12 rounded-full flex items-center justify-center active:scale-90" style={{ backgroundColor:"var(--erp-canvas)" }}>
           <Upload size={16} style={{ color:"rgba(11,30,63,0.76)" }} />
         </button>
       </div>
@@ -248,7 +248,7 @@ const DRV_TABS: MobTab[] = [
 const DRV_TRIPS = [
   { id:"DSP-005", time:"14:10", from:"KAIA Terminal 1", to:"Marriott Makkah", pax:52, status:"ACTIVE",    color:DRV_C },
   { id:"DSP-007", time:"17:00", from:"Marriott Makkah", to:"KAIA Terminal 2", pax:38, status:"UPCOMING",  color:"rgba(11,30,63,0.50)" },
-  { id:"DSP-002", time:"11:20", from:"KAIA Terminal 2", to:"Makkah Towers",   pax:32, status:"DONE",      color:"#16A34A" },
+  { id:"DSP-002", time:"11:20", from:"KAIA Terminal 2", to:"Makkah Towers",   pax:32, status:"DONE",      color:"var(--erp-success)" },
 ];
 
 function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s: DriverScreen) => void }) {
@@ -269,7 +269,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
             <div>
               <div className="px-4 pt-2 pb-3" style={{ background:`linear-gradient(135deg,${DRV_C}18 0%,transparent 100%)` }}>
                 <MHeader title="Today's Dispatch" sub="Thu 16 Jul · Ahmad Hassan" color={DRV_C}
-                  right={<div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor:"#16A34A20" }}><div className="w-2 h-2 rounded-full" style={{ backgroundColor:"#16A34A" }} /></div>} />
+                  right={<div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor:"#16A34A20" }}><div className="w-2 h-2 rounded-full" style={{ backgroundColor:"var(--erp-success)" }} /></div>} />
                 {/* Driver status card */}
                 <MCard color={DRV_C} className="mx-4 mb-4">
                   <div className="p-4 flex items-center gap-4">
@@ -277,15 +277,15 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                       <Truck size={22} style={{ color:DRV_C }} />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-black text-[#0B1E3F]">Bus #TAH-07</div>
+                      <div className="text-sm font-black text-[var(--erp-text-strong)]">Bus #TAH-07</div>
                       <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}>32-seat · SAUDI/2024-1441</div>
                     </div>
-                    <MPill label="ON DUTY" color="#16A34A" />
+                    <MPill label="ON DUTY" color="var(--erp-success)" />
                   </div>
                   <div className="flex" style={{ borderTop:"1px solid rgba(11,30,63,0.11)" }}>
                     {[["3","Trips Today"],["184","Pax Moved"],["4.9","Rating"]].map(([v,l]) => (
                       <div key={l} className="flex-1 py-3 text-center" style={{ borderRight:"1px solid rgba(11,30,63,0.08)" }}>
-                        <div className="text-sm font-black text-[#0B1E3F]">{v}</div>
+                        <div className="text-sm font-black text-[var(--erp-text-strong)]">{v}</div>
                         <div className="text-[8px]" style={{ color:"rgba(11,30,63,0.58)" }}>{l}</div>
                       </div>
                     ))}
@@ -303,7 +303,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                       <span className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>{t.time}</span>
                       <MPill label={t.status} color={t.color} size="xs" />
                     </div>
-                    <div className="text-xs text-[#0B1E3F] flex items-center gap-1.5">
+                    <div className="text-xs text-[var(--erp-text-strong)] flex items-center gap-1.5">
                       <span>{t.from}</span>
                       <ChevronRight size={10} style={{ color:"rgba(11,30,63,0.50)" }} />
                       <span className="font-semibold">{t.to}</span>
@@ -333,12 +333,12 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                       <div className="flex-1 space-y-3">
                         <div>
                           <div className="text-[9px] font-black uppercase tracking-wider mb-0.5" style={{ color:"rgba(11,30,63,0.50)" }}>PICKUP</div>
-                          <div className="text-sm font-bold text-[#0B1E3F]">KAIA Terminal 1</div>
+                          <div className="text-sm font-bold text-[var(--erp-text-strong)]">KAIA Terminal 1</div>
                           <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>King Abdulaziz Int'l Airport, Jeddah</div>
                         </div>
                         <div>
                           <div className="text-[9px] font-black uppercase tracking-wider mb-0.5" style={{ color:"rgba(11,30,63,0.50)" }}>DROP-OFF</div>
-                          <div className="text-sm font-bold text-[#0B1E3F]">Marriott Makkah</div>
+                          <div className="text-sm font-bold text-[var(--erp-text-strong)]">Marriott Makkah</div>
                           <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>Abraj Al-Bait Towers, Makkah</div>
                         </div>
                       </div>
@@ -346,7 +346,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                     <div className="flex gap-3 mt-4 pt-3" style={{ borderTop:"1px solid rgba(11,30,63,0.11)" }}>
                       {[["52","PAX"],["8.4km","DIST"],["14:37","ETA"]].map(([v,l]) => (
                         <div key={l} className="flex-1 text-center">
-                          <div className="text-base font-black text-[#0B1E3F]">{v}</div>
+                          <div className="text-base font-black text-[var(--erp-text-strong)]">{v}</div>
                           <div className="text-[8px]" style={{ color:"rgba(11,30,63,0.50)" }}>{l}</div>
                         </div>
                       ))}
@@ -358,9 +358,9 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
               <MSec title={`Passengers (52)`} color={DRV_C} />
               <div className="px-4 space-y-1.5 mb-4">
                 {[["Mohammad Rahman","🇧🇩","12A"],["Fatima Begum","🇧🇩","12B"],["Karim Hassan","🇧🇩","13A"],["Aisha Malik","🇵🇰","13B"],["Omar Siddiqui","🇵🇰","14A"]].map(([n,f,s]) => (
-                  <div key={n as string} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{ backgroundColor:"#FBFCFD" }}>
+                  <div key={n as string} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{ backgroundColor:"var(--erp-surface-soft)" }}>
                     <span className="text-base">{f}</span>
-                    <span className="flex-1 text-xs text-[#0B1E3F]">{n}</span>
+                    <span className="flex-1 text-xs text-[var(--erp-text-strong)]">{n}</span>
                     <span className="text-[9px] font-black" style={{ color:DRV_C, fontFamily:"var(--font-mono)" }}>{s}</span>
                   </div>
                 ))}
@@ -380,7 +380,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                   </button>
                 </div>
                 <button className="w-full py-2.5 rounded-2xl text-sm flex items-center justify-center gap-2 active:scale-95"
-                  style={{ backgroundColor:"#FBFCFD", color:"rgba(11,30,63,0.66)" }}>
+                  style={{ backgroundColor:"var(--erp-surface-soft)", color:"rgba(11,30,63,0.66)" }}>
                   <Phone size={13} /> Call Operations
                 </button>
               </div>
@@ -416,7 +416,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                 <div className="absolute top-4 left-4 right-4 rounded-2xl p-3" style={{ backgroundColor:"rgba(0,0,0,0.75)", backdropFilter:"blur(12px)", border:"1px solid rgba(11,30,63,0.15)" }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-2xl font-black text-[#0B1E3F]">14 min</div>
+                      <div className="text-2xl font-black text-[var(--erp-text-strong)]">14 min</div>
                       <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}>8.2 km · Arrive ~14:37</div>
                     </div>
                     <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold active:scale-95" style={{ backgroundColor:DRV_C, color:"white" }}>
@@ -428,7 +428,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                 <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor:"rgba(0,0,0,0.65)", backdropFilter:"blur(8px)" }}>
                   <ChevronRight size={20} style={{ color:DRV_C }} />
                   <div>
-                    <div className="text-xs font-bold text-[#0B1E3F]">Turn right on King Fahd Rd</div>
+                    <div className="text-xs font-bold text-[var(--erp-text-strong)]">Turn right on King Fahd Rd</div>
                     <div className="text-[9px]" style={{ color:"rgba(11,30,63,0.66)" }}>In 1.2 km</div>
                   </div>
                 </div>
@@ -452,12 +452,12 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
           {screen === "arrived" && (
             <div className="px-4 pt-2">
               <MHeader title="Arrival Confirmed" sub="DSP-005 · Marriott Makkah" back={() => setScreen("enroute")} color={DRV_C} />
-              <MCard color="#16A34A" className="mb-4">
+              <MCard color="var(--erp-success)" className="mb-4">
                 <div className="p-4 text-center">
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor:"rgba(74,222,128,0.15)", border:"2px solid #16A34A" }}>
-                    <CheckCircle size={28} style={{ color:"#16A34A" }} />
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor:"rgba(74,222,128,0.15)", border:"2px solid var(--erp-success)" }}>
+                    <CheckCircle size={28} style={{ color:"var(--erp-success)" }} />
                   </div>
-                  <div className="text-base font-black text-[#0B1E3F] mb-1">Arrived at Destination</div>
+                  <div className="text-base font-black text-[var(--erp-text-strong)] mb-1">Arrived at Destination</div>
                   <div className="text-xs" style={{ color:"rgba(11,30,63,0.66)" }}>14:33 · Marriott Hotel, Makkah</div>
                 </div>
               </MCard>
@@ -467,7 +467,7 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
                   {[["Expected","52 pax"],["Boarded","52 pax"],["Disembarked","52 pax"],["Discrepancy","None"]].map(([l,v]) => (
                     <div key={l} className="flex justify-between py-1.5 text-sm" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
                       <span style={{ color:"rgba(11,30,63,0.66)" }}>{l}</span>
-                      <span className="font-bold text-[#0B1E3F]">{v}</span>
+                      <span className="font-bold text-[var(--erp-text-strong)]">{v}</span>
                     </div>
                   ))}
                 </div>
@@ -484,10 +484,10 @@ function DriverApp({ screen, setScreen }: { screen: DriverScreen; setScreen: (s:
               <MHeader title="My Documents" sub="License & Vehicle Papers" color={DRV_C} />
               <MSec title="Required Documents" color={DRV_C} />
               {[
-                { icon:FileText,  label:"Saudi Driving License",   expiry:"Mar 2027", status:"VALID",   color:"#16A34A" },
-                { icon:Truck,     label:"Vehicle Registration",    expiry:"Sep 2026", status:"VALID",   color:"#16A34A" },
-                { icon:Shield,    label:"Vehicle Insurance",       expiry:"Nov 2025", status:"VALID",   color:"#16A34A" },
-                { icon:ClipboardList, label:"Vehicle Inspection",  expiry:"Jul 2026", status:"EXPIRING",color:"#B45309" },
+                { icon:FileText,  label:"Saudi Driving License",   expiry:"Mar 2027", status:"VALID",   color:"var(--erp-success)" },
+                { icon:Truck,     label:"Vehicle Registration",    expiry:"Sep 2026", status:"VALID",   color:"var(--erp-success)" },
+                { icon:Shield,    label:"Vehicle Insurance",       expiry:"Nov 2025", status:"VALID",   color:"var(--erp-success)" },
+                { icon:ClipboardList, label:"Vehicle Inspection",  expiry:"Jul 2026", status:"EXPIRING",color:"var(--erp-warning)" },
               ].map(d => (
                 <MRow key={d.label} icon={d.icon} label={d.label} sub={`Expires ${d.expiry}`} color={DRV_C}
                   right={<MPill label={d.status} color={d.color} size="xs" />} />
@@ -519,8 +519,8 @@ const AGT_TABS: MobTab[] = [
 ];
 
 const AGT_GROUPS = [
-  { id:"GRP-2891", pax:47, season:"1446H", status:"IN_STAY",    stage:"Stay · Jabal Omar",       color:"#16A34A" },
-  { id:"GRP-2401", pax:28, season:"1446H", status:"HOTEL",      stage:"Hotel Booking",            color:"#B45309" },
+  { id:"GRP-2891", pax:47, season:"1446H", status:"IN_STAY",    stage:"Stay · Jabal Omar",       color:"var(--erp-success)" },
+  { id:"GRP-2401", pax:28, season:"1446H", status:"HOTEL",      stage:"Hotel Booking",            color:"var(--erp-warning)" },
   { id:"GRP-2990", pax:52, season:"1446H", status:"FLIGHT",     stage:"Flight Ticketing",         color:AGT_C     },
   { id:"GRP-1884", pax:63, season:"1445H", status:"ARCHIVED",   stage:"Completed · Archived",     color:"rgba(11,30,63,0.38)" },
 ];
@@ -545,14 +545,14 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
               <MHeader title="My Groups" sub="Rashidi Travel · Season 1446H" color={AGT_C}
                 right={<button onClick={() => toast.info("এই মডিউল এখনও কনফিগার করা হয়নি।")} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor:AGT_C }}><Plus size={16} style={{ color:"white" }} /></button>} />
               {/* Wallet quick-look */}
-              <div className="mx-4 mb-4 rounded-2xl p-4" style={{ background:`linear-gradient(135deg,${AGT_C} 0%,#6366F1 100%)` }}>
+              <div className="mx-4 mb-4 rounded-2xl p-4" style={{ background:`linear-gradient(135deg,${AGT_C} 0%,var(--erp-cat-purple) 100%)` }}>
                 <div className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color:"rgba(255,255,255,0.80)" }}>Wallet Balance</div>
                 <div className="text-3xl font-black text-white">SAR 59,600</div>
                 <div className="text-[10px] mt-1" style={{ color:"rgba(255,255,255,0.80)" }}>INV-1446-0091 outstanding · SAR 323,725</div>
               </div>
               {/* Search */}
               <div className="px-4 mb-3">
-                <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl" style={{ backgroundColor:"#F5F7FA", border:"1px solid rgba(11,30,63,0.11)" }}>
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl" style={{ backgroundColor:"var(--erp-canvas)", border:"1px solid rgba(11,30,63,0.11)" }}>
                   <Search size={13} style={{ color:"rgba(11,30,63,0.50)" }} />
                   <span className="text-xs" style={{ color:"rgba(11,30,63,0.50)" }}>Search groups…</span>
                 </div>
@@ -567,7 +567,7 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-sm font-bold text-[#0B1E3F]">{g.id}</span>
+                      <span className="text-sm font-bold text-[var(--erp-text-strong)]">{g.id}</span>
                       <MPill label={g.status} color={g.color} size="xs" />
                     </div>
                     <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>{g.pax} pax · {g.stage}</div>
@@ -586,20 +586,20 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
                   <div className="p-4 flex items-center gap-4">
                     <div className="flex-1">
                       <div className="text-[10px] font-black uppercase tracking-wider mb-1" style={{ color:"rgba(11,30,63,0.58)" }}>Current Stage</div>
-                      <div className="text-base font-black text-[#0B1E3F]">In Stay</div>
+                      <div className="text-base font-black text-[var(--erp-text-strong)]">In Stay</div>
                       <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.58)" }}>Jabal Omar Hyatt · 14–28 Aug</div>
                     </div>
-                    <MPill label="ACTIVE" color="#16A34A" />
+                    <MPill label="ACTIVE" color="var(--erp-success)" />
                   </div>
                 </MCard>
               </div>
               <MSec title="Services" color={AGT_C} />
               {[
-                { icon:Fingerprint,    label:"Visa",      status:"All 47 Approved",   color:"#16A34A" },
-                { icon:BedDouble,      label:"Hotel",     status:"Confirmed · 14 Aug", color:"#16A34A" },
-                { icon:Truck,          label:"Transport", status:"3 dispatches done",  color:"#16A34A" },
-                { icon:UtensilsCrossed,label:"Catering",  status:"Daily meals active", color:"#16A34A" },
-                { icon:FileText,       label:"Invoice",   status:"SAR 323,725 due",    color:"#B45309" },
+                { icon:Fingerprint,    label:"Visa",      status:"All 47 Approved",   color:"var(--erp-success)" },
+                { icon:BedDouble,      label:"Hotel",     status:"Confirmed · 14 Aug", color:"var(--erp-success)" },
+                { icon:Truck,          label:"Transport", status:"3 dispatches done",  color:"var(--erp-success)" },
+                { icon:UtensilsCrossed,label:"Catering",  status:"Daily meals active", color:"var(--erp-success)" },
+                { icon:FileText,       label:"Invoice",   status:"SAR 323,725 due",    color:"var(--erp-warning)" },
               ].map(s => <MRow key={s.label} icon={s.icon} label={s.label} sub={s.status} color={AGT_C} right={<MPill label={s.status.startsWith("SAR")?"OUTSTANDING":"DONE"} color={s.color} size="xs" />} />)}
               <div className="px-4 mt-4">
                 <button onClick={() => setScreen("ocr")}
@@ -640,8 +640,8 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
                   <div key={s.id} className="flex items-start gap-3 mb-0">
                     <div className="flex flex-col items-center" style={{ width:24 }}>
                       <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                        style={{ backgroundColor: s.done?"#16A34A18":s.active?`${AGT_C}18`:"rgba(11,30,63,0.38)", border:`1.5px solid ${s.done?"#16A34A":s.active?AGT_C:"rgba(11,30,63,0.38)"}` }}>
-                        {s.done ? <CheckCircle size={11} style={{ color:"#16A34A" }} /> : s.active ? <div className="w-2 h-2 rounded-full" style={{ backgroundColor:AGT_C }} /> : <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor:"#E4E9F0" }} />}
+                        style={{ backgroundColor: s.done?"#16A34A18":s.active?`${AGT_C}18`:"rgba(11,30,63,0.38)", border:`1.5px solid ${s.done?"var(--erp-success)":s.active?AGT_C:"rgba(11,30,63,0.38)"}` }}>
+                        {s.done ? <CheckCircle size={11} style={{ color:"var(--erp-success)" }} /> : s.active ? <div className="w-2 h-2 rounded-full" style={{ backgroundColor:AGT_C }} /> : <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor:"var(--erp-border)" }} />}
                       </div>
                       {i < 13 && <div className="w-px flex-1 mt-0.5 mb-0.5" style={{ height:20, backgroundColor:s.done?"rgba(74,222,128,0.25)":"rgba(11,30,63,0.38)" }} />}
                     </div>
@@ -665,7 +665,7 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
                 <div className="text-4xl font-black text-white mb-1">SAR 59,600</div>
                 <div className="text-[10px]" style={{ color:"rgba(255,255,255,0.80)" }}>Last topped up: SAR 180,000 · 15 Jul</div>
                 <button onClick={() => toast.info("Top-up request sent to TUBA Finance.", { duration:2500 })}
-                  className="mt-4 px-4 py-2 rounded-xl text-xs font-bold active:scale-95" style={{ backgroundColor:"#E4E9F0", color:"#0B1E3F" }}>
+                  className="mt-4 px-4 py-2 rounded-xl text-xs font-bold active:scale-95" style={{ backgroundColor:"var(--erp-border)", color:"var(--erp-text-strong)" }}>
                   + Request Top-up
                 </button>
               </div>
@@ -678,10 +678,10 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
               ].map(t => (
                 <div key={t.label} className="flex items-center gap-3 px-4 py-3" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor:t.type==="credit"?"rgba(74,222,128,0.12)":"rgba(248,113,113,0.12)" }}>
-                    <TrendingUp size={14} style={{ color:t.type==="credit"?"#16A34A":"#DC2626", transform:t.type==="debit"?"scaleY(-1)":undefined }} />
+                    <TrendingUp size={14} style={{ color:t.type==="credit"?"var(--erp-success)":"var(--erp-destructive)", transform:t.type==="debit"?"scaleY(-1)":undefined }} />
                   </div>
-                  <div className="flex-1"><div className="text-xs font-semibold text-[#0B1E3F]">{t.label}</div><div className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{t.time}</div></div>
-                  <span className="text-sm font-bold" style={{ color:t.type==="credit"?"#16A34A":"#DC2626" }}>{t.amt}</span>
+                  <div className="flex-1"><div className="text-xs font-semibold text-[var(--erp-text-strong)]">{t.label}</div><div className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{t.time}</div></div>
+                  <span className="text-sm font-bold" style={{ color:t.type==="credit"?"var(--erp-success)":"var(--erp-destructive)" }}>{t.amt}</span>
                 </div>
               ))}
             </div>
@@ -696,11 +696,11 @@ function AgentApp({ screen, setScreen }: { screen: AgentScreen; setScreen: (s: A
                 { title:"Visa issued — 47 pax",     sub:"Visa Desk update · GRP-2891",           time:"8h",   urgent:false },
                 { title:"Vouchers dispatched",       sub:"Hotel + transport vouchers sent",       time:"1d",   urgent:false },
               ].map((n, i) => (
-                <div key={i} className="px-4 py-3.5" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)", borderLeft:`3px solid ${n.urgent?"#EF4444":"transparent"}`, backgroundColor:n.urgent?"rgba(239,68,68,0.04)":"transparent" }}>
+                <div key={i} className="px-4 py-3.5" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)", borderLeft:`3px solid ${n.urgent?"var(--erp-destructive)":"transparent"}`, backgroundColor:n.urgent?"rgba(239,68,68,0.04)":"transparent" }}>
                   <div className="flex items-start gap-2">
-                    {n.urgent && <AlertTriangle size={12} className="mt-0.5 shrink-0" style={{ color:"#EF4444" }} />}
+                    {n.urgent && <AlertTriangle size={12} className="mt-0.5 shrink-0" style={{ color:"var(--erp-destructive)" }} />}
                     <div className="flex-1">
-                      <div className="text-xs font-bold" style={{ color:n.urgent?"#DC2626":"rgba(11,30,63,0.94)" }}>{n.title}</div>
+                      <div className="text-xs font-bold" style={{ color:n.urgent?"var(--erp-destructive)":"rgba(11,30,63,0.94)" }}>{n.title}</div>
                       <div className="text-[10px] mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>{n.sub}</div>
                     </div>
                     <span className="text-[9px] shrink-0" style={{ color:"rgba(11,30,63,0.50)", fontFamily:"var(--font-mono)" }}>{n.time}</span>
@@ -752,23 +752,23 @@ function OpsApp({ screen, setScreen }: { screen: OpsScreen; setScreen: (s: OpsSc
               <MHeader title="Arrivals · 16 Jul" sub="3 flights today · 146 pax" color={OPS_C} />
               <div className="px-4 space-y-3 pb-4">
                 {[
-                  { flight:"SV-802", from:"DAC", time:"08:45", pax:47, status:"AT GATE",  color:"#16A34A", grp:"GRP-2891" },
+                  { flight:"SV-802", from:"DAC", time:"08:45", pax:47, status:"AT GATE",  color:"var(--erp-success)", grp:"GRP-2891" },
                   { flight:"BG-088", from:"DAC", time:"11:20", pax:32, status:"EN ROUTE", color:OPS_C,     grp:"GRP-2744" },
-                  { flight:"PK-901", from:"KHI", time:"15:40", pax:67, status:"SCHED",    color:"#9CA3AF", grp:"GRP-3301" },
+                  { flight:"PK-901", from:"KHI", time:"15:40", pax:67, status:"SCHED",    color:"var(--erp-muted-soft)", grp:"GRP-3301" },
                 ].map(f => (
                   <MCard key={f.flight} color={f.color}>
                     <div className="p-4">
                       <div className="flex items-center gap-3 mb-3">
                         <Plane size={18} style={{ color:f.color }} />
                         <div className="flex-1">
-                          <div className="text-base font-black text-[#0B1E3F]">{f.flight}</div>
+                          <div className="text-base font-black text-[var(--erp-text-strong)]">{f.flight}</div>
                           <div className="text-[10px]" style={{ color:"rgba(11,30,63,0.66)" }}>From {f.from} · ETA {f.time}</div>
                         </div>
                         <MPill label={f.status} color={f.color} />
                       </div>
                       <div className="flex gap-4 text-xs">
-                        <span style={{ color:"rgba(11,30,63,0.58)" }}><strong className="text-[#0B1E3F]">{f.pax}</strong> pax</span>
-                        <span style={{ color:"rgba(11,30,63,0.58)" }}>Group: <strong className="text-[#0B1E3F]">{f.grp}</strong></span>
+                        <span style={{ color:"rgba(11,30,63,0.58)" }}><strong className="text-[var(--erp-text-strong)]">{f.pax}</strong> pax</span>
+                        <span style={{ color:"rgba(11,30,63,0.58)" }}>Group: <strong className="text-[var(--erp-text-strong)]">{f.grp}</strong></span>
                       </div>
                       {f.status==="AT GATE" && (
                         <div className="flex gap-2 mt-3">
@@ -798,11 +798,11 @@ function OpsApp({ screen, setScreen }: { screen: OpsScreen; setScreen: (s: OpsSc
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-xs font-black" style={{ color:OPS_C, fontFamily:"var(--font-mono)" }}>{d.grp}</span>
                         <span className="text-[9px]" style={{ color:"rgba(11,30,63,0.58)" }}>{d.pax} pax</span>
-                        <MPill label={d.driver?"ASSIGNED":"PENDING"} color={d.driver?"#16A34A":OPS_C} size="xs" />
+                        <MPill label={d.driver?"ASSIGNED":"PENDING"} color={d.driver?"var(--erp-success)":OPS_C} size="xs" />
                       </div>
-                      <div className="text-xs text-[#0B1E3F] mb-2">{d.route}</div>
+                      <div className="text-xs text-[var(--erp-text-strong)] mb-2">{d.route}</div>
                       {d.driver
-                        ? <div className="text-[10px]" style={{ color:"#16A34A" }}>Driver: {d.driver}</div>
+                        ? <div className="text-[10px]" style={{ color:"var(--erp-success)" }}>Driver: {d.driver}</div>
                         : <button onClick={() => toast.success(`Driver assigned to ${d.grp}`, { duration:2000 })}
                             className="w-full py-2 rounded-xl text-[10px] font-bold active:scale-95" style={{ backgroundColor:OPS_C, color:"white" }}>
                             Assign Driver +
@@ -818,8 +818,8 @@ function OpsApp({ screen, setScreen }: { screen: OpsScreen; setScreen: (s: OpsSc
           {screen === "emergency" && (
             <div className="h-full flex flex-col" style={{ backgroundColor:"#150000" }}>
               <div className="pt-2 px-4 pb-4 text-center">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-4 mb-3" style={{ backgroundColor:"rgba(239,68,68,0.2)", border:"2px solid #EF4444" }}>
-                  <AlertTriangle size={28} style={{ color:"#EF4444" }} />
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-4 mb-3" style={{ backgroundColor:"rgba(239,68,68,0.2)", border:"2px solid var(--erp-destructive)" }}>
+                  <AlertTriangle size={28} style={{ color:"var(--erp-destructive)" }} />
                 </div>
                 <div className="text-lg font-black text-white mb-1">EMERGENCY ALERT</div>
                 <div className="text-sm" style={{ color:"rgba(255,100,100,0.8)" }}>Transport SLA Breach · DSP-006</div>
@@ -834,7 +834,7 @@ function OpsApp({ screen, setScreen }: { screen: OpsScreen; setScreen: (s: OpsSc
               </div>
               <div className="px-4 pb-4 space-y-2 mt-4">
                 <button onClick={() => toast.error("Calling driver...", { duration:2000 })}
-                  className="w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 active:scale-95" style={{ backgroundColor:"#EF4444", color: "white" }}>
+                  className="w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 active:scale-95" style={{ backgroundColor:"var(--erp-destructive)", color: "white" }}>
                   <Phone size={16} /> Call Driver Now
                 </button>
                 <button onClick={() => toast.success("Re-assignment initiated", { duration:2000 })}
@@ -849,7 +849,7 @@ function OpsApp({ screen, setScreen }: { screen: OpsScreen; setScreen: (s: OpsSc
             <div className="pt-2">
               <MHeader title="Live Overview" sub="Now · TUBA Operations" color={OPS_C} />
               <div className="grid grid-cols-2 gap-3 px-4 mb-4">
-                {[["8","Active Groups",OPS_C],["194","Pax Moving","#16A34A"],["6","Dispatches",OPS_C],["1","Alert",  "#EF4444"]].map(([v,l,c]) => (
+                {[["8","Active Groups",OPS_C],["194","Pax Moving","var(--erp-success)"],["6","Dispatches",OPS_C],["1","Alert",  "var(--erp-destructive)"]].map(([v,l,c]) => (
                   <MCard key={l}>
                     <div className="p-3 text-center">
                       <div className="text-2xl font-black" style={{ color:c as string }}>{v}</div>
@@ -862,15 +862,15 @@ function OpsApp({ screen, setScreen }: { screen: OpsScreen; setScreen: (s: OpsSc
               {[
                 { id:"DSP-005", route:"KAIA → Marriott", pct:85, color:OPS_C    },
                 { id:"DSP-003", route:"Mosque → KAIA",   pct:40, color:OPS_C    },
-                { id:"DSP-006", route:"Hilton → KAIA",   pct:20, color:"#EF4444"},
+                { id:"DSP-006", route:"Hilton → KAIA",   pct:20, color:"var(--erp-destructive)"},
               ].map(d => (
                 <div key={d.id} className="px-4 py-3" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-[10px] font-black" style={{ color:d.color, fontFamily:"var(--font-mono)" }}>{d.id}</span>
-                    <span className="flex-1 text-xs text-[#0B1E3F]">{d.route}</span>
+                    <span className="flex-1 text-xs text-[var(--erp-text-strong)]">{d.route}</span>
                     <span className="text-[10px] font-bold" style={{ color:d.color }}>{d.pct}%</span>
                   </div>
-                  <div className="h-1.5 rounded-full" style={{ backgroundColor:"#F5F7FA" }}>
+                  <div className="h-1.5 rounded-full" style={{ backgroundColor:"var(--erp-canvas)" }}>
                     <div className="h-full rounded-full" style={{ width:`${d.pct}%`, backgroundColor:d.color }} />
                   </div>
                 </div>
@@ -894,11 +894,11 @@ const SUP_TABS: MobTab[] = [
 ];
 
 const PENDING_APPROVALS = [
-  { id:"VIS-0341", type:"Visa",      icon:Fingerprint,    label:"GRP-3301 · 15 pax pending MOFA",  sub:"PIA Charter · Pakistan",          color:"#0D9488",  },
-  { id:"HOT-0088", type:"Hotel",     icon:BedDouble,      label:"Movenpick MKK · 28 rooms",        sub:"GRP-2401 · 19–31 Aug",            color:"#2563EB",  },
-  { id:"TRN-0121", type:"Transport", icon:Truck,          label:"Al-Naqil · 3 buses · GRP-3301",   sub:"KAIA T2 → Marriott · 15 Sep",     color:"#EA580C",  },
-  { id:"CAT-0055", type:"Catering",  icon:UtensilsCrossed,label:"Al-Barakah · Meal plan 67 pax",   sub:"GRP-3301 · Sep 15–29",            color:"#D97706",  },
-  { id:"FIN-0093", type:"Finance",   icon:FileText,       label:"INV-1446-0093 · SAR 450,000",     sub:"Rashidi Travel · Net 30d",         color:"#16A34A",  },
+  { id:"VIS-0341", type:"Visa",      icon:Fingerprint,    label:"GRP-3301 · 15 pax pending MOFA",  sub:"PIA Charter · Pakistan",          color:"var(--erp-cat-teal)",  },
+  { id:"HOT-0088", type:"Hotel",     icon:BedDouble,      label:"Movenpick MKK · 28 rooms",        sub:"GRP-2401 · 19–31 Aug",            color:"var(--erp-info)",  },
+  { id:"TRN-0121", type:"Transport", icon:Truck,          label:"Al-Naqil · 3 buses · GRP-3301",   sub:"KAIA T2 → Marriott · 15 Sep",     color:"var(--erp-cat-orange)",  },
+  { id:"CAT-0055", type:"Catering",  icon:UtensilsCrossed,label:"Al-Barakah · Meal plan 67 pax",   sub:"GRP-3301 · Sep 15–29",            color:"var(--erp-warning)",  },
+  { id:"FIN-0093", type:"Finance",   icon:FileText,       label:"INV-1446-0093 · SAR 450,000",     sub:"Rashidi Travel · Net 30d",         color:"var(--erp-success)",  },
 ];
 
 function SupApp({ screen, setScreen }: { screen: SupScreen; setScreen: (s: SupScreen) => void }) {
@@ -923,7 +923,7 @@ function SupApp({ screen, setScreen }: { screen: SupScreen; setScreen: (s: SupSc
                 const Icon = a.icon;
                 return (
                   <div key={a.id} className="mx-4 mb-3">
-                    <MCard color={isApproved?"#16A34A":a.color}>
+                    <MCard color={isApproved?"var(--erp-success)":a.color}>
                       <div className="p-3">
                         <div className="flex items-start gap-3 mb-3">
                           <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor:`${a.color}18` }}>
@@ -934,19 +934,19 @@ function SupApp({ screen, setScreen }: { screen: SupScreen; setScreen: (s: SupSc
                               <span className="text-[9px] font-black" style={{ color:a.color, fontFamily:"var(--font-mono)" }}>{a.id}</span>
                               <MPill label={a.type} color={a.color} size="xs" />
                             </div>
-                            <div className="text-xs font-semibold text-[#0B1E3F] truncate">{a.label}</div>
+                            <div className="text-xs font-semibold text-[var(--erp-text-strong)] truncate">{a.label}</div>
                             <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>{a.sub}</div>
                           </div>
                         </div>
                         {isApproved
-                          ? <div className="flex items-center gap-2 py-2 text-xs" style={{ color:"#16A34A" }}><CheckCircle size={12} /> Approved</div>
+                          ? <div className="flex items-center gap-2 py-2 text-xs" style={{ color:"var(--erp-success)" }}><CheckCircle size={12} /> Approved</div>
                           : <div className="flex gap-2">
                               <button onClick={() => { setApproved(s => new Set(s).add(a.id)); toast.success(`${a.type} approved: ${a.id}`, { duration:2000 }); }}
                                 className="flex-1 py-2 rounded-xl text-[10px] font-bold active:scale-95" style={{ backgroundColor:a.color, color:"white" }}>
                                 Approve ✓
                               </button>
                               <button onClick={() => toast.error(`${a.id} rejected`, { duration:2000 })}
-                                className="flex-1 py-2 rounded-xl text-[10px] font-bold active:scale-95" style={{ backgroundColor:"rgba(248,113,113,0.12)", color:"#DC2626", border:"1px solid rgba(248,113,113,0.2)" }}>
+                                className="flex-1 py-2 rounded-xl text-[10px] font-bold active:scale-95" style={{ backgroundColor:"rgba(248,113,113,0.12)", color:"var(--erp-destructive)", border:"1px solid rgba(248,113,113,0.2)" }}>
                                 Reject ✗
                               </button>
                             </div>
@@ -971,7 +971,7 @@ function SupApp({ screen, setScreen }: { screen: SupScreen; setScreen: (s: SupSc
                     ).map(([l,v]) => (
                       <div key={l} className="flex justify-between py-2 text-xs" style={{ borderBottom:"1px solid rgba(11,30,63,0.11)" }}>
                         <span style={{ color:"rgba(11,30,63,0.58)" }}>{l}</span>
-                        <span className="font-semibold text-[#0B1E3F]">{v}</span>
+                        <span className="font-semibold text-[var(--erp-text-strong)]">{v}</span>
                       </div>
                     ))}
                   </div>
@@ -982,7 +982,7 @@ function SupApp({ screen, setScreen }: { screen: SupScreen; setScreen: (s: SupSc
                     Approve ✓
                   </button>
                   <button onClick={() => { toast.error("Rejected", { duration:2000 }); setScreen("approvals"); }}
-                    className="flex-1 py-3 rounded-2xl text-sm font-bold active:scale-95" style={{ backgroundColor:"rgba(248,113,113,0.12)", color:"#DC2626", border:"1px solid rgba(248,113,113,0.2)" }}>
+                    className="flex-1 py-3 rounded-2xl text-sm font-bold active:scale-95" style={{ backgroundColor:"rgba(248,113,113,0.12)", color:"var(--erp-destructive)", border:"1px solid rgba(248,113,113,0.2)" }}>
                     Reject ✗
                   </button>
                 </div>
@@ -994,22 +994,22 @@ function SupApp({ screen, setScreen }: { screen: SupScreen; setScreen: (s: SupSc
             <div className="pt-2">
               <MHeader title="KPI Snapshot" sub="Season 1446H · Today" color={SUP_C} />
               <div className="grid grid-cols-2 gap-3 px-4 mb-4">
-                {[["SAR 8.45M","YTD Revenue",SUP_C,"↑ 12.4%"],["19.3%","Net Margin","#16A34A","↑ 2.1pp"],["8","Active Groups","#B45309",""],["924","Total Pax","#06B6D4",""]].map(([v,l,c,t]) => (
+                {[["SAR 8.45M","YTD Revenue",SUP_C,"↑ 12.4%"],["19.3%","Net Margin","var(--erp-success)","↑ 2.1pp"],["8","Active Groups","var(--erp-warning)",""],["924","Total Pax","var(--erp-cat-sky)",""]].map(([v,l,c,t]) => (
                   <MCard key={l}>
                     <div className="p-3">
                       <div className="text-xl font-black" style={{ color:c as string }}>{v}</div>
                       <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.58)" }}>{l}</div>
-                      {t && <div className="text-[8px] font-bold mt-1" style={{ color:"#16A34A" }}>{t as string}</div>}
+                      {t && <div className="text-[8px] font-bold mt-1" style={{ color:"var(--erp-success)" }}>{t as string}</div>}
                     </div>
                   </MCard>
                 ))}
               </div>
               <MSec title="Module Health" color={SUP_C} />
-              {[["Visa Desk","72%","#16A34A"],["Hotel Desk","85%","#16A34A"],["Transport","94%","#B45309"],["Finance","55%","#16A34A"],["Automation","88%","#B45309"]].map(([n,p,c]) => (
+              {[["Visa Desk","72%","var(--erp-success)"],["Hotel Desk","85%","var(--erp-success)"],["Transport","94%","var(--erp-warning)"],["Finance","55%","var(--erp-success)"],["Automation","88%","var(--erp-warning)"]].map(([n,p,c]) => (
                 <div key={n as string} className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom:"1px solid rgba(11,30,63,0.08)" }}>
                   <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor:c as string }} />
-                  <span className="flex-1 text-xs text-[#0B1E3F]">{n}</span>
-                  <div className="w-20 h-1.5 rounded-full" style={{ backgroundColor:"#F5F7FA" }}>
+                  <span className="flex-1 text-xs text-[var(--erp-text-strong)]">{n}</span>
+                  <div className="w-20 h-1.5 rounded-full" style={{ backgroundColor:"var(--erp-canvas)" }}>
                     <div className="h-full rounded-full" style={{ width:p as string, backgroundColor:c as string }} />
                   </div>
                   <span className="text-[9px] w-8 text-right font-bold" style={{ color:c as string, fontFamily:"var(--font-mono)" }}>{p}</span>
@@ -1022,9 +1022,9 @@ function SupApp({ screen, setScreen }: { screen: SupScreen; setScreen: (s: SupSc
             <div className="pt-2">
               <MHeader title="Escalation Alerts" sub="2 require action" color={SUP_C} />
               {[
-                { title:"Transport SLA breach — DSP-006",  sub:"Bassem Khalil · 3h delay · 52 pax affected",  priority:"HIGH",   color:"#EF4444" },
-                { title:"INV-1446-0091 overdue by 3 days", sub:"Rashidi Travel · SAR 323,725 · Notify agent",  priority:"MEDIUM", color:"#B45309" },
-                { title:"OCR flag: GRP-3301 (3 pax)",      sub:"Passport field mismatch · requires manual check", priority:"LOW", color:"#9CA3AF" },
+                { title:"Transport SLA breach — DSP-006",  sub:"Bassem Khalil · 3h delay · 52 pax affected",  priority:"HIGH",   color:"var(--erp-destructive)" },
+                { title:"INV-1446-0091 overdue by 3 days", sub:"Rashidi Travel · SAR 323,725 · Notify agent",  priority:"MEDIUM", color:"var(--erp-warning)" },
+                { title:"OCR flag: GRP-3301 (3 pax)",      sub:"Passport field mismatch · requires manual check", priority:"LOW", color:"var(--erp-muted-soft)" },
               ].map((a, i) => (
                 <div key={i} className="mx-4 mb-3">
                   <MCard color={a.color}>
@@ -1032,7 +1032,7 @@ function SupApp({ screen, setScreen }: { screen: SupScreen; setScreen: (s: SupSc
                       <div className="flex items-start gap-2 mb-2">
                         <AlertTriangle size={13} className="shrink-0 mt-0.5" style={{ color:a.color }} />
                         <div className="flex-1">
-                          <div className="text-xs font-bold text-[#0B1E3F]">{a.title}</div>
+                          <div className="text-xs font-bold text-[var(--erp-text-strong)]">{a.title}</div>
                           <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.66)" }}>{a.sub}</div>
                         </div>
                         <MPill label={a.priority} color={a.color} size="xs" />
@@ -1063,7 +1063,7 @@ function PhoneFrame({ children, color }: { children: ReactNode; color: string })
       width: 390, height: 720,
       borderRadius: 44,
       overflow: "hidden",
-      backgroundColor: "#F5F7FA",
+      backgroundColor: "var(--erp-canvas)",
       boxShadow: `0 0 0 2px rgba(11,30,63,0.18), 0 0 0 10px #0a0a0a, 0 50px 100px rgba(0,0,0,0.7), 0 0 80px ${color}08`,
     }}>
       {/* Dynamic Island */}
@@ -1074,7 +1074,7 @@ function PhoneFrame({ children, color }: { children: ReactNode; color: string })
 
       {/* Status bar */}
       <div className="absolute top-0 left-0 right-0 h-12 z-20 flex items-end pb-1.5 px-6 pointer-events-none">
-        <span className="text-[11px] font-bold text-[#0B1E3F]">9:41</span>
+        <span className="text-[11px] font-bold text-[var(--erp-text-strong)]">9:41</span>
         <div className="ml-auto flex items-center gap-1.5">
           <svg width="14" height="10" viewBox="0 0 14 10" fill="rgba(11,30,63,0.94)">
             <rect x="0" y="5" width="2.5" height="5" rx="0.5" />
@@ -1084,9 +1084,9 @@ function PhoneFrame({ children, color }: { children: ReactNode; color: string })
           </svg>
           <div className="flex items-center gap-0.5">
             <div className="w-5 h-2.5 rounded-sm" style={{ border:"1px solid rgba(11,30,63,0.22)", padding:"1px" }}>
-              <div className="h-full rounded-sm" style={{ width:"75%", backgroundColor:"#E4E9F0" }} />
+              <div className="h-full rounded-sm" style={{ width:"75%", backgroundColor:"var(--erp-border)" }} />
             </div>
-            <div className="w-0.5 h-1.5 rounded-r" style={{ backgroundColor:"#E4E9F0" }} />
+            <div className="w-0.5 h-1.5 rounded-r" style={{ backgroundColor:"var(--erp-border)" }} />
           </div>
         </div>
       </div>
@@ -1097,7 +1097,7 @@ function PhoneFrame({ children, color }: { children: ReactNode; color: string })
       </div>
 
       {/* Home indicator */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 rounded-full" style={{ backgroundColor:"#E4E9F0", zIndex:30 }} />
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 rounded-full" style={{ backgroundColor:"var(--erp-border)", zIndex:30 }} />
     </div>
   );
 }
@@ -1183,20 +1183,20 @@ export default function MobileApps() {
 
             {/* Screen label */}
             <div className="text-center">
-              <div className="text-xs font-bold text-[#0B1E3F]">{SCREEN_LABELS[activeApp].find(s=>s.id===currentScreen)?.label ?? "—"}</div>
+              <div className="text-xs font-bold text-[var(--erp-text-strong)]">{SCREEN_LABELS[activeApp].find(s=>s.id===currentScreen)?.label ?? "—"}</div>
               <div className="text-[9px] mt-0.5" style={{ color:"rgba(11,30,63,0.50)" }}>{activeApp.toUpperCase()} · Screen {SCREEN_LABELS[activeApp].findIndex(s=>s.id===currentScreen)+1} of {SCREEN_LABELS[activeApp].length}</div>
             </div>
           </div>
 
           {/* App info panel */}
           <div className="w-72 shrink-0 space-y-4 pt-12">
-            <div className="rounded-2xl p-5" style={{ backgroundColor:"#FBFCFD", border:`1px solid ${appColor}20` }}>
+            <div className="rounded-2xl p-5" style={{ backgroundColor:"var(--erp-surface-soft)", border:`1px solid ${appColor}20` }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ backgroundColor:`${appColor}18` }}>
                   <Smartphone size={18} style={{ color:appColor }} />
                 </div>
                 <div>
-                  <div className="text-sm font-black text-[#0B1E3F]">{meta.name}</div>
+                  <div className="text-sm font-black text-[var(--erp-text-strong)]">{meta.name}</div>
                   <div className="text-[9px]" style={{ color:`${appColor}BB` }}>iOS & Android · React Native</div>
                 </div>
               </div>
@@ -1211,7 +1211,7 @@ export default function MobileApps() {
             </div>
 
             {/* Other apps */}
-            <div className="rounded-2xl p-4" style={{ backgroundColor:"#FFFFFF", border:"1px solid rgba(11,30,63,0.11)" }}>
+            <div className="rounded-2xl p-4" style={{ backgroundColor:"var(--erp-surface)", border:"1px solid rgba(11,30,63,0.11)" }}>
               <div className="text-[8px] font-black uppercase tracking-widest mb-3" style={{ color:"rgba(11,30,63,0.50)" }}>All Mobile Apps</div>
               {(["driver","agent","ops","sup"] as AppId[]).map(id => {
                 const m = APP_META[id];

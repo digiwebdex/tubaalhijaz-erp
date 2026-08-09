@@ -7,7 +7,7 @@ import { api, isLoggedIn } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 
-const SLA = "#B45309";
+const SLA = "var(--erp-warning)";
 interface Row { id: string; code: string; name: string; stage: number; approvalStatus: string; slaHours: number | null; hoursInStage: number; status: string }
 interface Resp { summary: Record<string, number>; rows: Row[] }
 const NAV: NavItem[] = [{ id: "sla", label: "SLA Dashboard", labelBn: "এসএলএ ড্যাশবোর্ড", icon: Gauge as IconFC }];
@@ -21,10 +21,10 @@ export default function SlaDashboard() {
   useEffect(load, []);
 
   const cards = [
-    { key: "OVERDUE", label: lang === "bn" ? "মেয়াদোত্তীর্ণ" : "Overdue", color: "#B91C1C", icon: AlertTriangle },
+    { key: "OVERDUE", label: lang === "bn" ? "মেয়াদোত্তীর্ণ" : "Overdue", color: "var(--erp-destructive)", icon: AlertTriangle },
     { key: "AT_RISK", label: lang === "bn" ? "ঝুঁকিতে" : "At Risk", color: SLA, icon: Clock },
-    { key: "ON_TIME", label: lang === "bn" ? "সময়মতো" : "On Time", color: "#0D9488", icon: CheckCircle2 },
-    { key: "NO_SLA", label: lang === "bn" ? "এসএলএ নেই" : "No SLA", color: "#64748B", icon: Gauge },
+    { key: "ON_TIME", label: lang === "bn" ? "সময়মতো" : "On Time", color: "var(--erp-cat-teal)", icon: CheckCircle2 },
+    { key: "NO_SLA", label: lang === "bn" ? "এসএলএ নেই" : "No SLA", color: "var(--erp-muted)", icon: Gauge },
   ];
   const columns: ErpColumn<Row>[] = [
     { id: "code", header: lang === "bn" ? "কোড" : "Code", cell: (r) => <span className="text-[11px] font-mono" style={{ color: SLA }}>{r.code}</span> },

@@ -7,7 +7,7 @@ import { api, isLoggedIn, getAccessToken } from "../lib/api";
 import { useLang } from "../lib/LangContext";
 import { fontFor } from "@tuba/shared";
 
-const NC = "#7C3AED";
+const NC = "var(--erp-cat-purple)";
 const CHANNELS = ["", "WHATSAPP", "EMAIL", "IN_APP"];
 const STATUSES = ["", "PENDING", "DELIVERED", "READ", "FAILED"];
 interface Row { id: string; code: string | null; channel: string; status: string; priority: string; recipientUserId: string | null; recipientAddress: string | null; title: string; providerId: string | null; attempts: number; sentAt: string | null; error: string | null; createdAt: string }
@@ -44,10 +44,10 @@ export default function NotificationCenter() {
   };
 
   const cards = [
-    { key: "DELIVERED", label: lang === "bn" ? "ডেলিভার্ড" : "Delivered", color: "#0D9488", icon: CheckCircle2 },
-    { key: "READ", label: lang === "bn" ? "পঠিত" : "Read", color: "#2563EB", icon: MailCheck },
-    { key: "PENDING", label: lang === "bn" ? "বিচারাধীন" : "Pending", color: "#B45309", icon: Clock },
-    { key: "FAILED", label: lang === "bn" ? "ব্যর্থ" : "Failed", color: "#B91C1C", icon: XCircle },
+    { key: "DELIVERED", label: lang === "bn" ? "ডেলিভার্ড" : "Delivered", color: "var(--erp-cat-teal)", icon: CheckCircle2 },
+    { key: "READ", label: lang === "bn" ? "পঠিত" : "Read", color: "var(--erp-info)", icon: MailCheck },
+    { key: "PENDING", label: lang === "bn" ? "বিচারাধীন" : "Pending", color: "var(--erp-warning)", icon: Clock },
+    { key: "FAILED", label: lang === "bn" ? "ব্যর্থ" : "Failed", color: "var(--erp-destructive)", icon: XCircle },
   ];
   const columns: ErpColumn<Row>[] = [
     { id: "time", header: lang === "bn" ? "সময়" : "Time", cell: (r) => <span className="text-[11px]">{new Date(r.createdAt).toLocaleString()}</span> },

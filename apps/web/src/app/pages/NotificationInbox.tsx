@@ -51,7 +51,7 @@ export default function NotificationInbox() {
             <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: "rgba(11,30,63,0.15)" }} role="tablist">
               {(["all", "unread"] as const).map((t) => (
                 <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
-                  className="text-[11px] font-bold px-3 py-1.5" style={{ background: tab === t ? IN : "transparent", color: tab === t ? "#fff" : "rgba(11,30,63,0.6)" }}>
+                  className="text-[11px] font-bold px-3 py-1.5" style={{ background: tab === t ? IN : "transparent", color: tab === t ? "var(--erp-surface)" : "rgba(11,30,63,0.6)" }}>
                   {t === "all" ? (lang === "bn" ? "সব" : "All") : `${lang === "bn" ? "অপঠিত" : "Unread"}${unread ? ` (${unread})` : ""}`}
                 </button>
               ))}
@@ -69,7 +69,7 @@ export default function NotificationInbox() {
                   return (
                     <li key={it.id}>
                       <button onClick={() => markRead(it)} className="w-full text-left rounded-xl p-3 flex gap-3 items-start transition"
-                        style={{ background: isUnread ? `${IN}0A` : "#fff", border: `1px solid ${isUnread ? `${IN}33` : "rgba(11,30,63,0.1)"}` }}>
+                        style={{ background: isUnread ? `${IN}0A` : "var(--erp-surface)", border: `1px solid ${isUnread ? `${IN}33` : "rgba(11,30,63,0.1)"}` }}>
                         <span className="mt-0.5 shrink-0 rounded-lg p-1.5" style={{ background: `${IN}14`, color: IN }} aria-hidden="true"><Icon size={15} /></span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">

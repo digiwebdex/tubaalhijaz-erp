@@ -15,18 +15,18 @@ interface TabNav { id: TabletView; label: string; icon: IconFC; color: string; }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const TAB_MOD  = "#6366F1";
+const TAB_MOD  = "var(--erp-cat-purple)";
 const OPS_C    = "#DC4E2A";
-const AGT_C    = "#9333EA";
-const DRV_C    = "#EA580C";
-const SUP_C    = "#0D9488";
+const AGT_C    = "var(--erp-cat-purple)";
+const DRV_C    = "var(--erp-cat-orange)";
+const SUP_C    = "var(--erp-cat-teal)";
 const BG_DARK  = "#080E1E";
 const BG_MID   = "#0C1628";
 const BG_CARD  = "#111E35";
 const BORDER   = "rgba(11,30,63,0.38)";
-const MUTED    = "#64748B";
-const TEXT     = "#E8EDF5";
-const TEXT_DIM = "#94A3B8";
+const MUTED    = "var(--erp-muted)";
+const TEXT     = "var(--erp-text-strong)";
+const TEXT_DIM = "var(--erp-muted-soft)";
 
 const TAB_NAV: TabNav[] = [
   { id:"ops",    label:"Ops Terminal",  icon: Zap    as IconFC, color: OPS_C },
@@ -103,22 +103,22 @@ function TPill({ label, color }: { label: string; color: string }) {
 
 function StatusPill({ s }: { s: string }) {
   const map: Record<string, [string, string]> = {
-    landing:    ["#22C55E","Landing"],
-    taxiing:    ["#3B82F6","Taxiing"],
-    scheduled:  ["#64748B","Scheduled"],
-    delayed:    ["#EF4444","Delayed"],
-    boarding:   ["#22C55E","Boarding"],
-    "check-in": ["#F59E0B","Check-in"],
-    "en-route": ["#22C55E","En Route"],
-    loading:    ["#F59E0B","Loading"],
-    waiting:    ["#64748B","Waiting"],
-    complete:   ["#64748B","Complete"],
-    active:     ["#22C55E","Active"],
-    pending:    ["#F59E0B","Pending"],
-    "checked-in":["#22C55E","Checked-in"],
-    "boarding2":["#3B82F6","Boarding"],
+    landing:    ["var(--erp-success)","Landing"],
+    taxiing:    ["var(--erp-info)","Taxiing"],
+    scheduled:  ["var(--erp-muted)","Scheduled"],
+    delayed:    ["var(--erp-destructive)","Delayed"],
+    boarding:   ["var(--erp-success)","Boarding"],
+    "check-in": ["var(--erp-warning)","Check-in"],
+    "en-route": ["var(--erp-success)","En Route"],
+    loading:    ["var(--erp-warning)","Loading"],
+    waiting:    ["var(--erp-muted)","Waiting"],
+    complete:   ["var(--erp-muted)","Complete"],
+    active:     ["var(--erp-success)","Active"],
+    pending:    ["var(--erp-warning)","Pending"],
+    "checked-in":["var(--erp-success)","Checked-in"],
+    "boarding2":["var(--erp-info)","Boarding"],
   };
-  const [c, l] = map[s] ?? ["#64748B", s];
+  const [c, l] = map[s] ?? ["var(--erp-muted)", s];
   return <TPill label={l} color={c} />;
 }
 
@@ -126,7 +126,7 @@ function TSearchBar({ placeholder, color }: { placeholder: string; color: string
   return (
     <div style={{
       display:"flex", alignItems:"center", gap:8,
-      background:"#FBFCFD", border:`1px solid ${BORDER}`,
+      background:"var(--erp-surface-soft)", border:`1px solid ${BORDER}`,
       borderRadius:10, padding:"8px 12px", flex:1,
     }}>
       <Search size={14} style={{ color:MUTED, flexShrink:0 }} />
@@ -218,7 +218,7 @@ function IconRail({
       <button title="Settings" style={{ width:"100%", height:48, display:"flex", alignItems:"center", justifyContent:"center", background:"transparent", border:"none", cursor:"pointer" }}>
         <Settings size={18} style={{ color: TEXT_DIM }} />
       </button>
-      <div style={{ width:32, height:32, borderRadius:"50%", background:"#EEF1F6", display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ width:32, height:32, borderRadius:"50%", background:"var(--erp-border)", display:"flex", alignItems:"center", justifyContent:"center" }}>
         <UserCircle size={18} style={{ color: TEXT_DIM }} />
       </div>
     </div>
@@ -279,7 +279,7 @@ function TabletFrame({ color, children }: { color: string; children: ReactNode }
 
       {/* Home gesture bar */}
       <div style={{ height:14, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-        <div style={{ width:100, height:4, borderRadius:2, background:"#E4E9F0" }} />
+        <div style={{ width:100, height:4, borderRadius:2, background:"var(--erp-border)" }} />
       </div>
     </div>
   );
@@ -418,10 +418,10 @@ function OpsTablet() {
               <TSectionHead title="Live Operations Board" color={OPS_C} />
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
                 {[
-                  { label:"Flights Today",  val:"7",  sub:"4 arr · 3 dep",  c:"#3B82F6" },
+                  { label:"Flights Today",  val:"7",  sub:"4 arr · 3 dep",  c:"var(--erp-info)" },
                   { label:"Active Buses",   val:"12", sub:"8 en-route",     c:OPS_C },
-                  { label:"Total Pax",      val:"839",sub:"in transit",     c:"#22C55E" },
-                  { label:"Pending Tasks",  val:"3",  sub:"require action", c:"#F59E0B" },
+                  { label:"Total Pax",      val:"839",sub:"in transit",     c:"var(--erp-success)" },
+                  { label:"Pending Tasks",  val:"3",  sub:"require action", c:"var(--erp-warning)" },
                 ].map(k => (
                   <div key={k.label} style={{ background:BG_CARD, border:`1px solid ${BORDER}`, borderRadius:12, padding:14 }}>
                     <div style={{ fontSize:11, color:MUTED, marginBottom:4 }}>{k.label}</div>
@@ -432,10 +432,10 @@ function OpsTablet() {
               </div>
               <TSectionHead title="Recent Activity" color={OPS_C} />
               {[
-                { icon:"✈", msg:"SV-821 landed at Terminal 2 — 248 pax", time:"10:35", c:"#22C55E" },
+                { icon:"✈", msg:"SV-821 landed at Terminal 2 — 248 pax", time:"10:35", c:"var(--erp-success)" },
                 { icon:"🚌", msg:"Bus-07 dispatched: T2 → Hilton Makkah",  time:"10:38", c:OPS_C },
-                { icon:"⚠", msg:"WY-551 delayed 45 min (weather)",        time:"10:42", c:"#F59E0B" },
-                { icon:"✅", msg:"D-004 completed: T2 → Makkah Hotel",     time:"10:50", c:"#22C55E" },
+                { icon:"⚠", msg:"WY-551 delayed 45 min (weather)",        time:"10:42", c:"var(--erp-warning)" },
+                { icon:"✅", msg:"D-004 completed: T2 → Makkah Hotel",     time:"10:50", c:"var(--erp-success)" },
               ].map((a, i) => (
                 <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 0", borderBottom:`1px solid ${BORDER}` }}>
                   <span style={{ fontSize:16 }}>{a.icon}</span>
@@ -516,7 +516,7 @@ function AgentTablet() {
             <button style={{ padding:"6px 12px", borderRadius:8, border:`1px solid ${BORDER}`, background:"transparent", color:TEXT_DIM, fontSize:12, cursor:"pointer" }}>
               Export
             </button>
-            <button style={{ padding:"6px 14px", borderRadius:8, border:"none", background:AGT_C, color:"#fff", fontSize:12, fontWeight:600, cursor:"pointer" }}>
+            <button style={{ padding:"6px 14px", borderRadius:8, border:"none", background:AGT_C, color:"var(--erp-surface)", fontSize:12, fontWeight:600, cursor:"pointer" }}>
               + Add Pax
             </button>
           </div>
@@ -526,9 +526,9 @@ function AgentTablet() {
         <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, padding:14, borderBottom:`1px solid ${BORDER}` }}>
           {[
             { label:"Total Pax",  val:selectedGroup.pax, c:AGT_C },
-            { label:"Checked In", val:Math.floor(selectedGroup.pax * 0.7), c:"#22C55E" },
-            { label:"Pending",    val:Math.floor(selectedGroup.pax * 0.2), c:"#F59E0B" },
-            { label:"Boarding",   val:Math.floor(selectedGroup.pax * 0.1), c:"#3B82F6" },
+            { label:"Checked In", val:Math.floor(selectedGroup.pax * 0.7), c:"var(--erp-success)" },
+            { label:"Pending",    val:Math.floor(selectedGroup.pax * 0.2), c:"var(--erp-warning)" },
+            { label:"Boarding",   val:Math.floor(selectedGroup.pax * 0.1), c:"var(--erp-info)" },
           ].map(k => (
             <div key={k.label} style={{ background:BG_CARD, borderRadius:10, padding:"10px 12px" }}>
               <div style={{ fontSize:10, color:MUTED, marginBottom:2 }}>{k.label}</div>
@@ -602,7 +602,7 @@ function DriverTablet() {
         <div style={{ flex:1, overflow:"auto" }}>
           {DRV_TRIPS.map(trip => {
             const isActive = trip.id === selectedTrip.id;
-            const statusColor = trip.status === "active" ? "#22C55E" : trip.status === "complete" ? MUTED : "#F59E0B";
+            const statusColor = trip.status === "active" ? "var(--erp-success)" : trip.status === "complete" ? MUTED : "var(--erp-warning)";
             return (
               <button
                 key={trip.id}
@@ -642,17 +642,17 @@ function DriverTablet() {
         {/* Mini map */}
         <div style={{
           height:260, flexShrink:0,
-          background:"#0A1628",
+          background:"var(--erp-text-strong)",
           position:"relative",
           overflow:"hidden",
           borderBottom:`1px solid ${BORDER}`,
         }}>
           {/* Map grid lines */}
           {[...Array(8)].map((_, i) => (
-            <div key={`h${i}`} style={{ position:"absolute", left:0, right:0, top:`${i * 14}%`, height:1, background:"#FBFCFD" }} />
+            <div key={`h${i}`} style={{ position:"absolute", left:0, right:0, top:`${i * 14}%`, height:1, background:"var(--erp-surface-soft)" }} />
           ))}
           {[...Array(10)].map((_, i) => (
-            <div key={`v${i}`} style={{ position:"absolute", top:0, bottom:0, left:`${i * 10}%`, width:1, background:"#FBFCFD" }} />
+            <div key={`v${i}`} style={{ position:"absolute", top:0, bottom:0, left:`${i * 10}%`, width:1, background:"var(--erp-surface-soft)" }} />
           ))}
 
           {/* Route SVG */}
@@ -662,13 +662,13 @@ function DriverTablet() {
 
           {/* Origin pin */}
           <div style={{ position:"absolute", left:"15%", bottom:"25%", display:"flex", flexDirection:"column", alignItems:"center" }}>
-            <div style={{ width:12, height:12, borderRadius:"50%", background:DRV_C, border:"2px solid #fff", boxShadow:`0 0 0 4px ${DRV_C}44` }} />
+            <div style={{ width:12, height:12, borderRadius:"50%", background:DRV_C, border:"2px solid var(--erp-surface)", boxShadow:`0 0 0 4px ${DRV_C}44` }} />
             <span style={{ fontSize:10, color:TEXT, marginTop:4, whiteSpace:"nowrap" }}>{selectedTrip.from}</span>
           </div>
 
           {/* Destination pin */}
           <div style={{ position:"absolute", right:"15%", top:"18%", display:"flex", flexDirection:"column", alignItems:"center" }}>
-            <MapPin size={18} style={{ color:"#22C55E" }} />
+            <MapPin size={18} style={{ color:"var(--erp-success)" }} />
             <span style={{ fontSize:10, color:TEXT, marginTop:2, whiteSpace:"nowrap" }}>{selectedTrip.to}</span>
           </div>
 
@@ -695,7 +695,7 @@ function DriverTablet() {
               <button style={{ width:40, height:40, borderRadius:10, border:`1px solid ${BORDER}`, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>
                 <Phone size={16} style={{ color:TEXT_DIM }} />
               </button>
-              <button style={{ padding:"0 16px", height:40, borderRadius:10, border:"none", background:DRV_C, color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+              <button style={{ padding:"0 16px", height:40, borderRadius:10, border:"none", background:DRV_C, color:"var(--erp-surface)", fontSize:13, fontWeight:700, cursor:"pointer" }}>
                 Start Trip
               </button>
             </div>
@@ -710,7 +710,7 @@ function DriverTablet() {
                   <div style={{ fontSize:12, fontWeight:600, color:TEXT }}>{p.name}</div>
                   <div style={{ fontSize:11, color:TEXT_DIM }}>{p.passport}</div>
                 </div>
-                <CheckCircle size={14} style={{ color:"#22C55E" }} />
+                <CheckCircle size={14} style={{ color:"var(--erp-success)" }} />
               </div>
             ))}
           </div>
@@ -755,9 +755,9 @@ function SupTablet() {
         {/* KPI row */}
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, padding:"10px 12px", borderBottom:`1px solid ${BORDER}` }}>
           {[
-            { label:"Pending",   val:"4",  c:"#F59E0B" },
-            { label:"Approved",  val:"12", c:"#22C55E" },
-            { label:"Rejected",  val:"2",  c:"#EF4444" },
+            { label:"Pending",   val:"4",  c:"var(--erp-warning)" },
+            { label:"Approved",  val:"12", c:"var(--erp-success)" },
+            { label:"Rejected",  val:"2",  c:"var(--erp-destructive)" },
             { label:"Today SAR", val:"267k",c:SUP_C },
           ].map(k => (
             <div key={k.label} style={{ background:BG_CARD, borderRadius:8, padding:"8px 10px" }}>
@@ -788,7 +788,7 @@ function SupTablet() {
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <span style={{ fontSize:12, fontWeight:700, color: isActive ? SUP_C : TEXT }}>{ap.type}</span>
                   {ap.priority === "high" && (
-                    <AlertTriangle size={12} style={{ color:"#EF4444" }} />
+                    <AlertTriangle size={12} style={{ color:"var(--erp-destructive)" }} />
                   )}
                 </div>
                 <div style={{ fontSize:11, color:TEXT_DIM }}>{ap.agent}</div>
@@ -810,10 +810,10 @@ function SupTablet() {
             <div style={{ fontSize:11, color:MUTED }}>{selectedAp.id} · {selectedAp.agent}</div>
           </div>
           <div style={{ display:"flex", gap:8 }}>
-            <button style={{ padding:"7px 18px", borderRadius:8, border:`1px solid #EF444444`, background:"transparent", color:"#EF4444", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+            <button style={{ padding:"7px 18px", borderRadius:8, border:`1px solid #EF444444`, background:"transparent", color:"var(--erp-destructive)", fontSize:13, fontWeight:700, cursor:"pointer" }}>
               Reject
             </button>
-            <button style={{ padding:"7px 20px", borderRadius:8, border:"none", background:SUP_C, color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+            <button style={{ padding:"7px 20px", borderRadius:8, border:"none", background:SUP_C, color:"var(--erp-surface)", fontSize:13, fontWeight:700, cursor:"pointer" }}>
               Approve
             </button>
           </div>
@@ -866,8 +866,8 @@ function SupTablet() {
           {/* Alert */}
           {selectedAp.priority === "high" && (
             <div style={{ display:"flex", alignItems:"flex-start", gap:10, background:"#EF444412", border:"1px solid #EF444430", borderRadius:10, padding:"12px 14px", marginTop:8 }}>
-              <AlertTriangle size={16} style={{ color:"#EF4444", flexShrink:0, marginTop:1 }} />
-              <div style={{ fontSize:12, color:"#EF4444", lineHeight:1.5 }}>
+              <AlertTriangle size={16} style={{ color:"var(--erp-destructive)", flexShrink:0, marginTop:1 }} />
+              <div style={{ fontSize:12, color:"var(--erp-destructive)", lineHeight:1.5 }}>
                 High-priority request. Finance team flagged this for immediate supervisor review.
               </div>
             </div>
@@ -943,7 +943,7 @@ export default function TabletPage() {
                   display:"flex", alignItems:"center", gap:6,
                   padding:"8px 16px", border:"none", borderRadius:100, cursor:"pointer",
                   background: isActive ? nav.color : "rgba(11,30,63,0.38)",
-                  color: isActive ? "#fff" : TEXT_DIM,
+                  color: isActive ? "var(--erp-surface)" : TEXT_DIM,
                   fontSize:13, fontWeight:600,
                   transition:"all 160ms ease",
                 }}

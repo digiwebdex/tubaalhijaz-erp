@@ -10,10 +10,10 @@ import {
   Camera, Home, ChevronRight, LogIn,
 } from "lucide-react";
 
-const NAVY = "#0B1E3F";
-const GOLD = "#C9A24B";
+const NAVY = "var(--erp-text-strong)";
+const GOLD = "var(--erp-accent)";
 const DARK = "#F0F2F7";
-const GREEN = "#16A34A";
+const GREEN = "var(--erp-success)";
 
 type DZState = "empty" | "uploading" | "done";
 
@@ -72,7 +72,7 @@ function StepBar({ steps, current }: { steps: { num: number; label: string }[]; 
                     ? { backgroundColor: GOLD, color: NAVY }
                     : active
                     ? { backgroundColor: NAVY, color: GOLD, border: `2px solid ${GOLD}` }
-                    : { backgroundColor: "#F5F7FA", color: "rgba(11,30,63,0.50)", border: "1px solid rgba(11,30,63,0.15)" }
+                    : { backgroundColor: "var(--erp-canvas)", color: "rgba(11,30,63,0.50)", border: "1px solid rgba(11,30,63,0.15)" }
                 }
               >
                 {done ? <CheckCircle size={14} /> : s.num}
@@ -189,7 +189,7 @@ function FileDropzone({ state, onChange, label, hint, extracted, progress = 68, 
               <span>Scanning document…</span>
               <span>{progress}%</span>
             </div>
-            <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "#F5F7FA" }}>
+            <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "var(--erp-canvas)" }}>
               <div
                 className="h-full rounded-full transition-all"
                 style={{ width: `${progress}%`, backgroundColor: GOLD }}
@@ -241,7 +241,7 @@ function FileDropzone({ state, onChange, label, hint, extracted, progress = 68, 
       )}
 
       {uploadError && (
-        <div className="mt-2 p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>
+        <div className="mt-2 p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "var(--erp-destructive)" }}>
           {uploadError}
         </div>
       )}
@@ -281,9 +281,9 @@ function OcrInput({ label, value, onChange, ocr = false, placeholder, type = "te
         placeholder={placeholder}
         className="w-full px-3.5 py-2.5 text-sm rounded-xl focus:outline-none transition"
         style={{
-          backgroundColor: ocr ? `${GOLD}0A` : "#FBFCFD",
+          backgroundColor: ocr ? `${GOLD}0A` : "var(--erp-surface-soft)",
           border: `1px solid ${ocr ? `${GOLD}40` : "rgba(11,30,63,0.15)"}`,
-          color: ocr ? GOLD : "#0B1E3F",
+          color: ocr ? GOLD : "var(--erp-text-strong)",
           borderLeft: ocr ? `3px solid ${GOLD}` : undefined,
           fontFamily: "var(--font-sans)",
         }}
@@ -348,11 +348,11 @@ function ReviewCard({ title, rows }: { title: string; rows: { label: string; val
             {/* Entered company / owner / guarantor names run long — truncate with the
                 full value on hover rather than letting the row blow out. */}
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-semibold truncate" style={{ color: "#0B1E3F" }} title={r.value}>{r.value}</span>
+              <span className="text-xs font-semibold truncate" style={{ color: "var(--erp-text-strong)" }} title={r.value}>{r.value}</span>
               {r.ok !== undefined && (
                 r.ok
                   ? <CheckCircle size={12} className="shrink-0" style={{ color: GREEN }} />
-                  : <AlertCircle size={12} className="shrink-0" style={{ color: "#F59E0B" }} />
+                  : <AlertCircle size={12} className="shrink-0" style={{ color: "var(--erp-warning)" }} />
               )}
             </div>
           </div>
@@ -421,7 +421,7 @@ function DropzoneShowcase() {
                 <span>Extracting fields…</span>
                 <span>{uploadProg}%</span>
               </div>
-              <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "#F5F7FA" }}>
+              <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "var(--erp-canvas)" }}>
                 <div
                   className="h-full rounded-full transition-all"
                   style={{ width: `${uploadProg}%`, backgroundColor: GOLD }}
@@ -599,14 +599,14 @@ function AgentRegSection() {
       <div>
         <div className="mb-8">
           <div className="text-xs font-bold uppercase tracking-[0.18em] mb-1" style={{ color: GOLD }}>Section 02</div>
-          <h2 className="text-2xl font-bold text-[#0B1E3F]">Agent Registration</h2>
+          <h2 className="text-2xl font-bold text-[var(--erp-text-strong)]">Agent Registration</h2>
         </div>
         <div className="rounded-2xl p-12 flex flex-col items-center text-center" style={{ border: `1px solid ${GREEN}30`, backgroundColor: `${GREEN}06` }}>
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{ backgroundColor: `${GREEN}15`, border: `1px solid ${GREEN}30` }}>
             <CheckCircle size={28} style={{ color: GREEN }} />
           </div>
           <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: GREEN }}>Application Submitted</div>
-          <h3 className="text-2xl font-bold text-[#0B1E3F] mb-3">Verification Status: Pending</h3>
+          <h3 className="text-2xl font-bold text-[var(--erp-text-strong)] mb-3">Verification Status: Pending</h3>
           <p className="text-sm max-w-sm mb-6" style={{ color: "rgba(11,30,63,0.66)" }}>
             Your agent registration has been received and is now under review by our compliance team. Expected response within 3–5 business days.
           </p>
@@ -636,21 +636,21 @@ function AgentRegSection() {
     <div>
       <div className="mb-8">
         <div className="text-xs font-bold uppercase tracking-[0.18em] mb-1" style={{ color: GOLD }}>Section 02</div>
-        <h2 className="text-2xl font-bold text-[#0B1E3F]">Agent Registration</h2>
+        <h2 className="text-2xl font-bold text-[var(--erp-text-strong)]">Agent Registration</h2>
         <p className="text-sm mt-1" style={{ color: "rgba(11,30,63,0.58)" }}>5-step wizard · OCR document scanning · Inline validation</p>
       </div>
 
       {/* Dropzone showcase — only on step 1 */}
       {/* DropzoneShowcase removed for live launch: it showed fabricated OCR extraction (sample "Rashidi Travel Co. LLC") to real applicants */}
 
-      <div className="rounded-2xl p-8" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "#FFFFFF" }}>
+      <div className="rounded-2xl p-8" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "var(--erp-surface)" }}>
         <StepBar steps={AGENT_STEPS} current={step} />
 
         {/* Step 1 — Documents */}
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-base font-bold text-[#0B1E3F] mb-1">Business Documents</h3>
+              <h3 className="text-base font-bold text-[var(--erp-text-strong)] mb-1">Business Documents</h3>
               <p className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>
                 Upload your Trade License and owner identity. Our OCR engine auto-extracts fields for the next step.
               </p>
@@ -676,7 +676,7 @@ function AgentRegSection() {
         {step === 2 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-base font-bold text-[#0B1E3F] mb-1">Owner Profile & Office</h3>
+              <h3 className="text-base font-bold text-[var(--erp-text-strong)] mb-1">Owner Profile & Office</h3>
               <p className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>
                 {tlDone || passDone
                   ? "Your documents are attached. Confirm your company profile details below."
@@ -706,7 +706,7 @@ function AgentRegSection() {
         {step === 3 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-base font-bold text-[#0B1E3F] mb-1">Finance & Banking</h3>
+              <h3 className="text-base font-bold text-[var(--erp-text-strong)] mb-1">Finance & Banking</h3>
               <p className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>Bank account details, signed cheque, and security deposit documentation.</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -739,12 +739,12 @@ function AgentRegSection() {
         {step === 4 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-base font-bold text-[#0B1E3F] mb-1">Guarantors & Reference Agent</h3>
+              <h3 className="text-base font-bold text-[var(--erp-text-strong)] mb-1">Guarantors & Reference Agent</h3>
               <p className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>Two personal guarantors and one reference travel agent who already operates on TUBA AL HIJAZ.</p>
             </div>
 
             {[1, 2].map((n) => (
-              <div key={n} className="rounded-xl p-5" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "#FFFFFF" }}>
+              <div key={n} className="rounded-xl p-5" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "var(--erp-surface)" }}>
                 <div className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: GOLD }}>Guarantor {n}</div>
                 <div className="grid grid-cols-3 gap-4">
                   <OcrInput label="Full Name" value={guarantors[n - 1].name} onChange={(v) => setG(n - 1, "name", v)} placeholder="Guarantor full name" />
@@ -768,7 +768,7 @@ function AgentRegSection() {
         {step === 5 && (
           <div className="space-y-5">
             <div>
-              <h3 className="text-base font-bold text-[#0B1E3F] mb-1">Review & Submit</h3>
+              <h3 className="text-base font-bold text-[var(--erp-text-strong)] mb-1">Review & Submit</h3>
               <p className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>Verify all information before final submission. Once submitted, your application enters compliance review.</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -816,7 +816,7 @@ function AgentRegSection() {
         )}
 
         {submitError && (
-          <div className="mt-5 p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>
+          <div className="mt-5 p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "var(--erp-destructive)" }}>
             {submitError}
           </div>
         )}
@@ -841,7 +841,7 @@ const VERIFICATION_STATES = [
   {
     id: "pending",
     label: "Pending",
-    color: "#F59E0B",
+    color: "var(--erp-warning)",
     icon: Clock,
     appId: "AGT-1446-4827",
     submitted: "14 Jul 2025",
@@ -856,7 +856,7 @@ const VERIFICATION_STATES = [
   {
     id: "review",
     label: "Under Review",
-    color: "#3B82F6",
+    color: "var(--erp-info)",
     icon: ScanLine,
     appId: "AGT-1446-3201",
     submitted: "09 Jul 2025",
@@ -886,7 +886,7 @@ const VERIFICATION_STATES = [
   {
     id: "rejected",
     label: "Rejected",
-    color: "#EF4444",
+    color: "var(--erp-destructive)",
     icon: XCircle,
     appId: "AGT-1446-1988",
     submitted: "27 Jun 2025",
@@ -970,12 +970,12 @@ function VerificationSection() {
     <div>
       <div className="mb-8">
         <div className="text-xs font-bold uppercase tracking-[0.18em] mb-1" style={{ color: GOLD }}>Section 03</div>
-        <h2 className="text-2xl font-bold text-[#0B1E3F]">Verification Status Tracker</h2>
+        <h2 className="text-2xl font-bold text-[var(--erp-text-strong)]">Verification Status Tracker</h2>
         <p className="text-sm mt-1" style={{ color: "rgba(11,30,63,0.58)" }}>
           Click a card to preview each status state — Pending / Under Review / Verified / Rejected
         </p>
         {liveError && (
-          <div className="mt-4 p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>
+          <div className="mt-4 p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "var(--erp-destructive)" }}>
             {liveError}
           </div>
         )}
@@ -1022,7 +1022,7 @@ function VerificationSection() {
           </div>
           <div>
             <div className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: current.color }}>{current.label}</div>
-            <div className="text-sm font-semibold text-[#0B1E3F]">{current.desc}</div>
+            <div className="text-sm font-semibold text-[var(--erp-text-strong)]">{current.desc}</div>
           </div>
           <div className="ml-auto text-right">
             <div className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: "rgba(11,30,63,0.50)" }}>Application ID</div>
@@ -1031,7 +1031,7 @@ function VerificationSection() {
         </div>
 
         {/* Content */}
-        <div className="p-6 grid grid-cols-2 gap-6" style={{ backgroundColor: "#FFFFFF" }}>
+        <div className="p-6 grid grid-cols-2 gap-6" style={{ backgroundColor: "var(--erp-surface)" }}>
           {/* Timeline */}
           <div>
             <div className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "rgba(11,30,63,0.50)" }}>Timeline</div>
@@ -1052,17 +1052,17 @@ function VerificationSection() {
                             : tl.current
                             ? `${current.color}15`
                             : "rgba(11,30,63,0.38)",
-                          border: `1.5px solid ${t.done ? current.color : tl.rejected ? "#EF4444" : tl.current ? current.color : "rgba(11,30,63,0.38)"}`,
+                          border: `1.5px solid ${t.done ? current.color : tl.rejected ? "var(--erp-destructive)" : tl.current ? current.color : "rgba(11,30,63,0.38)"}`,
                         }}
                       >
                         {t.done ? (
                           <CheckCircle size={11} style={{ color: current.color }} />
                         ) : tl.rejected ? (
-                          <XCircle size={11} style={{ color: "#EF4444" }} />
+                          <XCircle size={11} style={{ color: "var(--erp-destructive)" }} />
                         ) : tl.current ? (
                           <Loader2 size={10} className="animate-spin" style={{ color: current.color }} />
                         ) : (
-                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#E4E9F0" }} />
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "var(--erp-border)" }} />
                         )}
                       </div>
                       {!isLast && (
@@ -1070,7 +1070,7 @@ function VerificationSection() {
                       )}
                     </div>
                     <div className="pb-4">
-                      <div className="text-xs font-semibold" style={{ color: t.done || tl.current ? "#0B1E3F" : "rgba(11,30,63,0.58)" }}>
+                      <div className="text-xs font-semibold" style={{ color: t.done || tl.current ? "var(--erp-text-strong)" : "rgba(11,30,63,0.58)" }}>
                         {t.label}
                       </div>
                       <div className="text-[10px]" style={{ color: "rgba(11,30,63,0.50)", fontFamily: "var(--font-mono)" }}>
@@ -1088,8 +1088,8 @@ function VerificationSection() {
             {active === "rejected" && current.reason && (
               <div className="rounded-xl p-4" style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
                 <div className="flex items-center gap-2 mb-2">
-                  <AlertCircle size={13} style={{ color: "#EF4444" }} />
-                  <span className="text-xs font-bold" style={{ color: "#EF4444" }}>Rejection Reason</span>
+                  <AlertCircle size={13} style={{ color: "var(--erp-destructive)" }} />
+                  <span className="text-xs font-bold" style={{ color: "var(--erp-destructive)" }}>Rejection Reason</span>
                 </div>
                 <p className="text-xs leading-relaxed" style={{ color: "rgba(11,30,63,0.76)" }}>{current.reason}</p>
               </div>
@@ -1118,7 +1118,7 @@ function VerificationSection() {
                 <Link
                   to="/login"
                   className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
-                  style={{ backgroundColor: GREEN, color: "#0B1E3F" }}
+                  style={{ backgroundColor: GREEN, color: "var(--erp-text-strong)" }}
                 >
                   <LogIn size={13} /> Go to Agent Portal
                 </Link>
@@ -1127,7 +1127,7 @@ function VerificationSection() {
 
             {(active === "pending" || active === "review") && (
               <div className="space-y-3">
-                <div className="rounded-xl p-4" style={{ backgroundColor: "#FBFCFD", border: "1px solid rgba(11,30,63,0.11)" }}>
+                <div className="rounded-xl p-4" style={{ backgroundColor: "var(--erp-surface-soft)", border: "1px solid rgba(11,30,63,0.11)" }}>
                   <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(11,30,63,0.50)" }}>What Happens Next</div>
                   <div className="space-y-2 text-xs" style={{ color: "rgba(11,30,63,0.66)" }}>
                     <div className="flex items-start gap-2">
@@ -1144,7 +1144,7 @@ function VerificationSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs px-3 py-2.5 rounded-xl" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(11,30,63,0.11)" }}>
+                <div className="flex items-center gap-2 text-xs px-3 py-2.5 rounded-xl" style={{ backgroundColor: "var(--erp-surface)", border: "1px solid rgba(11,30,63,0.11)" }}>
                   <Mail size={12} className="shrink-0" style={{ color: "rgba(11,30,63,0.50)" }} />
                   <span className="shrink-0" style={{ color: "rgba(11,30,63,0.58)" }}>Notifications sent to: </span>
                   {(() => {
@@ -1175,7 +1175,7 @@ const SUPPLIER_TYPES = [
     label: "Hotel",
     ar: "فندق",
     icon: Building,
-    color: "#2563EB",
+    color: "var(--erp-info)",
     desc: "Accommodation provider near the Haram",
     extra: [
       { label: "Star Rating", placeholder: "e.g. 4-star, 5-star" },
@@ -1189,7 +1189,7 @@ const SUPPLIER_TYPES = [
     label: "Transport",
     ar: "نقل",
     icon: Bus,
-    color: "#EA580C",
+    color: "var(--erp-cat-orange)",
     desc: "Bus, van, or private car fleet operator",
     extra: [
       { label: "Fleet Size (vehicles)", placeholder: "e.g. 25" },
@@ -1203,7 +1203,7 @@ const SUPPLIER_TYPES = [
     label: "Catering",
     ar: "تموين",
     icon: UtensilsCrossed,
-    color: "#9333EA",
+    color: "var(--erp-cat-purple)",
     desc: "Halal-certified meal preparation & delivery",
     extra: [
       { label: "Daily Capacity (meals/day)", placeholder: "e.g. 2,000" },
@@ -1290,14 +1290,14 @@ function SupplierRegSection() {
       <div>
         <div className="mb-8">
           <div className="text-xs font-bold uppercase tracking-[0.18em] mb-1" style={{ color: GOLD }}>Section 04</div>
-          <h2 className="text-2xl font-bold text-[#0B1E3F]">Supplier Registration</h2>
+          <h2 className="text-2xl font-bold text-[var(--erp-text-strong)]">Supplier Registration</h2>
         </div>
         <div className="rounded-2xl p-12 flex flex-col items-center text-center" style={{ border: `1px solid ${GREEN}30`, backgroundColor: `${GREEN}06` }}>
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5" style={{ backgroundColor: `${GREEN}15`, border: `1px solid ${GREEN}30` }}>
             <CheckCircle size={28} style={{ color: GREEN }} />
           </div>
           <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: GREEN }}>Supplier Application Submitted</div>
-          <h3 className="text-2xl font-bold text-[#0B1E3F] mb-3">Under Compliance Review</h3>
+          <h3 className="text-2xl font-bold text-[var(--erp-text-strong)] mb-3">Under Compliance Review</h3>
           <p className="text-sm max-w-sm mb-6" style={{ color: "rgba(11,30,63,0.66)" }}>
             Your {selected?.label} supplier registration is now under review. Our procurement team will contact you within 5 business days.
           </p>
@@ -1323,7 +1323,7 @@ function SupplierRegSection() {
     <div>
       <div className="mb-8">
         <div className="text-xs font-bold uppercase tracking-[0.18em] mb-1" style={{ color: GOLD }}>Section 04</div>
-        <h2 className="text-2xl font-bold text-[#0B1E3F]">Supplier Registration</h2>
+        <h2 className="text-2xl font-bold text-[var(--erp-text-strong)]">Supplier Registration</h2>
         <p className="text-sm mt-1" style={{ color: "rgba(11,30,63,0.58)" }}>
           Hotel / Transport / Catering — type-specific fields and document requirements
         </p>
@@ -1341,12 +1341,12 @@ function SupplierRegSection() {
                   key={t.id}
                   onClick={() => setSupType(t.id)}
                   className="rounded-2xl p-6 text-left transition-all hover:scale-[1.01]"
-                  style={{ border: `1px solid rgba(11,30,63,0.11)`, backgroundColor: "#FFFFFF" }}
+                  style={{ border: `1px solid rgba(11,30,63,0.11)`, backgroundColor: "var(--erp-surface)" }}
                 >
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: `${t.color}18` }}>
                     <Icon size={22} style={{ color: t.color }} />
                   </div>
-                  <div className="text-base font-bold text-[#0B1E3F] mb-1">{t.label}</div>
+                  <div className="text-base font-bold text-[var(--erp-text-strong)] mb-1">{t.label}</div>
                   <div className="text-xs mb-2" style={{ color: t.color, fontFamily: "var(--font-arabic)" }} lang="ar" dir="rtl">{t.ar}</div>
                   <div className="text-xs leading-relaxed" style={{ color: "rgba(11,30,63,0.58)" }}>{t.desc}</div>
                   <div className="mt-4 text-xs flex items-center gap-1 font-semibold" style={{ color: t.color }}>
@@ -1374,13 +1374,13 @@ function SupplierRegSection() {
             </button>
           </div>
 
-          <div className="rounded-2xl p-8" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "#FFFFFF" }}>
+          <div className="rounded-2xl p-8" style={{ border: "1px solid rgba(11,30,63,0.11)", backgroundColor: "var(--erp-surface)" }}>
             <StepBar steps={SUP_STEPS} current={step} />
 
             {step === 1 && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-base font-bold text-[#0B1E3F] mb-1">Company Information</h3>
+                  <h3 className="text-base font-bold text-[var(--erp-text-strong)] mb-1">Company Information</h3>
                   <p className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>Basic company details and {selected!.label.toLowerCase()}-specific information.</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -1415,7 +1415,7 @@ function SupplierRegSection() {
             {step === 2 && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-base font-bold text-[#0B1E3F] mb-1">Document Uploads</h3>
+                  <h3 className="text-base font-bold text-[var(--erp-text-strong)] mb-1">Document Uploads</h3>
                   <p className="text-xs" style={{ color: "rgba(11,30,63,0.58)" }}>
                     Upload your Trade License and {selected!.label.toLowerCase()}-specific certification.
                   </p>
@@ -1438,7 +1438,7 @@ function SupplierRegSection() {
             )}
 
             {submitError && (
-              <div className="mt-5 p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "#DC2626" }}>
+              <div className="mt-5 p-3 rounded-xl text-xs" style={{ backgroundColor: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", color: "var(--erp-destructive)" }}>
                 {submitError}
               </div>
             )}
