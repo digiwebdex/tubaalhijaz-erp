@@ -285,7 +285,7 @@ export default function Home() {
           <div className="flex items-center justify-center gap-8 flex-wrap">
             {TRUST_LOGOS.map((logo) => (
               <div key={logo.name} className="flex flex-col items-center gap-1.5 group">
-                <div className="w-20 h-14 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all" style={{ borderColor: `${NAVY}12`, backgroundColor: "white" }}>
+                <div className="w-20 h-14 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all" style={{ borderColor: "#1C2444", backgroundColor: "#141830" }}>
                   <div className="text-sm font-black tracking-wider" style={{ color: INK }}>{logo.name}</div>
                   <div className="text-[9px]" style={{ color: GOLD, fontFamily: "var(--font-arabic)" }} lang="ar">{logo.sub}</div>
                 </div>
